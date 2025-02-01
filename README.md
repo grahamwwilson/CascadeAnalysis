@@ -26,5 +26,7 @@ This can be customized relatively easily to plot any of the standard histograms
 inside ROOT.
 eg.
 > root
-> .x DiPlotX.C("220","h3Code") will produce the 3-lepton flavor code plot 
-with the signal set for the 220 GeV LSP case. 
+
+> .x DiPlotX.C("220","h3Code") 
+
+will produce the 3-lepton flavor code plot with the 220 GeV LSP signal case. 
