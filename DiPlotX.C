@@ -1,4 +1,4 @@
-void DiPlotX(string MLSP="260", string htype="h3Code",float ymax=4.0e6, float ymin=20.0, int mode=0, float xlmin=0.15, float ylmin=0.58){
+void DiPlotX(string MLSP="90", string htype="h3Code",float ymax=4.0e6, float ymin=20.0, int mode=0, float xlmin=0.15, float ylmin=0.58){
 
 //gStyle->SetOptStat(111111);
 // See https://root.cern/doc/v608/classTPaveStats.html
@@ -93,6 +93,7 @@ TLegend* leg = new TLegend(xlmin,ylmin,xlmin+dx,ylmin+dy);
 leg->SetTextFont(42);
 leg->SetTextSize(0.04);
 string signalstr;
+if (MLSP=="90")signalstr = "(130/115/110/100/90)";
 if (MLSP=="260")signalstr = "(300/289/280/270/260)*10";
 if (MLSP=="270")signalstr = "(300/289/280/275/270)*10";
 if (MLSP=="220")signalstr = "(300/289/260/240/220)*10";
