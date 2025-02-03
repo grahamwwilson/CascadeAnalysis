@@ -15,7 +15,7 @@ New 4-vector related functions should be put there.
 There are three example shell scripts for running analyze.py on various LHE files.
 Start by getting Test.sh to do what you need.
 Note that both redoquick.sh and redo.sh run on the various SM files and add all 
-the output files for each process together, when making histos_SM.root
+the output files for each process together, when making histos_SM.root.
 
 ## ROOT plotting macro
 An example ROOT plotting macro is provided ("DiPlotX.C"). 
