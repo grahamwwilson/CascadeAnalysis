@@ -2,7 +2,6 @@
 import random
 import ROOT
 import math
-import numpy as np
 import analyzeArgs
 from FourVecDataClass import FourVec
 
