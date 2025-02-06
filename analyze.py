@@ -12,7 +12,9 @@ analyzeArgs.showArgs(nevsToRead, which, target, lumi)
 wt = target/lumi
 print('Using event weight of ',wt)
 
-lhefile=which+".lhe"
+#FIXME
+prefix="WF-V1/"
+lhefile=prefix+which+".lhe"
 f = open(lhefile, "r")
 # Initialize output histogram file
 rootfile="histos_"+which+".root"
