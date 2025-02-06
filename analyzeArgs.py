@@ -41,6 +41,6 @@ def getArguments(argv=None):
     which = args.which
     target = args.target
     lumi = args.lumi
-    prefix = args.prefiz
+    prefix = args.prefix
    
     return nevsToRead,which,target,lumi,prefix 
