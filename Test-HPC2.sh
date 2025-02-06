@@ -11,8 +11,8 @@ module load root/6.32.2
 module list
 root --version
 python --version
-
 python analyze.py -h
+
 python analyze.py -w "Test" -t 400.0 -l 4.4241e3
 
 module unload root/6.32.2

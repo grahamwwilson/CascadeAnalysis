@@ -5,16 +5,17 @@ import math
 import analyzeArgs
 from FourVecDataClass import FourVec
 
-nevsToRead, which, target, lumi = analyzeArgs.getArguments(None)
-analyzeArgs.showArgs(nevsToRead, which, target, lumi)
+nevsToRead, which, target, lumi, prefix = analyzeArgs.getArguments(None)
+analyzeArgs.showArgs(nevsToRead, which, target, lumi, prefix)
 
 # Calculate event weight for histograms
 wt = target/lumi
 print('Using event weight of ',wt)
 
 #FIXME
-prefix="WF-V1/"
-lhefile=prefix+which+".lhe"
+#prefix="WF-V1/"
+lhefile=prefix+"/"+which+".lhe"
+print('Opening LHE file',lhefile)
 f = open(lhefile, "r")
 # Initialize output histogram file
 rootfile="histos_"+which+".root"
