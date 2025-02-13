@@ -28,7 +28,7 @@ python3 analyze.py -h
 python3 analyze.py -w "ZZZ" -t 400.0 -l 3.125e5 -p "WF-V1"
 #python3 analyze.py -w "WWW" -t 400.0 -l 4.4241e3 -p "WF-V1"
 
-#hadd -f histos_SM.root histos_WZBoth.root histos_ZZ.root histos_WWW.root histos_WWZ.root
+hadd -f histos_SM.root histos_WZBoth.root histos_ZZ.root histos_WWW.root histos_ZZZ.root
 
 #python3 analyze.py -w "Sleptons-LSP90"  -t 400.0 -l 8.3681e2 -p "WF-V1"
 #python3 analyze.py -w "Sleptons-LSP220" -t 400.0 -l 2.2893e4 -p "WF-V1"
