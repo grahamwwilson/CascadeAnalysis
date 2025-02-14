@@ -38,7 +38,9 @@ hPosMumass = ROOT.TH1D("hPosMumass","; Positron-Muon mass [GeV]",500,0.0,250.0)
 hEleMumass = ROOT.TH1D("hEleMumass","; Electron-Muon mass [GeV]",500,0.0,250.0)
 hWmass = ROOT.TH1D("hWmass","; Muon-Neutrino mass [GeV]",500,0.0,250.0)
 hTriLeptonMass = ROOT.TH1D("hTriLeptonMass","; Trilepton mass [GeV]",375,0.0,750.0)
+hTriLeptonMass0 = ROOT.TH1D("hTriLeptonMass0","; Trilepton mass [GeV]",150,0.0,750.0)
 hQuadLeptonMass = ROOT.TH1D("hQuadLeptonMass","; Four-lepton mass [GeV]",375,0.0,750.0)
+hQuadLeptonMass57 = ROOT.TH1D("hQuadLeptonMass57","; Four-lepton mass [GeV]",75,0.0,750.0)
 #hQuadLeptonMass = ROOT.TH1D("hQuadLeptonMass","; Four-lepton mass [GeV]",3750,-0.1,749.9)
 hnupT = ROOT.TH1D("hnupT","; Neutrino pT [GeV]",100,0.0,200.0)
 hZpT = ROOT.TH1D("hZpT","; Di-electron pT [GeV]",100,0.0,200.0)
@@ -253,7 +255,9 @@ while True:
             hMET.Fill(fMET.pt(),wt)           
             hmT.Fill(fTriLepton.mtp(fMET),wt)
             hTriLRap.Fill(fTriLepton.rapidity(),wt)
-            h3Code.Fill(leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor(), wt)          
+            h3Code.Fill(leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor(), wt)
+            if nOSSF==0:
+                hTriLeptonMass0.Fill(fTriLepton.mass(),wt)         
                                
         if len(leptons) == 4:
             hPtFour.Fill(leptons[3].pt(), wt)
@@ -261,7 +265,10 @@ while True:
             hQuadLeptonMass.Fill(fQuadLepton.mass(),wt)           
             hMETFour.Fill(fMET.pt(), wt)
             hmTFour.Fill(fQuadLepton.mtp(fMET),wt)
-            h4Code.Fill(leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor(), wt) 
+            code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor()
+            h4Code.Fill(code, wt)
+            if code==5 or code==7:
+                hQuadLeptonMass57.Fill(fQuadLepton.mass(),wt)            
             
         if len(leptons) == 5:
             code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor() + leptons[4].flavor
