@@ -88,6 +88,8 @@ hPtFour = ROOT.TH1D("hPtFour","; Lowest lepton pT [GeV in 4-lepton events]",100,
 h2Code = ROOT.TH1D("h2Code","; Two-lepton signed flavor code (OS= +ve, SS= -ve)",9,-4.5,4.5)
 h3Code = ROOT.TH1D("h3Code","; Three-lepton flavor code ",4,2.5,6.5)
 h4Code = ROOT.TH1D("h4Code","; Four-lepton flavor code ",5,3.5,8.5)
+h5Code = ROOT.TH1D("h5Code","; Five-lepton flavor code ",6,4.5,10.5)
+h6Code = ROOT.TH1D("h6Code","; Six-lepton flavor code ",7,5.5,12.5)
 
 hmZvsyZ = ROOT.TH2D("hmZvsyZ","; Di-electron mass [GeV] vs Z |rapidity|",50,0.0,7.5,100,0.0,250.0)
 
@@ -260,6 +262,14 @@ while True:
             hMETFour.Fill(fMET.pt(), wt)
             hmTFour.Fill(fQuadLepton.mtp(fMET),wt)
             h4Code.Fill(leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor(), wt) 
+            
+        if len(leptons) == 5:
+            code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor() + leptons[4].flavor
+            h5Code.Fill(code,wt)
+            
+        if len(leptons) == 6:
+            code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor() + leptons[4].flavor + leptons[5].flavor
+            h6Code.Fill(code,wt)                        
                       
 # Automate the process of forming a new composite 4-vector
         fpartons = fpartona.add(1000, fpartonb)
