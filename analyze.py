@@ -271,11 +271,11 @@ while True:
                 hQuadLeptonMass57.Fill(fQuadLepton.mass(),wt)            
             
         if len(leptons) == 5:
-            code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor() + leptons[4].flavor
+            code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor() + leptons[4].flavor()
             h5Code.Fill(code,wt)
             
         if len(leptons) == 6:
-            code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor() + leptons[4].flavor + leptons[5].flavor
+            code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor() + leptons[4].flavor() + leptons[5].flavor()
             h6Code.Fill(code,wt)                        
                       
 # Automate the process of forming a new composite 4-vector
