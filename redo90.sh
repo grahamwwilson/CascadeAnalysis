@@ -19,14 +19,17 @@ root --version
 python3 --version
 python3 analyze.py -h
 
-python3 analyze.py -w "WZ" -t 400.0 -l 694.68 -p "WF-V2"
-python3 analyze.py -w "ZZ" -t 400.0 -l 918.22 -p "WF-V2"
-python3 analyze.py -w "WWW" -t 400.0 -l 6.5239e3 -p "WF-V2"
-python3 analyze.py -w "WWZ" -t 400.0 -l 1.0247e4 -p "WF-V2"
-# Temporary fix. Set luminosity with revised cross-section guess of 27.2ab*1.2 = 32ab
-# python3 analyze.py -w "ZZZ" -t 400.0 -l 3.125e5 -p "WF-V1"
+#python3 analyze.py -w "WWZ" -t 400.0 -l 7.9159e3 -p "WF-V1"
+#python3 analyze.py -w "WZBoth" -t 400.0 -l 79.432 -p "WF-V1"
+#python3 analyze.py -w "ZZ" -t 400.0 -l 250.24 -p "WF-V1"
+#python3 analyze.py -w "WWW" -t 400.0 -l 4.4241e3 -p "WF-V1"
 
-#hadd -f histos_SM.root histos_WZ.root histos_ZZ.root histos_WWW.root histos_WWZ.root histos_ZZZ.root
+#hadd -f histos_SM.root histos_WZBoth.root histos_ZZ.root histos_WWW.root histos_WWZ.root
+
+python3 analyze.py -w "Sleptons-LSP90"  -t 400.0 -l 8.3681e2 -p "WF-V1"
+#python3 analyze.py -w "Sleptons-LSP220" -t 400.0 -l 2.2893e4 -p "WF-V1"
+#python3 analyze.py -w "Sleptons-LSP270" -t 400.0 -l 2.2893e4 -p "WF-V1"
+#python3 analyze.py -w "Sleptons-LSP260" -t 400.0 -l 2.2893e4 -p "WF-V1"
 
 module unload root/6.32.2
 module list
