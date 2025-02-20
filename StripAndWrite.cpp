@@ -1,3 +1,4 @@
+#include "CLI11.hpp"   // See https://github.com/CLIUtils/CLI11    This is v2.4.2 of CLI11.
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -31,7 +32,7 @@ int countNeutrinos(const std::vector<Particle>& particles) {
     return neutrinoCount;
 }
 
-void processLHEFile(const std::string& inputFileName, const std::string& outputFileName) {
+void processLHEFile(const std::string& inputFileName, const std::string& outputFileName, int requestedNuCount) {
     std::ifstream inputFile(inputFileName);
     if (!inputFile.is_open()) {
         std::cerr << "Error opening input file: " << inputFileName << std::endl;
@@ -47,13 +48,13 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
     std::string line;
     std::vector<Particle> particles;
     int eventCount = 0;
-    int eventsWithFiveNeutrinos = 0;
+    int eventsWithNeutrinos = 0;
 
     // Write the header to the output file (this assumes the header is part of the input LHE)
     while (std::getline(inputFile, line)) {
         if (line.find("<event>") != std::string::npos) {
             // Start of a new event, write it to the output
-            outputFile << line << std::endl;  // Write the opening <event> tag
+            // GWW outputFile << line << std::endl;  // Write the opening <event> tag
             break;
         } else if (line.find("<LesHouchesEvents") != std::string::npos) {
             // Write the LHE header to the output file
@@ -77,10 +78,14 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
 
         // First line of the event (the header line) - we do not process it for particles
         std::stringstream ss(line);
-        int eventInfo[9];  // To store event-level info (like total energy, number of particles, etc.)
-        for (int i = 0; i < 9; i++) {
+        int eventInfo[2];  // To store event-level info (like total energy, number of particles, etc.)
+        for (int i = 0; i < 2; i++) {
             ss >> eventInfo[i];
         }
+        double deventInfo[4];
+        for (int i = 0; i < 4; i++) {
+            ss >> deventInfo[i];
+        }        
         
         // Prepare to process particle lines
         particles.clear();
@@ -91,20 +96,17 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
                 // End of this event, check the neutrino count
                 eventCount++;
                 int neutrinoCount = countNeutrinos(particles);
-                if (neutrinoCount == 5) {
-                    eventsWithFiveNeutrinos++;
-                    // Event passes the 5 neutrinos condition, write it to the output file
+                if (neutrinoCount == requestedNuCount) {
+                    eventsWithNeutrinos++;
+                    // Event passes the neutrino count condition, write it to the output file
                     outputFile << "<event>" << std::endl;  // Start of the event block
                     // Write the event-level info line (just as in the input)
-                    outputFile << std::setw(2) << eventInfo[0] << " "
-                               << std::setw(1) << eventInfo[1] << " "
-                               << std::setw(1) << eventInfo[2] << " "
-                               << std::setw(1) << eventInfo[3] << " "
-                               << std::setw(1) << eventInfo[4] << " "
-                               << std::setw(1) << eventInfo[5] << " "
-                               << std::setw(1) << eventInfo[6] << " "
-                               << std::setw(1) << eventInfo[7] << " "
-                               << std::setw(1) << eventInfo[8] << std::endl;
+                    outputFile << std::setw(3) << eventInfo[0] << " "
+                               << std::setw(2) << eventInfo[1] << " "
+                               << std::scientific << std::setprecision(10) << std::setw(13) << deventInfo[0] << " "
+                               << std::setw(13) << deventInfo[1] << " "
+                               << std::setw(13) << deventInfo[2] << " "
+                               << std::setw(13) << deventInfo[3] << std::endl;
                     // Write particle lines for this event
                     for (const auto& p : particles) {
                         if (p.pdgCode != 0) { // Check to avoid invalid particles with pdgCode 0
@@ -149,13 +151,26 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
     // Print out diagnostics
     std::cout << "Processing complete." << std::endl;
     std::cout << "Total number of events processed: " << eventCount << std::endl;
-    std::cout << "Number of events with exactly 5 neutrinos: " << eventsWithFiveNeutrinos << std::endl;
+    std::cout << "Number of events with requested neutrino count: " << eventsWithNeutrinos << std::endl;
 }
 
-int main() {
-    std::string inputLHEFile = "input.lhe";   // Replace with your LHE input file path
-    std::string outputLHEFile = "output_5neutrinos.lhe"; // Replace with desired output file path
-    processLHEFile(inputLHEFile, outputLHEFile);
+int main(int argc, char** argv) {
+
+    CLI::App app{"Skim the fully leptonic tau decays specifying the number of final state neutrinos"};  
+        
+    std::string inputLHEFile = "input.lhe";
+    app.add_option("-i,--ifile", inputLHEFile, "Input LHE file (default: input.lhe)"); 
+    
+    std::string outputLHEFile = "output.lhe";
+    app.add_option("-o,--ofile", outputLHEFile, "Output LHE file (default: output.lhe)");
+    
+    int requestedNuCount = 5;
+    app.add_option("-n,--neut", requestedNuCount, "Requested neutrino count (default: 5)");    
+    
+    CLI11_PARSE(app, argc, argv);
+
+    processLHEFile(inputLHEFile, outputLHEFile, requestedNuCount);
+    
     return 0;
 }
 
