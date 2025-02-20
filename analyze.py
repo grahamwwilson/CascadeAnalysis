@@ -154,6 +154,9 @@ while True:
         for i in range(nfinal):
             p = (f.readline()).split()
 #           print("p ",p)
+# Add requirement that the particle is a final state particle
+            if int(p[1]) != 1:
+                continue
             particle = FourVec( int(p[0]), float(p[6]), float(p[7]), float(p[8]), float(p[9]) )          
             Particles.append(particle)
             if abs(particle.pdgID) == 11:
