@@ -23,6 +23,14 @@ bool isNeutrino(int pdgCode) {
             pdgCode == -12 || pdgCode == -14 || pdgCode == -16);
 }
 
+bool isTau(int pdgCode) {
+    return ( pdgCode == 15 );
+}
+
+bool isAntiTau(int pdgCode) {
+    return ( pdgCode == -15 );
+}
+
 bool isTauNeutrino(int pdgCode) {
     return ( pdgCode == 16 );
 }
@@ -43,48 +51,84 @@ bool isDecayNuWithTauAntiNeutrino(int pdgCode) {
 int CountTauNeutrinos(const std::vector<Particle>& particles) {
 
 // Figure out whether we have a leptonically decaying tau- -> l- nu_bar nu_tau
-// We only check whether we find the nu_tau and the nu_bar with the same parent
+// from a primary tau lepton.
+// First, we check whether we find the nu_tau and the nu_bar with the same parent
+// Second, we verify that the parent is a primary tau lepton
 
     int neutrinoCount = 0;
     
     for (const auto& p1 : particles) {
-        if (isTauNeutrino(p1.pdgCode) && p1.status==1 && p1.mother1) {
+        if (isTauNeutrino(p1.pdgCode) && p1.status==1 && p1.mother1!=0 ) {
+            // p1 is a final-state tau neutrino from a tau decay 
             for (const auto& p2 : particles) {
-                 if (p2.id != p1.id && p2.mother1 == p1.mother1){
+                 if ( p2.mother1 == p1.mother1 && p2.id != p1.id ){
+                     // p2 and p1 have the same parent and p2!=p1.
                      if (isDecayNuWithTauNeutrino(p2.pdgCode) && p2.status==1) {
-                         neutrinoCount++;
+                         // p2 is a electron or muon anti-neutrino
+                         for (const auto& p3 : particles) {                     
+                             if ( p3.id == p1.mother1 && p3.id != p1.id ){
+                                 // p3 is the immediate parent of p1. This should be a tau-.
+                                  for (const auto& p4 : particles) {                     
+                                       if ( p4.id == p3.mother1 && p4.id != p1.id && p4.id != p3.id && p4.mother1 == 0 ){
+                                            // p4 is the immediate parent of p3. This should be a tau-. We also check that it is a primary particle (no parent).
+                                           if(isTau(p3.pdgCode) && isTau(p4.pdgCode)){
+                                               neutrinoCount++;
+                                           }
+                                           else{
+                                               std::cout << "Weird " << p1.pdgCode << " " << p2.pdgCode << " " << p3.pdgCode << " " << p4.pdgCode << std::endl;
+                                           }
+                                       }
+                                  }
+                             }
+                         }
                      } 
                  }
             }
         }
     }
-    return neutrinoCount;
-    
+    return neutrinoCount;   
 }
 
 int CountTauAntiNeutrinos(const std::vector<Particle>& particles) {
 
-// Figure out whether we have a leptonically decaying tau+ -> l+ nu nu_tau_bar
-// We only check whether we find the nu_tau_bar and the nu with the same parent
+// Figure out whether we have a leptonically decaying tau+ -> l+ nu nu_tau_bar 
+// from a primary tau anti-lepton.
+// First we check whether we find the nu_tau_bar and the nu with the same parent
+// Second, we verify that the parent is a primary tau lepton
 
     int neutrinoCount = 0;
     
     for (const auto& p1 : particles) {
-        if (isTauAntiNeutrino(p1.pdgCode) && p1.status==1) {
+        if (isTauAntiNeutrino(p1.pdgCode) && p1.status==1 && p1.mother1!=0) {
+            // p1 is a final-state tau anti-neutrino from a tau decay
             for (const auto& p2 : particles) {
-                 if (p2.id != p1.id && p2.mother1 == p1.mother1){
+                 if ( p2.mother1 == p1.mother1 && p2.id != p1.id ){
+                     // p2 and p1 have the same parent and p2!=p1.
                      if (isDecayNuWithTauAntiNeutrino(p2.pdgCode) && p2.status==1) {
-                         neutrinoCount++;
+                         // p2 is a electron or muon neutrino
+                         for (const auto& p3 : particles) {                     
+                             if ( p3.id == p1.mother1 && p3.id != p1.id ){
+                                 // p3 is the immediate parent of p1. This should be a tau+.
+                                  for (const auto& p4 : particles) {                     
+                                       if ( p4.id == p3.mother1 && p4.id != p1.id && p4.id != p3.id && p4.mother1 == 0 ){
+                                            // p4 is the immediate parent of p3. This should be a tau+. We also check that it is a primary particle (no parent).
+                                           if(isAntiTau(p3.pdgCode) && isAntiTau(p4.pdgCode)){
+                                               neutrinoCount++;
+                                           }
+                                           else{
+                                               std::cout << "Weird " << p1.pdgCode << " " << p2.pdgCode << " " << p3.pdgCode << " " << p4.pdgCode << std::endl;
+                                           }
+                                       }
+                                  }
+                             }
+                         }
                      } 
                  }
             }
-        }
+        } 
     }
-    return neutrinoCount;
-    
+    return neutrinoCount;   
 }
-
-
 
 int countNeutrinos(const std::vector<Particle>& particles) {
     int neutrinoCount = 0;
