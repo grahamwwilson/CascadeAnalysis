@@ -25,6 +25,8 @@ python3 analyze.py -w "Run-62" -t 400.0 -l 8.1882e2 -p "."
 python3 analyze.py -w "Run-63" -t 400.0 -l 1.1850e3 -p "."
 python3 analyze.py -w "Run-64" -t 400.0 -l 1.2438e3 -p "."
 
+hadd -f histos_SundryTaus.root histos_Run-62.root histos_Run-63.root histos_Run-64.root
+
 module unload root/6.32.2
 module list
 
