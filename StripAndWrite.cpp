@@ -7,6 +7,7 @@
 #include <iomanip>
 
 struct Particle {
+    int id;           // An index for the particle according to order of appearance
     int pdgCode;      // Particle ID (PDG code)
     int status;       // Status (1 for final state, 3 for intermediate, etc.)
     int mother1, mother2, daughter1, daughter2; // Mother and daughter indices
@@ -22,6 +23,69 @@ bool isNeutrino(int pdgCode) {
             pdgCode == -12 || pdgCode == -14 || pdgCode == -16);
 }
 
+bool isTauNeutrino(int pdgCode) {
+    return ( pdgCode == 16 );
+}
+
+bool isDecayNuWithTauNeutrino(int pdgCode) {
+    return ( pdgCode == -12 || pdgCode == -14 );
+}
+
+bool isTauAntiNeutrino(int pdgCode) {
+    return ( pdgCode == -16 );
+}
+
+bool isDecayNuWithTauAntiNeutrino(int pdgCode) {
+    return ( pdgCode == 12 || pdgCode == 14 );
+}
+
+
+int CountTauNeutrinos(const std::vector<Particle>& particles) {
+
+// Figure out whether we have a leptonically decaying tau- -> l- nu_bar nu_tau
+// We only check whether we find the nu_tau and the nu_bar with the same parent
+
+    int neutrinoCount = 0;
+    
+    for (const auto& p1 : particles) {
+        if (isTauNeutrino(p1.pdgCode) && p1.status==1) {
+            for (const auto& p2 : particles) {
+                 if (p2.id != p1.id && p2.mother1 == p1.mother1){
+                     if (isDecayNuWithTauNeutrino(p2.pdgCode) && p2.status==1) {
+                         neutrinoCount++;
+                     } 
+                 }
+            }
+        }
+    }
+    return neutrinoCount;
+    
+}
+
+int CountTauAntiNeutrinos(const std::vector<Particle>& particles) {
+
+// Figure out whether we have a leptonically decaying tau+ -> l+ nu nu_tau_bar
+// We only check whether we find the nu_tau_bar and the nu with the same parent
+
+    int neutrinoCount = 0;
+    
+    for (const auto& p1 : particles) {
+        if (isTauAntiNeutrino(p1.pdgCode) && p1.status==1) {
+            for (const auto& p2 : particles) {
+                 if (p2.id != p1.id && p2.mother1 == p1.mother1){
+                     if (isDecayNuWithTauAntiNeutrino(p2.pdgCode) && p2.status==1) {
+                         neutrinoCount++;
+                     } 
+                 }
+            }
+        }
+    }
+    return neutrinoCount;
+    
+}
+
+
+
 int countNeutrinos(const std::vector<Particle>& particles) {
     int neutrinoCount = 0;
     for (const auto& p : particles) {
@@ -32,7 +96,7 @@ int countNeutrinos(const std::vector<Particle>& particles) {
     return neutrinoCount;
 }
 
-void processLHEFile(const std::string& inputFileName, const std::string& outputFileName, int requestedNuCount, int extraNuCount) {
+void processLHEFile(const std::string& inputFileName, const std::string& outputFileName, int requestedCount, int extraCount) {
     std::ifstream inputFile(inputFileName);
     if (!inputFile.is_open()) {
         std::cerr << "Error opening input file: " << inputFileName << std::endl;
@@ -89,14 +153,17 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
         
         // Prepare to process particle lines
         particles.clear();
+        int lines = 0;
 
         // Read the particle lines for this event
         while (std::getline(inputFile, line) && line.find("<event>") == std::string::npos) {
             if (line.find("</event>") != std::string::npos) {
                 // End of this event, check the neutrino count
                 eventCount++;
-                int neutrinoCount = countNeutrinos(particles);
-                if (neutrinoCount >= requestedNuCount && neutrinoCount <= requestedNuCount + extraNuCount) {
+                int tauLeptonicDecayCount = CountTauNeutrinos(particles) + CountTauAntiNeutrinos(particles);
+//                int neutrinoCount = countNeutrinos(particles);
+//                if (neutrinoCount >= requestedNuCount && neutrinoCount <= requestedNuCount + extraNuCount) {
+                if (tauLeptonicDecayCount >= requestedCount && tauLeptonicDecayCount <= requestedCount + extraCount) {                
                     eventsWithNeutrinos++;
                     // Event passes the neutrino count condition, write it to the output file
                     outputFile << "<event>" << std::endl;  // Start of the event block
@@ -140,6 +207,8 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
 
             // Only add valid particles to the event (ignore any with pdgCode 0)
             if (particle.pdgCode != 0) {
+                lines++;
+                particle.id = lines;
                 particles.push_back(particle);
             }
         }
@@ -164,15 +233,15 @@ int main(int argc, char** argv) {
     std::string outputLHEFile = "output.lhe";
     app.add_option("-o,--ofile", outputLHEFile, "Output LHE file (default: output.lhe)");
     
-    int requestedNuCount = 5;
-    app.add_option("-n,--neut", requestedNuCount, "Requested neutrino count (default: 5)"); 
+    int requestedCount = 2;
+    app.add_option("-c,--count", requestedCount, "Requested tau leptonic decay count (default: 2)"); 
     
-    int extraNuCount = 0;
-    app.add_option("-e,--extra", extraNuCount, "Allowed extra neutrinos (default: 0)");    
+    int extraCount = 0;
+    app.add_option("-e,--extra", extraCount, "Allowed extra tau leptonic decays (default: 0)");    
        
     CLI11_PARSE(app, argc, argv);
 
-    processLHEFile(inputLHEFile, outputLHEFile, requestedNuCount, extraNuCount);
+    processLHEFile(inputLHEFile, outputLHEFile, requestedCount, extraCount);
     
     return 0;
 }
