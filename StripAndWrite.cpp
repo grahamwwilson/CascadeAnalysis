@@ -32,7 +32,7 @@ int countNeutrinos(const std::vector<Particle>& particles) {
     return neutrinoCount;
 }
 
-void processLHEFile(const std::string& inputFileName, const std::string& outputFileName, int requestedNuCount) {
+void processLHEFile(const std::string& inputFileName, const std::string& outputFileName, int requestedNuCount, int extraNuCount) {
     std::ifstream inputFile(inputFileName);
     if (!inputFile.is_open()) {
         std::cerr << "Error opening input file: " << inputFileName << std::endl;
@@ -96,7 +96,7 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
                 // End of this event, check the neutrino count
                 eventCount++;
                 int neutrinoCount = countNeutrinos(particles);
-                if (neutrinoCount == requestedNuCount) {
+                if (neutrinoCount >= requestedNuCount && neutrinoCount <= requestedNuCount + extraNuCount) {
                     eventsWithNeutrinos++;
                     // Event passes the neutrino count condition, write it to the output file
                     outputFile << "<event>" << std::endl;  // Start of the event block
@@ -134,9 +134,9 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
             std::stringstream particleStream(line);
             Particle particle;
             particleStream >> particle.pdgCode >> particle.status >> particle.mother1 >> particle.mother2 >>
-                            particle.daughter1 >> particle.daughter2 >>
-                            particle.px >> particle.py >> particle.pz >> particle.energy >>
-                            particle.mass >> particle.charge >> particle.colorFlow;
+                              particle.daughter1 >> particle.daughter2 >>
+                              particle.px >> particle.py >> particle.pz >> particle.energy >>
+                              particle.mass >> particle.charge >> particle.colorFlow;
 
             // Only add valid particles to the event (ignore any with pdgCode 0)
             if (particle.pdgCode != 0) {
@@ -165,11 +165,14 @@ int main(int argc, char** argv) {
     app.add_option("-o,--ofile", outputLHEFile, "Output LHE file (default: output.lhe)");
     
     int requestedNuCount = 5;
-    app.add_option("-n,--neut", requestedNuCount, "Requested neutrino count (default: 5)");    
+    app.add_option("-n,--neut", requestedNuCount, "Requested neutrino count (default: 5)"); 
     
+    int extraNuCount = 0;
+    app.add_option("-e,--extra", extraNuCount, "Allowed extra neutrinos (default: 0)");    
+       
     CLI11_PARSE(app, argc, argv);
 
-    processLHEFile(inputLHEFile, outputLHEFile, requestedNuCount);
+    processLHEFile(inputLHEFile, outputLHEFile, requestedNuCount, extraNuCount);
     
     return 0;
 }
