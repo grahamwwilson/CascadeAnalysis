@@ -48,7 +48,7 @@ int CountTauNeutrinos(const std::vector<Particle>& particles) {
     int neutrinoCount = 0;
     
     for (const auto& p1 : particles) {
-        if (isTauNeutrino(p1.pdgCode) && p1.status==1) {
+        if (isTauNeutrino(p1.pdgCode) && p1.status==1 && p1.mother1) {
             for (const auto& p2 : particles) {
                  if (p2.id != p1.id && p2.mother1 == p1.mother1){
                      if (isDecayNuWithTauNeutrino(p2.pdgCode) && p2.status==1) {
@@ -220,12 +220,12 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
     // Print out diagnostics
     std::cout << "Processing complete." << std::endl;
     std::cout << "Total number of events processed: " << eventCount << std::endl;
-    std::cout << "Number of events with requested neutrino count: " << eventsWithNeutrinos << std::endl;
+    std::cout << "Number of events with requested number of leptonic tau decays: " << eventsWithNeutrinos << std::endl;
 }
 
 int main(int argc, char** argv) {
 
-    CLI::App app{"Skim the fully leptonic tau decays specifying the number of final state neutrinos"};  
+    CLI::App app{"Skim off the fully leptonic tau decays by specifying the requested number of leptonic tau decays"};  
         
     std::string inputLHEFile = "input.lhe";
     app.add_option("-i,--ifile", inputLHEFile, "Input LHE file (default: input.lhe)"); 
