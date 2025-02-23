@@ -128,7 +128,7 @@ while True:
         partona = (f.readline()).split()
         partonb = (f.readline()).split() 
     
-        if event%10000 ==0:
+        if event%100000 ==0:
             print("event ",event)
        
 # Initial state partons     
