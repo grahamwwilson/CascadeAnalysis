@@ -94,7 +94,7 @@ int CountTauAntiNeutrinos(const std::vector<Particle>& particles) {
 // Figure out whether we have a leptonically decaying tau+ -> l+ nu nu_tau_bar 
 // from a primary tau anti-lepton.
 // First we check whether we find the nu_tau_bar and the nu with the same parent
-// Second, we verify that the parent is a primary tau lepton
+// Second, we verify that the original parent is a primary tau lepton, and not a decay tau lepton, such as from D_S+ -> tau+ nu_tau.
 
     int neutrinoCount = 0;
     
