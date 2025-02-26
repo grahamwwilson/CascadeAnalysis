@@ -128,7 +128,9 @@ class FourVec:
         eta = self.eta()
         pt  = self.pt()
         accEl = False
-        if abs(eta) < 2.5 and pt > 2.0: accEl = True
+#        if abs(eta) < 2.5 and pt > 2.0: accEl = True
+        if abs(eta) < 2.5 and pt > 5.0: accEl = True
+#        if abs(eta) < 2.5 and pt > 10.0: accEl = True
         return accEl
         
     def accMu(self):
@@ -136,7 +138,9 @@ class FourVec:
         eta = self.eta()
         pt  = self.pt()
         accMu = False
-        if abs(eta) < 2.4 and pt > 3.0: accMu = True
+#        if abs(eta) < 2.4 and pt > 3.0: accMu = True
+        if abs(eta) < 2.4 and pt > 5.0: accMu = True
+#        if abs(eta) < 2.4 and pt > 10.0: accMu = True                
         return accMu        
  
     def sselmu(self,other):
