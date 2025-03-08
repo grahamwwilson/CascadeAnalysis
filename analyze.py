@@ -5,8 +5,8 @@ import math
 import analyzeArgs
 from FourVecDataClass import FourVec
 
-nevsToRead, which, target, lumi, prefix = analyzeArgs.getArguments(None)
-analyzeArgs.showArgs(nevsToRead, which, target, lumi, prefix)
+nevsToRead, which, target, lumi, prefix, elPtMin, muPtMin = analyzeArgs.getArguments(None)
+analyzeArgs.showArgs(nevsToRead, which, target, lumi, prefix, elPtMin, muPtMin)
 
 # Calculate event weight for histograms
 wt = target/lumi
@@ -161,7 +161,7 @@ while True:
             Particles.append(particle)
             if abs(particle.pdgID) == 11:
                 genleptons.append(particle)
-                if particle.accEl(): 
+                if particle.accEl(elPtMin): 
                     leptons.append(particle)
                     Zlist.append(particle)
                     Trilist.append(particle)
@@ -175,7 +175,7 @@ while True:
                         hpospT.Fill(particle.pt(),wt)                                         
             if abs(particle.pdgID) == 13:
                 genleptons.append(particle)
-                if particle.accMu(): 
+                if particle.accMu(muPtMin): 
                     leptons.append(particle)
                     Mulist.append(particle)
                     Wlist.append(particle)

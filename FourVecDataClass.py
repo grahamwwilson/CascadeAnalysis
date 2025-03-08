@@ -13,8 +13,10 @@ class FourVec:
     
     def print(self):
         " Print 4-vector attributes "
-        print("4-vector has pdgID {pdgID} and elements ({px}, {py}, {pz}, {E}) with flag={flag}, m={m}, pt = {pt}, costh = {costh}, qsinth = {qsinth}".
-        format(pdgID = self.pdgID, px = self.px, py =self.py, pz = self.pz, E = self.E, flag=self.flag, m = self.mass(), pt = self.pt(), costh=self.costh(), qsinth = self.qsinth() ))
+        print("4-vector has pdgID {pdgID} and elements ({px}, {py}, {pz}, {E})"
+              " with flag={flag}, m={m}, pt = {pt}, costh = {costh}, qsinth = {qsinth}".
+              format(pdgID = self.pdgID, px = self.px, py =self.py, pz = self.pz, E = self.E, 
+              flag=self.flag, m = self.mass(), pt = self.pt(), costh=self.costh(), qsinth = self.qsinth() ))
         
     def theta(self):
         " Polar angle (rad) "
@@ -123,24 +125,20 @@ class FourVec:
                 oselmu = True
         return oselmu 
         
-    def accEl(self):
+    def accEl(self, ptMin = 2.0):
         " Boolean function on whether the electron is accepted "
         eta = self.eta()
         pt  = self.pt()
         accEl = False
-#        if abs(eta) < 2.5 and pt > 2.0: accEl = True
-#       if abs(eta) < 2.5 and pt > 5.0: accEl = True
-        if abs(eta) < 2.5 and pt > 10.0: accEl = True
+        if abs(eta) < 2.5 and pt > ptMin: accEl = True
         return accEl
         
-    def accMu(self):
+    def accMu(self, ptMin = 3.0):
         " Boolean function on whether the muon is accepted "
         eta = self.eta()
         pt  = self.pt()
         accMu = False
-#        if abs(eta) < 2.4 and pt > 3.0: accMu = True
-#        if abs(eta) < 2.4 and pt > 5.0: accMu = True
-        if abs(eta) < 2.4 and pt > 10.0: accMu = True                
+        if abs(eta) < 2.4 and pt > ptMin: accMu = True                
         return accMu        
  
     def sselmu(self,other):
@@ -514,8 +512,4 @@ class FourVec:
         else:      
             result = 0.5*math.log( (E+pz)/(E-pz) )
             
-        return result             
-        
-              
-                  
-        
+        return result

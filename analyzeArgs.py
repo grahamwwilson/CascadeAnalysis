@@ -10,14 +10,16 @@ def getArgs(argv=None):
     parser.add_argument("-w", "--which", type=str, default="Sleptons-LSP260", help="LHE data-set filename (no .lhe) (str)")
     parser.add_argument("-t", "--target", type=float, default=1.0, help="Target integrated luminosity [inv fb]")
     parser.add_argument("-l", "--lumi", type=float, default=1.0,   help="Actual simulated integrated luminosity [inv fb]")  
-    parser.add_argument("-p", "--prefix", type=str, default=".",   help="LHE file path prefix (str)")       
+    parser.add_argument("-p", "--prefix", type=str, default=".",   help="LHE file path prefix (str)")
+    parser.add_argument("-e", "--elPtMin", type=float, default="2.0", help="PtMin (Electron) [GeV]") 
+    parser.add_argument("-m", "--muPtMin", type=float, default="3.0", help="PtMin (Muon)     [GeV]")              
     
     args=parser.parse_args(argv)
     print('(pvalueArgs.getArgs     ) Found argument list: ',args)
     
     return args
     
-def showArgs(nevsToRead, which, target, lumi, prefix):
+def showArgs(nevsToRead, which, target, lumi, prefix, elPtMin, muPtMin):
 # Check these are what we want
     print('(analyzeArgs.ShowArgs    ) Program has set')
     print('which:            ',which)
@@ -25,6 +27,8 @@ def showArgs(nevsToRead, which, target, lumi, prefix):
     print('actual lumi [/fb] ',lumi)
     print('# of events to read ',nevsToRead)
     print('prefix ',prefix)
+    print('elPtMin ',elPtMin)
+    print('muPtMin ',muPtMin)
     print('Note actual lumi may need to be corrected if not all events are to be read ...')
     return
         
@@ -42,5 +46,7 @@ def getArguments(argv=None):
     target = args.target
     lumi = args.lumi
     prefix = args.prefix
+    elPtMin = args.elPtMin
+    muPtMin = args.muPtMin
    
-    return nevsToRead,which,target,lumi,prefix 
+    return nevsToRead, which, target, lumi, prefix, elPtMin, muPtMin 
