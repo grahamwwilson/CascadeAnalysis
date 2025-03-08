@@ -18,6 +18,11 @@ Note that both redoquick.sh and redo.sh run on the various SM files and add all
 the output files for each process together, when making histos_SM.root.
 The latest iteration is respin.sh that runs everything.
 
+Now respin.sh has two optional command line arguments.
+For example
+./respin.sh 5.0 3.0
+will rerun with the electron pT threshold at 5 GeV, and the muon pT threshold at 3 GeV
+
 ## ROOT plotting macro
 An example ROOT plotting macro is provided ("DiPlotXP.C"). 
 It assumes that you have all the needed root files available locally - these 
@@ -26,10 +31,10 @@ a convenient work area (eg. your laptop).
 You can find the "V1" set in the SleptonCascade directory of the group work area.
 This can be customized relatively easily to plot any of the standard histograms 
 inside ROOT. The most recent ones are produced directly in my CascadeAnalysis directory 
-on the HPC.
+on the HPC. You need all the relevant histograms.
 eg.
 > root
 
-> .x DiPlotXP.C("90","hnleptons",1.0e9) 
+> .x DiPlotXPP.C("90","hnleptons",1.0e9) 
 
 will produce the lepton multiplicity plot with the 90 GeV LSP signal case. 
