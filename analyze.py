@@ -37,6 +37,7 @@ hSSmmmass = ROOT.TH1D("hSSmmmass","; SS Di-muon mass [GeV]",125,0.0,250.0)
 hPosMumass = ROOT.TH1D("hPosMumass","; Positron-Muon mass [GeV]",500,0.0,250.0)
 hEleMumass = ROOT.TH1D("hEleMumass","; Electron-Muon mass [GeV]",500,0.0,250.0)
 hWmass = ROOT.TH1D("hWmass","; Muon-Neutrino mass [GeV]",500,0.0,250.0)
+h4lCharge = ROOT.TH1D("h4lCharge","; 4l charge",9,-4.5,4.5)
 hTriLeptonMass = ROOT.TH1D("hTriLeptonMass","; Trilepton mass [GeV]",375,0.0,750.0)
 hTriLeptonMass0 = ROOT.TH1D("hTriLeptonMass0","; Trilepton mass [GeV] in 0 OSSF events",75,0.0,750.0)
 hQuadLeptonMass57 = ROOT.TH1D("hQuadLeptonMass57","; Four-lepton mass [GeV] in 3e-1mu and 1e-3mu events",75,0.0,750.0)
@@ -75,7 +76,8 @@ hJetsPT = ROOT.TH1D("hJetsPT","; Jet system pT [GeV] ",200,0.0,2000.0)
 
 hdisc = ROOT.TH1D("hdisc","; Quadratic discriminant",2,-1.0e6,1.0e6)
 hnOSSF = ROOT.TH1D("hnOSSF","; nOSSF lepton pairs in trilepton event",3,-0.5,2.5)
-h3lCharge = ROOT.TH1D("h3lCharge","; Trilepton event charge",7,-3.5,3.5)
+# Add ASCII bin labels ....
+h3lCharge = ROOT.TH1D("h3lCharge","; Trilepton event charge",9,-5.5,3.5)
 hnelmu = ROOT.TH2D("hnelmu","; Number of electrons; Number of muons",4,-0.5,3.5,4,-0.5,3.5) 
 hnleptons = ROOT.TH1D("hnleptons","; Number of accepted leptons",7,-0.5,6.5)
 
@@ -270,6 +272,8 @@ while True:
             hmTFour.Fill(fQuadLepton.mtp(fMET),wt)
             code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor()
             h4Code.Fill(code, wt)
+            charge4l = leptons[0].lcharge() + leptons[1].lcharge() + leptons[2].lcharge() + leptons[3].lcharge()
+            h4lCharge.Fill(charge4l,wt)
             if code==5 or code==7:
                 hQuadLeptonMass57.Fill(fQuadLepton.mass(),wt)            
             
