@@ -39,7 +39,7 @@ time ./assembleSM.sh
 # the standard histograms.
 time ./redo_Sleptons.sh ${ELMIN} ${MUMIN}
 
-COLLATEDIR=${1:-LOWESTPT}
+COLLATEDIR=${3:-LOWESTPT}
 
 mkdir ${COLLATEDIR}
 mv histos*.root ${COLLATEDIR}
