@@ -118,6 +118,7 @@ while True:
         nextline = (f.readline()).split()
         nparticles = int(nextline[0])
         processID = int(nextline[1])
+        sqrts = nextline[3]
         nfinal = nparticles - 2
         hprocess.Fill(processID, wt)
         hwhich.Fill(processID, nparticles, wt)
@@ -234,7 +235,7 @@ while True:
             nmu = leptons[0].mflavor() + leptons[1].mflavor() + leptons[2].mflavor()
             hnelmu.Fill(nel,nmu,wt)
             if charge3l==-3 or charge3l==3:
-                print('SSS event ',event)
+                print('SSS event ',event,nparticles,sqrts)
                 print('Lepton 0',leptons[0].pt(),leptons[0].pdgID, leptons[0].px, leptons[0].py, leptons[0].pz) 
                 print('Lepton 1',leptons[1].pt(),leptons[1].pdgID, leptons[1].px, leptons[1].py, leptons[1].pz)
                 print('Lepton 2',leptons[2].pt(),leptons[2].pdgID, leptons[2].px, leptons[2].py, leptons[2].pz)
