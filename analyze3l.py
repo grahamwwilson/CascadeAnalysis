@@ -347,7 +347,7 @@ while True:
             m3l = fTriLepton.mass()
             aRegion = False
             bRegion = False
-            cregion = False
+            cRegion = False
             if m3l>30.0 and m3l<200.0: 
                 aRegion = True
             if m3l>200.0 and m3l<400.0: 
