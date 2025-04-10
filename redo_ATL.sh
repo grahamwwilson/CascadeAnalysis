@@ -21,9 +21,11 @@ root --version
 python --version
 python analyze.py -h
 
+# Order prioritizes 350
+python analyze.py -w "ATLAS-350-200-100"  -t 400.0 -l 4.6153e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
+
 python analyze.py -w "ATLAS-250-150-100"  -t 400.0 -l 1.2003e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
 python analyze.py -w "ATLAS-300-200-100"  -t 400.0 -l 2.4665e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
-python analyze.py -w "ATLAS-350-200-100"  -t 400.0 -l 4.6153e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
 python analyze.py -w "ATLAS-400-200-100"  -t 400.0 -l 8.0943e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
 python analyze.py -w "ATLAS-450-200-100"  -t 400.0 -l 1.3504e5 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
 python analyze.py -w "ATLAS-550-200-100"  -t 400.0 -l 3.3610e5 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}

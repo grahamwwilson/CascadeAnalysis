@@ -47,6 +47,8 @@ hnupT = ROOT.TH1D("hnupT","; Neutrino pT [GeV]",100,0.0,200.0)
 hZpT = ROOT.TH1D("hZpT","; Di-electron pT [GeV]",100,0.0,200.0)
 hWmT = ROOT.TH1D("hWmT","; Muon-neutrino transverse mass [GeV]",200,0.0,200.0)
 hmT = ROOT.TH1D("hmT","; Transverse mass [GeV]",125,0.0,500.0)
+hmTNew1 = ROOT.TH1D("hmTNew1","nOSSF = 1; Transverse mass [GeV]",80,0.0,400.0)
+hmTNew2 = ROOT.TH1D("hmTNew2","nOSSF = 2; Minimum transverse mass [GeV]",80,0.0,400.0)
 hmI = ROOT.TH1D("hmI","; Mass of the invisible system (Eq 3)",375,0.0,750.0)
 
 heleEta = ROOT.TH1D("heleEta","; Electron Eta",150,-7.5,7.5)
@@ -277,7 +279,11 @@ while True:
                  dmll.append(leptons[2].mtwo(leptons[0]) - 91.2 )
                  Wleptons.append(1)
                  mTlW.append(leptons[1].mtsimple(fMET))
-            mTlW.sort(reverse=True)                   
+            mTlW.sort()                    # sort in ascending order
+            if nOSSF==1:
+                 hmTNew1.Fill(mTlW[0])
+            if nOSSF==2:
+                 hmTNew2.Fill(mTlW[0])                 
            
 # Fix me - would be good if it was easier to generalize this
             if leptons[0].osdiel(leptons[1]): hOSeemass.Fill(leptons[0].mtwo(leptons[1]),wt)
