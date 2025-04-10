@@ -2,9 +2,12 @@ from dataclasses import dataclass
 import math
 
 @dataclass
-class FourVec:
-    " FourVec class with a number of helper methods "
+class FourVecExtra:
+    " FourVec Extra class with a number of helper methods "
+    entry: int
     pdgID: int
+    status: int
+    parent: int
     px: float
     py: float
     pz: float
@@ -13,10 +16,12 @@ class FourVec:
     
     def print(self):
         " Print 4-vector attributes "
-        print("4-vector has pdgID {pdgID} and elements ({px}, {py}, {pz}, {E})"
+        print("4-vector has entry {entry} with pdgID {pdgID} with status {status} and parent {parent} "
+              " and elements ({px}, {py}, {pz}, {E})"
               " with flag={flag}, m={m}, pt = {pt}, costh = {costh}, qsinth = {qsinth}".
-              format(pdgID = self.pdgID, px = self.px, py =self.py, pz = self.pz, E = self.E, 
-              flag=self.flag, m = self.mass(), pt = self.pt(), costh=self.costh(), qsinth = self.qsinth() ))
+              format(entry=self.entry, pdgID = self.pdgID, status = self.status, parent = self.parent, 
+                     px = self.px, py =self.py, pz = self.pz, E = self.E, 
+                     flag=self.flag, m = self.mass(), pt = self.pt(), costh=self.costh(), qsinth = self.qsinth() ))
         
     def theta(self):
         " Polar angle (rad) "
@@ -64,18 +69,6 @@ class FourVec:
         if abs(self.pdgID) == 13:
             flavor = 1
         return flavor
-        
-    def osdil(self,other):
-        " Boolean function on whether the di-lepton candidate is an OS SF dilepton "
-        osdil = False
-        flav1 = self.lflavor()
-        flav2 = other.lflavor()
-        charge1 = self.lcharge()
-        charge2 = other.lcharge()
-        if flav1 == flav2:
-            if charge1*charge2 == -1:
-                osdil = True
-        return osdil        
         
     def osdiel(self,other):
         " Boolean function on whether the di-lepton candidate is an OS di-electron "
@@ -494,18 +487,7 @@ class FourVec:
         ET1 = math.sqrt(m1**2 + px1**2 + py1**2)
         ET2 = math.sqrt(m2**2 + px2**2 + py2**2)
         mtsq = m1**2 + m2**2 + 2.0*(ET1*ET2 - (px1*px2 + py1*py2)) 
-        return math.sqrt(mtsq)
-        
-    def mtsimple(self,other):
-        " Compute transverse mass of the self and other 4-vector. Use eqn from 2503.13135"
-        px1 = self.px
-        py1 = self.py
-        pT1 = math.sqrt(px1**2 + py1**2)
-        px2 = other.px
-        py2 = other.py
-        ET2 = math.sqrt(px2**2 + py2**2)
-        mtsq = 2.0*pT1*ET2*(1.0 - ( (px1*px2 + py1*py2)/(pT1*ET2) ) ) 
-        return math.sqrt(mtsq)                   
+        return math.sqrt(mtsq)        
         
     def tdotp(self,other):
         " Compute transverse momentum dot product of the self and other 4-vector "
