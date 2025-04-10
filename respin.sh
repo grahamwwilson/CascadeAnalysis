@@ -1,10 +1,16 @@
 #!/bin/bash
 #
+# To run do something like ./respin.sh 5.0 5.0 MyOutputDirectory
+# The first two arguments are the pT thresholds, the latter is the subdirectory that is created 
+# and all the existing (at end of the script) files are moved to.
+#
 # Remake all histograms. This should maybe migrate to a series of batch jobs.
 #
 # Add the electron and muon minimum pT to be accepted as input arguments 1 and 2.
 # These default to (2.0, 3.0 GeV)
 #
+
+#ELMIN=$1
 
 ELMIN=${1:-2.0}
 MUMIN=${2:-3.0}
