@@ -503,7 +503,8 @@ class FourVec:
         pT1 = math.sqrt(px1**2 + py1**2)
         px2 = other.px
         py2 = other.py
-        ET2 = math.sqrt(px2**2 + py2**2)
+        mfloor = 0.511e-3
+        ET2 = math.sqrt(mfloor**2 + px2**2 + py2**2)
         mtsq = 2.0*pT1*ET2*(1.0 - ( (px1*px2 + py1*py2)/(pT1*ET2) ) ) 
         return math.sqrt(mtsq)                   
         
