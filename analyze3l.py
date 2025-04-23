@@ -28,12 +28,20 @@ hmass = ROOT.TH1D("hpmass",";Partonic Center of Mass Energy [GeV]",400,0.0,2000.
 hphmass = ROOT.TH1D("hfmass",";Final-State Invariant Mass [GeV]",400,0.0,2000.0)
 
 hZmass = ROOT.TH1D("hZmass","; Di-electron mass [GeV]",500,0.0,250.0)
-hOSeemass = ROOT.TH1D("hOSeemass","; OS Di-electron mass [GeV]",125,0.0,250.0)
-hOSemmass = ROOT.TH1D("hOSemmass","; OS Electron-muon mass [GeV]",125,0.0,250.0)
-hOSmmmass = ROOT.TH1D("hOSmmmass","; OS Di-muon mass [GeV]",125,0.0,250.0)
-hSSeemass = ROOT.TH1D("hSSeemass","; SS Di-electron mass [GeV]",125,0.0,250.0)
-hSSemmass = ROOT.TH1D("hSSemmass","; SS Electron-muon mass [GeV]",125,0.0,250.0)
-hSSmmmass = ROOT.TH1D("hSSmmmass","; SS Di-muon mass [GeV]",125,0.0,250.0)
+
+h2lOSeemass = ROOT.TH1D("h2lOSeemass","; 2l OS Di-electron mass [GeV]",125,0.0,250.0)
+h2lOSemmass = ROOT.TH1D("h2lOSemmass","; 2l OS Electron-muon mass [GeV]",125,0.0,250.0)
+h2lOSmmmass = ROOT.TH1D("h2lOSmmmass","; 2l OS Di-muon mass [GeV]",125,0.0,250.0)
+h2lSSeemass = ROOT.TH1D("h2lSSeemass","; 2l SS Di-electron mass [GeV]",125,0.0,250.0)
+h2lSSemmass = ROOT.TH1D("h2lSSemmass","; 2l SS Electron-muon mass [GeV]",125,0.0,250.0)
+h2lSSmmmass = ROOT.TH1D("h2lSSmmmass","; 2l SS Di-muon mass [GeV]",125,0.0,250.0)
+
+hOSeemass = ROOT.TH1D("hOSeemass","; 3l OS Di-electron mass [GeV]",125,0.0,250.0)
+hOSemmass = ROOT.TH1D("hOSemmass","; 3l OS Electron-muon mass [GeV]",125,0.0,250.0)
+hOSmmmass = ROOT.TH1D("hOSmmmass","; 3l OS Di-muon mass [GeV]",125,0.0,250.0)
+hSSeemass = ROOT.TH1D("hSSeemass","; 3l SS Di-electron mass [GeV]",125,0.0,250.0)
+hSSemmass = ROOT.TH1D("hSSemmass","; 3l SS Electron-muon mass [GeV]",125,0.0,250.0)
+hSSmmmass = ROOT.TH1D("hSSmmmass","; 3l SS Di-muon mass [GeV]",125,0.0,250.0)
 hPosMumass = ROOT.TH1D("hPosMumass","; Positron-Muon mass [GeV]",500,0.0,250.0)
 hEleMumass = ROOT.TH1D("hEleMumass","; Electron-Muon mass [GeV]",500,0.0,250.0)
 hWmass = ROOT.TH1D("hWmass","; Muon-Neutrino mass [GeV]",500,0.0,250.0)
@@ -245,6 +253,13 @@ while True:
                 h2Code.Fill(code, wt)
             else:
                 h2Code.Fill(-code, wt)
+# Fix me - would be good if it was easier to generalize this
+            if leptons[0].osdiel(leptons[1]): h2lOSeemass.Fill(leptons[0].mtwo(leptons[1]),wt)
+            if leptons[0].oselmu(leptons[1]): h2lOSemmass.Fill(leptons[0].mtwo(leptons[1]),wt)          
+            if leptons[0].osdimu(leptons[1]): h2lOSmmmass.Fill(leptons[0].mtwo(leptons[1]),wt)            
+            if leptons[0].ssdiel(leptons[1]): h2lSSeemass.Fill(leptons[0].mtwo(leptons[1]),wt)
+            if leptons[0].sselmu(leptons[1]): h2lSSemmass.Fill(leptons[0].mtwo(leptons[1]),wt)
+            if leptons[0].ssdimu(leptons[1]): h2lSSmmmass.Fill(leptons[0].mtwo(leptons[1]),wt)
        
         if len(leptons) == 3:       
             hPtOne.Fill(leptons[0].pt(),wt) 
