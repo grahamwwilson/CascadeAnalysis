@@ -74,6 +74,7 @@ hmupT  = ROOT.TH1D("hmupT","; Muon pT",100,0.0,100.0)
 hZRap  = ROOT.TH1D("hZRap","; Z Rapidity",150,-7.5,7.5)
 hWRap  = ROOT.TH1D("hWRap","; W Rapidity",150,-7.5,7.5)
 hTriLRap  = ROOT.TH1D("hTriLRap","; Trilepton Rapidity",150,-7.5,7.5)
+hMETTwo  = ROOT.TH1D("hMETTwo","; Dilepton MET [GeV]",200,0.0,500.0)
 hMETThree  = ROOT.TH1D("hMETThree","; Trilepton MET [GeV]",200,0.0,500.0)
 hMETFour  = ROOT.TH1D("hMETFour","; Quadlepton MET [GeV]",200,0.0,500.0)
 hmTFour  = ROOT.TH1D("hmTFour","; Quadlepton mT [GeV]",200,0.0,500.0)
@@ -245,6 +246,7 @@ while True:
         if len(leptons) == 2:
             h2LPtOne.Fill(leptons[0].pt(),wt) 
             h2LPtTwo.Fill(leptons[1].pt(),wt)
+            hMETTwo.Fill(fMET.pt(),wt)
            
             code = leptons[0].lflavor() + leptons[1].lflavor()
             q1 = leptons[0].lcharge()
