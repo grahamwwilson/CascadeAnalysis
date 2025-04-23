@@ -140,7 +140,7 @@ int countNeutrinos(const std::vector<Particle>& particles) {
     return neutrinoCount;
 }
 
-void processLHEFile(const std::string& inputFileName, const std::string& outputFileName, int requestedCount, int extraCount) {
+void processLHEFile(const std::string& inputFileName, const std::string& outputFileName, int requestedCount, int extraCount, int processIDmin, int processIDmax) {
     std::ifstream inputFile(inputFileName);
     if (!inputFile.is_open()) {
         std::cerr << "Error opening input file: " << inputFileName << std::endl;
@@ -193,7 +193,9 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
         double deventInfo[4];
         for (int i = 0; i < 4; i++) {
             ss >> deventInfo[i];
-        }        
+        }
+        
+        int processID = eventInfo[1];   // The WHIZARD processID - useful for filtering samples with many processes    
         
         // Prepare to process particle lines
         particles.clear();
@@ -205,9 +207,11 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
                 // End of this event, check the neutrino count
                 eventCount++;
                 int tauLeptonicDecayCount = CountTauNeutrinos(particles) + CountTauAntiNeutrinos(particles);
-//                int neutrinoCount = countNeutrinos(particles);
-//                if (neutrinoCount >= requestedNuCount && neutrinoCount <= requestedNuCount + extraNuCount) {
-                if (tauLeptonicDecayCount >= requestedCount && tauLeptonicDecayCount <= requestedCount + extraCount) {                
+
+// Add processID cuts.
+
+                if ( (processID >= processIDmin && processID <= processIDmax ) && 
+                     (tauLeptonicDecayCount >= requestedCount && tauLeptonicDecayCount <= requestedCount + extraCount) ) {                
                     eventsWithNeutrinos++;
                     // Event passes the neutrino count condition, write it to the output file
                     outputFile << "<event>" << std::endl;  // Start of the event block
@@ -269,7 +273,7 @@ void processLHEFile(const std::string& inputFileName, const std::string& outputF
 
 int main(int argc, char** argv) {
 
-    CLI::App app{"Skim off the fully leptonic tau decays by specifying the requested number of leptonic tau decays"};  
+    CLI::App app{"Skim off the fully leptonic tau decays by specifying the requested number of leptonic tau decays and optionally processIDs"};  
         
     std::string inputLHEFile = "input.lhe";
     app.add_option("-i,--ifile", inputLHEFile, "Input LHE file (default: input.lhe)"); 
@@ -281,11 +285,17 @@ int main(int argc, char** argv) {
     app.add_option("-c,--count", requestedCount, "Requested tau leptonic decay count (default: 2)"); 
     
     int extraCount = 0;
-    app.add_option("-e,--extra", extraCount, "Allowed extra tau leptonic decays (default: 0)");    
-       
+    app.add_option("-e,--extra", extraCount, "Allowed extra tau leptonic decays (default: 0)");
+    
+    int processIDmin = 1;
+    app.add_option("-p,--pmin", processIDmin, "Process ID minimum (default: 1)");
+    
+    int processIDmax = 999;
+    app.add_option("-q,--qmax", processIDmax, "Process ID maximum (default: 999)");    
+    
     CLI11_PARSE(app, argc, argv);
 
-    processLHEFile(inputLHEFile, outputLHEFile, requestedCount, extraCount);
+    processLHEFile(inputLHEFile, outputLHEFile, requestedCount, extraCount, processIDmin, processIDmax);
     
     return 0;
 }
