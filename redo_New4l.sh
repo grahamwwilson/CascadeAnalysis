@@ -22,7 +22,10 @@ python analyze.py -w "ZDYtaultaul"  -t 400.0 -l 6.6213e-3 -p "." -e ${ELMIN} -m 
 python analyze.py -w "WWlvlv"  -t 400.0 -l 2.7575e2 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
 python analyze.py -w "ZZllvv"  -t 400.0 -l 3.0904e3 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
 python analyze.py -w "ZZtau2l"  -t 400.0 -l 2.6543e3 -p "." -e ${ELMIN} -m ${MUMIN}
+python analyze.py -w "WWtaultaul"  -t 400.0 -l 9.9937e1 -p "." -e ${ELMIN} -m ${MUMIN}
+python analyze.py -w "WWltaul"  -t 400.0 -l 9.9937e1 -p "." -e ${ELMIN} -m ${MUMIN}
 
+hadd -f histos_New4l.root histos_ZDYll.root histos_ZDYtaultaul.root histos_WWlvlv.root histos_ZZllvv.root histos_ZZtau2l.root WWtaultaul.root WWltaul.root
 
 module unload root/6.32.2
 module list
