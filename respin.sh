@@ -53,7 +53,15 @@ time ./redo_Sleptons.sh ${ELMIN} ${MUMIN}
 
 COLLATEDIR=${3:-LOWESTPT}
 
-mkdir ${COLLATEDIR}
+if [ -d "$COLLATEDIR" ]; then
+    echo "Directory $COLLATEDIR exists. Removing histos*.root files..."
+    rm -f "$COLLATEDIR"/histos*.root
+else
+    echo "Directory $COLLATEDIR does not exist. Creating it..."
+    mkdir "$COLLATEDIR"
+fi
+
 mv histos*.root ${COLLATEDIR}
+echo "histogram files moved to "${COLLATEDIR}
 
 exit
