@@ -3,6 +3,7 @@ import random
 import ROOT
 import math
 import analyzeArgs
+import itertools
 from FourVecDataClass import FourVec
 
 nevsToRead, which, target, lumi, prefix, elPtMin, muPtMin = analyzeArgs.getArguments(None)
@@ -49,6 +50,10 @@ h4lCharge = ROOT.TH1D("h4lCharge","; 4l charge",9,-4.5,4.5)
 hTriLeptonMass = ROOT.TH1D("hTriLeptonMass","; Trilepton mass [GeV]",375,0.0,750.0)
 hTriLeptonMass0 = ROOT.TH1D("hTriLeptonMass0","; Trilepton mass [GeV] in 0 OSSF events",75,0.0,750.0)
 hQuadLeptonMass57 = ROOT.TH1D("hQuadLeptonMass57","; Four-lepton mass [GeV] in 3e-1mu and 1e-3mu events",75,0.0,750.0)
+hQuadLeptonMass57OffZ = ROOT.TH1D("hQuadLeptonMass57OffZ","; OffZ Four-lepton mass [GeV] in 3e-1mu and 1e-3mu events",75,0.0,750.0)
+hQuadLeptonMassOffZ = ROOT.TH1D("hQuadLeptonMassOffZ","; OffZ Four-lepton mass [GeV]",375,0.0,750.0)
+hQuadLeptonMass57OnZ = ROOT.TH1D("hQuadLeptonMass57OnZ","; OnZ Four-lepton mass [GeV] in 3e-1mu and 1e-3mu events",75,0.0,750.0)
+hQuadLeptonMassOnZ = ROOT.TH1D("hQuadLeptonMassOnZ","; OnZ Four-lepton mass [GeV]",375,0.0,750.0)
 hQuadLeptonMass = ROOT.TH1D("hQuadLeptonMass","; Four-lepton mass [GeV]",375,0.0,750.0)
 #hQuadLeptonMass = ROOT.TH1D("hQuadLeptonMass","; Four-lepton mass [GeV]",3750,-0.1,749.9)
 hnupT = ROOT.TH1D("hnupT","; Neutrino pT [GeV]",100,0.0,200.0)
@@ -118,6 +123,12 @@ hprocess= ROOT.TH1D("hprocess","; Process ID; ",12,0.5,12.5)
 
 hOnZ1 = ROOT.TH1D("hOnZ1","; (mll - mZ); ",100,-100.0,100.0)
 hOnZ2 = ROOT.TH2D("hOnZ2","; (mll - mZ); ",20,-20.0,20.0,20,-20.0,20.0)
+
+h2lOnZ = ROOT.TH1D("h2lOnZ","; (mll - mZ); ",150,-100.0,200.0)
+h3lOnZ = ROOT.TH1D("h3lOnZ","; (mll - mZ); ",150,-100.0,200.0)
+h4lOnZ = ROOT.TH1D("h4lOnZ","; (mll - mZ); ",150,-100.0,200.0)
+h5lOnZ = ROOT.TH1D("h5lOnZ","; (mll - mZ); ",150,-100.0,200.0)
+h6lOnZ = ROOT.TH1D("h6lOnZ","; (mll - mZ); ",150,-100.0,200.0)
 
 # Define alphanumeric bin labels for plots with ATLAS 2503.13135 categories
 SRSS_labels = ["eee", "ee#mu", "e#mu#mu", "#mu#mu#mu"]
@@ -242,8 +253,24 @@ while True:
         nmu = 0
        
         fMET = fMETnull.addlist(101, METlist)
+        
+# Make "OnZ" information for all lepton pairs regardless of lepton multiplicity
+        dmll = []
+        if len(leptons) >= 2:
+            for i, j in itertools.combinations(range(len(leptons)), 2):
+                if leptons[i].osdil(leptons[j]):
+                    dmll.append(leptons[i].mtwo(leptons[j]) - 91.2)
+        sorted_dmll = sorted(dmll, key=abs)
+        
+        ZCUT = 12.5
+        OnZFlag = False
+        if sorted_dmll:
+            if dmll[0] > -ZCUT and dmll[0] < ZCUT:
+                OnZFlag = True       
        
         if len(leptons) == 2:
+            if sorted_dmll:
+                 h2lOnZ.Fill(sorted_dmll[0],wt)        
             h2LPtOne.Fill(leptons[0].pt(),wt) 
             h2LPtTwo.Fill(leptons[1].pt(),wt)
             hMETTwo.Fill(fMET.pt(),wt)
@@ -280,27 +307,24 @@ while True:
 #                print('Lepton 1',leptons[1].pt(),leptons[1].pdgID, leptons[1].px, leptons[1].py, leptons[1].pz)
 #                print('Lepton 2',leptons[2].pt(),leptons[2].pdgID, leptons[2].px, leptons[2].py, leptons[2].pz)
            
-# Make list with OS SF dilepton masses with respect to the Z mass.
-            dmll = []
+# Code for mTmin lepton index ID (a la ATLAS).
             Wleptons = []             # Keep list of indices of left-over l_W leptons in OSSF cases
             mTlW = []                 # And calculate transverse mass
-            if leptons[0].osdil(leptons[1]): 
-                 dmll.append(leptons[0].mtwo(leptons[1]) - 91.2 )
-                 Wleptons.append(2)
-                 mTlW.append(leptons[2].mtsimple(fMET))
-            if leptons[1].osdil(leptons[2]):
-                 dmll.append(leptons[1].mtwo(leptons[2]) - 91.2 )
-                 Wleptons.append(0)
-                 mTlW.append(leptons[0].mtsimple(fMET))                 
-            if leptons[2].osdil(leptons[0]):
-                 dmll.append(leptons[2].mtwo(leptons[0]) - 91.2 )
-                 Wleptons.append(1)
-                 mTlW.append(leptons[1].mtsimple(fMET))
-            mTlW.sort()                    # sort in ascending order
+            all_indices = {0, 1, 2}
+            for i, j in itertools.combinations(all_indices, 2):
+                if leptons[i].osdil(leptons[j]):
+                    # Convert the complementary set to a list and get the first element that is the left-over lepton index
+                    k = list(all_indices - {i, j})[0]                    
+                    Wleptons.append(k)
+                    mTlW.append(leptons[k].mtsimple(fMET))
+            mTlW.sort()                            # sort in ascending order
+
+            if sorted_dmll:
+                 h3lOnZ.Fill(sorted_dmll[0],wt)
             if nOSSF==1:
-                 hmTNew1.Fill(mTlW[0])
+                 hmTNew1.Fill(mTlW[0],wt)
             if nOSSF==2:
-                 hmTNew2.Fill(mTlW[0])                 
+                 hmTNew2.Fill(mTlW[0],wt)                 
            
 # Fix me - would be good if it was easier to generalize this
             if leptons[0].osdiel(leptons[1]): hOSeemass.Fill(leptons[0].mtwo(leptons[1]),wt)
@@ -347,13 +371,13 @@ while True:
             nOnZ = 0
             
             if nOSSF==1:
-                hOnZ1.Fill(dmll[0])
+                hOnZ1.Fill(dmll[0],wt)
                 if abs(dmll[0]) < 10.0:
                     nOnZ = 1
             if nOSSF==2:
                 m1 = dmll[0]
                 m2 = dmll[1]
-                hOnZ2.Fill(dmll[0],dmll[1])
+                hOnZ2.Fill(dmll[0],dmll[1],wt)
                 if abs(m1) < 10.0:
                     nOnZ += 1
                 if abs(m2) < 10.0:
@@ -388,23 +412,40 @@ while True:
                 if cRegion: hSROSoff.Fill(l3code+8, wt)                            
                                
         if len(leptons) == 4:
+            if sorted_dmll:
+                 h4lOnZ.Fill(sorted_dmll[0],wt)        
             hPtFour.Fill(leptons[3].pt(), wt)
             fQuadLepton = fQuadLeptonnull.addlist(102, leptons)
-            hQuadLeptonMass.Fill(fQuadLepton.mass(),wt)           
+          
             hMETFour.Fill(fMET.pt(), wt)
             hmTFour.Fill(fQuadLepton.mtp(fMET),wt)
             code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor()
             h4Code.Fill(code, wt)
             charge4l = leptons[0].lcharge() + leptons[1].lcharge() + leptons[2].lcharge() + leptons[3].lcharge()
             h4lCharge.Fill(charge4l,wt)
+            
+            hQuadLeptonMass.Fill(fQuadLepton.mass(),wt)
+            if OnZFlag is True:
+                hQuadLeptonMassOnZ.Fill(fQuadLepton.mass(),wt)
+            else:
+                hQuadLeptonMassOffZ.Fill(fQuadLepton.mass(),wt)            
+                                  
             if code==5 or code==7:
-                hQuadLeptonMass57.Fill(fQuadLepton.mass(),wt)            
+                hQuadLeptonMass57.Fill(fQuadLepton.mass(),wt)
+                if OnZFlag is True:
+                    hQuadLeptonMass57OnZ.Fill(fQuadLepton.mass(),wt)
+                else:
+                    hQuadLeptonMass57OffZ.Fill(fQuadLepton.mass(),wt) 
             
         if len(leptons) == 5:
+            if sorted_dmll:
+                 h5lOnZ.Fill(sorted_dmll[0],wt)        
             code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor() + leptons[4].lflavor()
             h5Code.Fill(code,wt)
             
         if len(leptons) == 6:
+            if sorted_dmll:
+                 h6lOnZ.Fill(sorted_dmll[0],wt)            
             code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor() + leptons[4].lflavor() + leptons[5].lflavor()
             h6Code.Fill(code,wt)                        
                       
