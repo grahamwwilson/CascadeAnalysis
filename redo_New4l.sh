@@ -25,7 +25,8 @@ python analyze.py -w "ZZtau2l"  -t 400.0 -l 2.6543e3 -p "." -e ${ELMIN} -m ${MUM
 python analyze.py -w "WWtaultaul"  -t 400.0 -l 9.9937e1 -p "." -e ${ELMIN} -m ${MUMIN}
 python analyze.py -w "WWltaul"  -t 400.0 -l 9.9937e1 -p "." -e ${ELMIN} -m ${MUMIN}
 
-hadd -f histos_New4l.root histos_ZDYll.root histos_ZDYtaultaul.root histos_WWlvlv.root histos_ZZllvv.root histos_ZZtau2l.root WWtaultaul.root WWltaul.root
+# Have moved this into the assembleSM.sh script
+#hadd histos_New4l.root histos_ZDYll.root histos_ZDYtaultaul.root histos_WWlvlv.root histos_ZZllvv.root histos_ZZtau2l.root WWtaultaul.root WWltaul.root
 
 module unload root/6.32.2
 module list
