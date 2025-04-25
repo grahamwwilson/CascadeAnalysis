@@ -48,6 +48,8 @@ hEleMumass = ROOT.TH1D("hEleMumass","; Electron-Muon mass [GeV]",500,0.0,250.0)
 hWmass = ROOT.TH1D("hWmass","; Muon-Neutrino mass [GeV]",500,0.0,250.0)
 h4lCharge = ROOT.TH1D("h4lCharge","; 4l charge",9,-4.5,4.5)
 hTriLeptonMass = ROOT.TH1D("hTriLeptonMass","; Trilepton mass [GeV]",375,0.0,750.0)
+hTriLeptonMassOnZ = ROOT.TH1D("hTriLeptonMassOnZ","; OnZ Trilepton mass [GeV]",375,0.0,750.0)
+hTriLeptonMassOffZ = ROOT.TH1D("hTriLeptonMassOffZ","; OffZ Trilepton mass [GeV]",375,0.0,750.0)
 hTriLeptonMass0 = ROOT.TH1D("hTriLeptonMass0","; Trilepton mass [GeV] in 0 OSSF events",75,0.0,750.0)
 hQuadLeptonMass57 = ROOT.TH1D("hQuadLeptonMass57","; Four-lepton mass [GeV] in 3e-1mu and 1e-3mu events",75,0.0,750.0)
 hQuadLeptonMass57OffZ = ROOT.TH1D("hQuadLeptonMass57OffZ","; OffZ Four-lepton mass [GeV] in 3e-1mu and 1e-3mu events",75,0.0,750.0)
@@ -355,6 +357,11 @@ while True:
             # 3lcode here goes from 1 to 4
             l3code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() - 2
             h3Code.Fill(leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor(), wt)
+            
+            if OnZFlag is True:
+                hTriLeptonMassOnZ.Fill(fTriLepton.mass(),wt)
+            else:
+                hTriLeptonMassOffZ.Fill(fTriLepton.mass(),wt)                 
             
             ATLAS_presel = True
             if leptons[0].pt() < 28.0:
