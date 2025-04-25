@@ -36,6 +36,9 @@ time ./redoZZZMET.sh ${ELMIN} ${MUMIN}
 # All the tau files
 time ./DoTauFiles.sh ${ELMIN} ${MUMIN}
 
+# Latest files derived from Stephen's samples
+time ./redo_New4l.sh ${ELMIN} ${MUMIN}
+
 # Assemble the Standard Model background ansatz. (Note some contributions 
 # eg. WZZMET, ZZZMET, are added to the background sum, but 
 # are not included explicitly as separate contributions in the plots).
