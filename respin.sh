@@ -44,12 +44,12 @@ time ./redo_New4l.sh ${ELMIN} ${MUMIN}
 # are not included explicitly as separate contributions in the plots).
 time ./assembleSM.sh
 
-# The six files with the slepton cascade models used by ATLAS.
-time ./redo_ATL.sh ${ELMIN} ${MUMIN}
-
 # The four Sleptons files. Once the sleptons_90 file finishes we can display 
 # the standard histograms.
 time ./redo_Sleptons.sh ${ELMIN} ${MUMIN}
+
+# The six files with the slepton cascade models used by ATLAS.
+time ./redo_ATL.sh ${ELMIN} ${MUMIN}
 
 COLLATEDIR=${3:-LOWESTPT}
 
