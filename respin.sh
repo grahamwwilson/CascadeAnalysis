@@ -34,7 +34,7 @@ time ./redoWZZMET.sh ${ELMIN} ${MUMIN}
 time ./redoZZZMET.sh ${ELMIN} ${MUMIN}
 
 # All the tau files
-time ./DoTauFiles.sh ${ELMIN} ${MUMIN}
+time ./DoTauFilesNew.sh ${ELMIN} ${MUMIN}
 
 # Latest files derived from Stephen's samples
 time ./redo_New4l.sh ${ELMIN} ${MUMIN}
