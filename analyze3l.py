@@ -47,17 +47,31 @@ hPosMumass = ROOT.TH1D("hPosMumass","; Positron-Muon mass [GeV]",500,0.0,250.0)
 hEleMumass = ROOT.TH1D("hEleMumass","; Electron-Muon mass [GeV]",500,0.0,250.0)
 hWmass = ROOT.TH1D("hWmass","; Muon-Neutrino mass [GeV]",500,0.0,250.0)
 h4lCharge = ROOT.TH1D("h4lCharge","; 4l charge",9,-4.5,4.5)
+
 hTriLeptonMass = ROOT.TH1D("hTriLeptonMass","; Trilepton mass [GeV]",375,0.0,750.0)
 hTriLeptonMassOnZ = ROOT.TH1D("hTriLeptonMassOnZ","; OnZ Trilepton mass [GeV]",375,0.0,750.0)
 hTriLeptonMassOffZ = ROOT.TH1D("hTriLeptonMassOffZ","; OffZ Trilepton mass [GeV]",375,0.0,750.0)
+
 hTriLeptonMass0 = ROOT.TH1D("hTriLeptonMass0","; Trilepton mass [GeV] in 0 OSSF events",75,0.0,750.0)
+hTriLeptonMassQ3 = ROOT.TH1D("hTriLeptonMassQ3","; |Q|=3 Trilepton mass [GeV]",75,0.0,750.0)
+hTriLeptonMass0Q1 = ROOT.TH1D("hTriLeptonMass0Q1","; Trilepton mass [GeV] in |Q|=1 0 OSSF events",75,0.0,750.0)
+
 hQuadLeptonMass57 = ROOT.TH1D("hQuadLeptonMass57","; Four-lepton mass [GeV] in 3e-1mu and 1e-3mu events",75,0.0,750.0)
 hQuadLeptonMass57OffZ = ROOT.TH1D("hQuadLeptonMass57OffZ","; OffZ Four-lepton mass [GeV] in 3e-1mu and 1e-3mu events",75,0.0,750.0)
-hQuadLeptonMassOffZ = ROOT.TH1D("hQuadLeptonMassOffZ","; OffZ Four-lepton mass [GeV]",375,0.0,750.0)
 hQuadLeptonMass57OnZ = ROOT.TH1D("hQuadLeptonMass57OnZ","; OnZ Four-lepton mass [GeV] in 3e-1mu and 1e-3mu events",75,0.0,750.0)
-hQuadLeptonMassOnZ = ROOT.TH1D("hQuadLeptonMassOnZ","; OnZ Four-lepton mass [GeV]",375,0.0,750.0)
+
 hQuadLeptonMass = ROOT.TH1D("hQuadLeptonMass","; Four-lepton mass [GeV]",375,0.0,750.0)
-#hQuadLeptonMass = ROOT.TH1D("hQuadLeptonMass","; Four-lepton mass [GeV]",3750,-0.1,749.9)
+hQuadLeptonMassOffZ = ROOT.TH1D("hQuadLeptonMassOffZ","; OffZ Four-lepton mass [GeV]",375,0.0,750.0)
+hQuadLeptonMassOnZ = ROOT.TH1D("hQuadLeptonMassOnZ","; OnZ Four-lepton mass [GeV]",375,0.0,750.0)
+
+hQuadLeptonMassQ2 = ROOT.TH1D("hQuadLeptonMassQ2","; |Q|=2 Four-lepton mass [GeV]",375,0.0,750.0)
+hQuadLeptonMassQ2OnZ = ROOT.TH1D("hQuadLeptonMassQ2OnZ","; |Q|=2 OnZ Four-lepton mass [GeV]",375,0.0,750.0)
+hQuadLeptonMassQ2OffZ = ROOT.TH1D("hQuadLeptonMassQ2OffZ","; |Q|=2 OffZ Four-lepton mass [GeV]",375,0.0,750.0)
+
+hQuadLeptonMass57Q2 = ROOT.TH1D("hQuadLeptonMass57Q2","; 57 |Q|=2 Four-lepton mass [GeV]",375,0.0,750.0)
+hQuadLeptonMass57Q2OnZ = ROOT.TH1D("hQuadLeptonMass57Q2OnZ","; 57 |Q|=2 OnZ Four-lepton mass [GeV]",375,0.0,750.0)
+hQuadLeptonMass57Q2OffZ = ROOT.TH1D("hQuadLeptonMass57Q2OffZ","; 57 |Q|=2 OffZ Four-lepton mass [GeV]",375,0.0,750.0)
+
 hnupT = ROOT.TH1D("hnupT","; Neutrino pT [GeV]",100,0.0,200.0)
 hZpT = ROOT.TH1D("hZpT","; Di-electron pT [GeV]",100,0.0,200.0)
 hWmT = ROOT.TH1D("hWmT","; Muon-neutrino transverse mass [GeV]",200,0.0,200.0)
@@ -361,7 +375,13 @@ while True:
             if OnZFlag is True:
                 hTriLeptonMassOnZ.Fill(fTriLepton.mass(),wt)
             else:
-                hTriLeptonMassOffZ.Fill(fTriLepton.mass(),wt)                 
+                hTriLeptonMassOffZ.Fill(fTriLepton.mass(),wt)  
+                
+            if charge3l == -3 or charge3l == 3:
+                hTriLeptonMassQ3.Fill(fTriLepton.mass(),wt)
+                    
+            if (charge3l == -1 or charge3l == 1) and nOSSF == 0:
+                hTriLeptonMass0Q1.Fill(fTriLepton.mass(),wt)                                                    
             
             ATLAS_presel = True
             if leptons[0].pt() < 28.0:
@@ -443,6 +463,20 @@ while True:
                     hQuadLeptonMass57OnZ.Fill(fQuadLepton.mass(),wt)
                 else:
                     hQuadLeptonMass57OffZ.Fill(fQuadLepton.mass(),wt) 
+                    
+            if charge4l == -2 or charge4l == 2:
+                hQuadLeptonMassQ2.Fill(fQuadLepton.mass(),wt)
+                if OnZFlag is True:
+                    hQuadLeptonMassQ2OnZ.Fill(fQuadLepton.mass(),wt)
+                else:
+                    hQuadLeptonMassQ2OffZ.Fill(fQuadLepton.mass(),wt) 
+                    
+            if (charge4l == -2 or charge4l == 2) and (code == 5 or code ==7):
+                hQuadLeptonMass57Q2.Fill(fQuadLepton.mass(),wt)
+                if OnZFlag is True:
+                    hQuadLeptonMass57Q2OnZ.Fill(fQuadLepton.mass(),wt)
+                else:
+                    hQuadLeptonMass57Q2OffZ.Fill(fQuadLepton.mass(),wt)                                 
             
         if len(leptons) == 5:
             if sorted_dmll:
