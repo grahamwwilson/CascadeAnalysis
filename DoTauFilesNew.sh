@@ -38,7 +38,7 @@ python3 analyze.py -w "Run-63" -t 400.0 -l 1.1850e3 -p "." -e ${ELMIN} -m ${MUMI
 python3 analyze.py -w "Run-64" -t 400.0 -l 1.2438e3 -p "." -e ${ELMIN} -m ${MUMIN}
 
 hadd -f histos_SundryTaus.root histos_Run-62.root histos_Run-63.root histos_Run-64.root
-hadd -f histos_HadTaus.root histos_Run-61-OneHad.root histos_Run-62-OneHad.root
+hadd -f histos_HadTaus.root histos_Run-61-OneHad-LMAX3.root histos_Run-62-OneHad-LMAX3.root
 hadd -f histos_AllTaus.root histos_Run-60.root histos_Run-61.root histos_SundryTaus.root histos_HadTaus.root
 
 module unload root/6.32.2
