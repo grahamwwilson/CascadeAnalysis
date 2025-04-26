@@ -26,8 +26,11 @@ python3 --version
 python3 analyze.py -h
 
 # Use new OneHad files with generator-level veto on more than 3 leptons (no pT or eta cuts)
-python3 analyze.py -w "Run-61-OneHad-LMAX3" -t 400.0 -l 7.8305e2 -p "." -e ${ELMIN} -m ${MUMIN}
-python3 analyze.py -w "Run-62-OneHad-LMAX3" -t 400.0 -l 8.1882e2 -p "." -e ${ELMIN} -m ${MUMIN}
+#python3 analyze.py -w "Run-61-OneHad-LMAX3" -t 400.0 -l 7.8305e2 -p "." -e ${ELMIN} -m ${MUMIN}
+#python3 analyze.py -w "Run-62-OneHad-LMAX3" -t 400.0 -l 8.1882e2 -p "." -e ${ELMIN} -m ${MUMIN}
+# Increase weight by 1/0.96 to compensate for 4-lepton veto effect (4% of selected events fail the 4-lepton veto - and they should be there). 
+python3 analyze.py -w "Run-61-OneHad-LMAX3" -t 400.0 -l 8.1568e2 -p "." -e ${ELMIN} -m ${MUMIN}
+python3 analyze.py -w "Run-62-OneHad-LMAX3" -t 400.0 -l 8.5294e2 -p "." -e ${ELMIN} -m ${MUMIN}
 python3 analyze.py -w "Run-60" -t 400.0 -l 1.2010e3 -p "." -e ${ELMIN} -m ${MUMIN}
 python3 analyze.py -w "Run-61" -t 400.0 -l 7.8305e2 -p "." -e ${ELMIN} -m ${MUMIN}
 python3 analyze.py -w "Run-62" -t 400.0 -l 8.1882e2 -p "." -e ${ELMIN} -m ${MUMIN}
