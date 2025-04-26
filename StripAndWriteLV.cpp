@@ -145,7 +145,7 @@ int countNeutrinos(const std::vector<Particle>& particles) {
     return neutrinoCount;
 }
 
-int countLeptons(const std::vector<Particle>& particles) {
+int CountLeptons(const std::vector<Particle>& particles) {
     int leptonCount = 0;
     for (const auto& p : particles) {
         if (isLepton(p.pdgCode) && p.status==1) {
