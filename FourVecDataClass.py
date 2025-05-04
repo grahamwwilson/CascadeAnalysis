@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import math
+import numpy as np
 
 @dataclass
 class FourVec:
@@ -551,28 +552,28 @@ class FourVec:
             
         return result
         
-    def MT2(self,leps,guessmass,ptmax,psteps,phisteps):
+    def MT2(self, leps, m1hyp, m2hyp, ptmax, psteps, phisteps):
         """ self is the fmet list, leps are the leptons list, 
+            m1hyp and m2hyp are the hypothesized invisible particle masses 
         """
-        pvals=[ptmax/psteps * i for i in range(psteps+1)]
-        phivals=[2*math.pi/phisteps * i for i in range(phisteps+1)]
-        metx=self.px
-        mety=self.py
-        mm1=guessmass #mass of missing particle one
-        mm2=guessmass #mass of missing particle two
-        mlist=[]
+        pvals = np.linspace(0, ptmax, psteps + 1)
+        phivals = np.linspace(0, 2.0*np.pi, phisteps + 1)
+#        pvals = [ptmax/psteps * i for i in range(psteps+1)]
+#        phivals = [2*math.pi/phisteps * i for i in range(phisteps+1)]
+        metx = self.px
+        mety = self.py
+        mlist = []
         for j in pvals:
             for k in phivals:
-                p1x=j*math.cos(k)
-                p1y=j*math.sin(k)
-                p2x=metx-p1x
-                p2y=mety-p1y
-                E1=math.sqrt(mm1**2+(p1x**2+p1y**2))
-                E2=math.sqrt(mm2**2+(p2x**2+p2y**2))
-                p1=FourVec(123456789, p1x, p1y, 0, E1)
-                p2=FourVec(123456789, p2x, p2y, 0, E2)
-                
-                p1m=p1.MTp(leps[0])
-                p2m=p2.MTp(leps[1])
-                mlist.append(max([p1m,p2m]))
+                p1x = j*math.cos(k)
+                p1y = j*math.sin(k)
+                p2x = metx - p1x
+                p2y = mety - p1y
+                E1 = math.sqrt( m1hyp**2 + p1x**2 + p1y**2 )
+                E2 = math.sqrt( m2hyp**2 + p2x**2 + p2y**2 )
+                p1 = FourVec(123456789, p1x, p1y, 0, E1)
+                p2 = FourVec(123456789, p2x, p2y, 0, E2)
+                p1m = p1.MTp(leps[0])
+                p2m = p2.MTp(leps[1])
+                mlist.append(max([p1m, p2m]))
         return min(mlist)        

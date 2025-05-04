@@ -322,10 +322,10 @@ while True:
             if leptons[0].ssdimu(leptons[1]): h2lSSmmmass.Fill(leptons[0].mtwo(leptons[1]),wt)
             
             if processID==1:
-                value = fMET.MT2(leptons,mma,sd4,steps,psteps)
+                value = fMET.MT2(leptons, mma, mma, sd4, steps, psteps)
                 hmT2.Fill(value, wt)
-                if event < 1000 or event%1000 == 0:
-                    print('Event ',event,' MT2 = ',value)
+#                if event < 1000 or event%1000 == 0:
+#                print('Event ',event,' MT2 = ',value)
 #                hSP90mt2b4.Fill(fMET.MT2(leptons,mmb,sd4,steps,psteps),wt)            
        
         if len(leptons) == 3:       
