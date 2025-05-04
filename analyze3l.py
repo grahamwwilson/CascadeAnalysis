@@ -169,7 +169,7 @@ mma=0.0
 heading="MT2"
 xaxis="MT2 [GeV]"
 titles=heading+": pt= "+str(sd4)+" GeV and missing mass of "+str(mma)+" GeV;"+xaxis+"; Weighted Count"
-hSMmt2a4= ROOT.TH1D("hWWP3mt2a4",titles,375,0.0,750.0)
+hmT2 = ROOT.TH1D("hmT2",titles,375,0.0,750.0)
 #titles=heading+": pt= "+str(sd4)+" GeV and missing mass of "+str(mmb)+" GeV;"+xaxis+"; Weighted Count"
 #hSMmt2b4= ROOT.TH1D("hWWP3mt2b4",titles,375,0.0,750.0)
 steps=50
@@ -323,7 +323,7 @@ while True:
             
             if processID==1:
                 value = fMET.MT2(leptons,mma,sd4,steps,psteps)
-                hSP90mt2a4.Fill(value, wt)
+                hmT2.Fill(value, wt)
                 if event < 1000:
                     print('Event ',event,' MT2 = ',value)
 #                hSP90mt2b4.Fill(fMET.MT2(leptons,mmb,sd4,steps,psteps),wt)            
