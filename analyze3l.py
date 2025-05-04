@@ -158,8 +158,23 @@ for i in range(1, len(SROSon_labels)+1):
     hSROSon.GetXaxis().SetBinLabel(i, SROSon_labels[i-1])
     hSROSoff.GetXaxis().SetBinLabel(i, SROSoff_labels[i-1]) 
 hSROSon.GetXaxis().LabelsOption("h")
-hSROSoff.GetXaxis().LabelsOption("h")   
+hSROSoff.GetXaxis().LabelsOption("h")
 
+
+# mT2 stuff
+ptmax=550 #maximum found pt
+sd4=24.265*4 #4 times the standard deviation of the transverse momentum
+mma=0.0
+#mmb=90
+heading="MT2"
+xaxis="MT2 [GeV]"
+titles=heading+": pt= "+str(sd4)+" GeV and missing mass of "+str(mma)+" GeV;"+xaxis+"; Weighted Count"
+hSMmt2a4= ROOT.TH1D("hWWP3mt2a4",titles,375,0.0,750.0)
+#titles=heading+": pt= "+str(sd4)+" GeV and missing mass of "+str(mmb)+" GeV;"+xaxis+"; Weighted Count"
+#hSMmt2b4= ROOT.TH1D("hWWP3mt2b4",titles,375,0.0,750.0)
+steps=50
+psteps=50
+ 
 event = 0
 
 eventWT = 1.0
@@ -286,7 +301,7 @@ while True:
        
         if len(leptons) == 2:
             if sorted_dmll:
-                 h2lOnZ.Fill(sorted_dmll[0],wt)        
+                h2lOnZ.Fill(sorted_dmll[0],wt)        
             h2LPtOne.Fill(leptons[0].pt(),wt) 
             h2LPtTwo.Fill(leptons[1].pt(),wt)
             hMETTwo.Fill(fMET.pt(),wt)
@@ -305,6 +320,13 @@ while True:
             if leptons[0].ssdiel(leptons[1]): h2lSSeemass.Fill(leptons[0].mtwo(leptons[1]),wt)
             if leptons[0].sselmu(leptons[1]): h2lSSemmass.Fill(leptons[0].mtwo(leptons[1]),wt)
             if leptons[0].ssdimu(leptons[1]): h2lSSmmmass.Fill(leptons[0].mtwo(leptons[1]),wt)
+            
+            if processID==1:
+                value = fMET.MT2(leptons,mma,sd4,steps,psteps)
+                hSP90mt2a4.Fill(value, wt)
+                if event < 1000:
+                    print('Event ',event,' MT2 = ',value)
+#                hSP90mt2b4.Fill(fMET.MT2(leptons,mmb,sd4,steps,psteps),wt)            
        
         if len(leptons) == 3:       
             hPtOne.Fill(leptons[0].pt(),wt) 

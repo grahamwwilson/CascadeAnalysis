@@ -496,6 +496,19 @@ class FourVec:
         mtsq = m1**2 + m2**2 + 2.0*(ET1*ET2 - (px1*px2 + py1*py2)) 
         return math.sqrt(mtsq)
         
+    def MTp(self,other):
+        " Compute transverse mass of the self and other 4-vector. Use eqn 3 from RJR paper. This is the SJS one"
+        px1 = self.px
+        py1 = self.py
+        px2 = other.px
+        py2 = other.py
+        m1 = self.mass()
+        m2 = other.mass()           # Could potentially use something else here
+        ET1 = math.sqrt(m1**2 + px1**2 + py1**2)
+        ET2 = math.sqrt(m2**2 + px2**2 + py2**2)
+        mtsq = m1**2 + m2**2 + 2.0*(ET1*ET2 - (px1*px2 + py1*py2)) 
+        return math.sqrt(mtsq)             
+        
     def mtsimple(self,other):
         " Compute transverse mass of the self and other 4-vector. Use eqn from 2503.13135"
         px1 = self.px
@@ -537,3 +550,29 @@ class FourVec:
             result = 0.5*math.log( (E+pz)/(E-pz) )
             
         return result
+        
+    def MT2(self,leps,guessmass,ptmax,psteps,phisteps):
+        """ self is the fmet list, leps are the leptons list, 
+        """
+        pvals=[ptmax/psteps * i for i in range(psteps+1)]
+        phivals=[2*math.pi/phisteps * i for i in range(phisteps+1)]
+        metx=self.px
+        mety=self.py
+        mm1=guessmass #mass of missing particle one
+        mm2=guessmass #mass of missing particle two
+        mlist=[]
+        for j in pvals:
+            for k in phivals:
+                p1x=j*math.cos(k)
+                p1y=j*math.sin(k)
+                p2x=metx-p1x
+                p2y=mety-p1y
+                E1=math.sqrt(mm1**2+(p1x**2+p1y**2))
+                E2=math.sqrt(mm2**2+(p2x**2+p2y**2))
+                p1=FourVec(123456789, p1x, p1y, 0, E1)
+                p2=FourVec(123456789, p2x, p2y, 0, E2)
+                
+                p1m=p1.MTp(leps[0])
+                p2m=p2.MTp(leps[1])
+                mlist.append(max([p1m,p2m]))
+        return min(mlist)        
