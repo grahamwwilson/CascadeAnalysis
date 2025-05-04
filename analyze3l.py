@@ -326,8 +326,7 @@ while True:
                 value, nit = fMET.MT2(leptons, mma, mma, sd4)
                 hmT2.Fill(value, wt)
                 hnit.Fill(value, wt)
-                if event < 1000:
-                    print('Event ',event,'MT2 = ',value,'nit = ',nit)
+                print('Event ',event,'MT2 = ',value,'nit = ',nit)
 #                hSP90mt2b4.Fill(fMET.MT2(leptons,mmb,sd4,steps,psteps),wt)            
        
         if len(leptons) == 3:       
