@@ -325,7 +325,7 @@ while True:
             if processID==1:
                 value, nit = fMET.MT2(leptons, mma, mma, sd4)
                 hmT2.Fill(value, wt)
-                hnit.Fill(value, wt)
+                hnit.Fill(nit, wt)
                 print('Event ',event,'MT2 = ',value,'nit = ',nit)
 #                hSP90mt2b4.Fill(fMET.MT2(leptons,mmb,sd4,steps,psteps),wt)            
        
