@@ -627,7 +627,7 @@ class FourVec:
     # Run the minimizer
         success = minimizer.Minimize()
         mt2min = minimizer.MinValue()
-        n_iters = minimizer.Iterations()
+        n_iters = minimizer.NIterations()
 
         if verbose:
             print("MT2 minimization result:", "Success" if success else "Failed")
