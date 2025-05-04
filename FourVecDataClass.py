@@ -593,7 +593,7 @@ class FourVec:
         Returns:
            (minimized MT2 value, number of iterations used)
         """
-        def mt2_objective(npar, grad, result, pars, flag):
+        def mt2_objective(pars):
             p1x, p1y = pars[0], pars[1]
             p2x = self.px - p1x
             p2y = self.py - p1y
@@ -607,7 +607,7 @@ class FourVec:
             mt1 = p1.MTp(leps[0])
             mt2 = p2.MTp(leps[1])
 
-            result[0] = max(mt1, mt2)
+            return max(mt1, mt2)
 
     # Create the minimizer
         minimizer = ROOT.Math.Factory.CreateMinimizer("Minuit2", "Simple")
