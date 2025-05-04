@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from scipy.optimize import minimize
+#from scipy.optimize import minimize
+import ROOT
 import math
 import numpy as np
 
@@ -577,33 +578,60 @@ class FourVec:
                 p1m = p1.MTp(leps[0])
                 p2m = p2.MTp(leps[1])
                 mlist.append(max([p1m, p2m]))
-        return min(mlist)
-        
-    def MT2(self, leps, m1hyp, m2hyp, ptmax, tol=1.0e-6):
-        """ self is the fmet list, leps are the leptons list, 
-            m1hyp and m2hyp are the hypothesized invisible particle masses. 
-            Uses scipy minimize for minimization rather than prior grid search.
+        return min(mlist)        
+
+    def MT2(self, leps, m1hyp, m2hyp, ptmax, tol=1e-6, verbose=False):
+        """Compute MT2 using ROOT.Math.Minimizer instead of grid search or scipy.
+    
+        Parameters:
+           leps: list of two FourVec objects (visible particles)
+           m1hyp, m2hyp: hypothesized masses of invisible particles
+           ptmax: maximum trial transverse momentum
+           tol: optimization tolerance
+           verbose: if True, prints minimization status
+    
+        Returns:
+           (minimized MT2 value, number of iterations used)
         """
-        def mt2_objective(p):
-            p1x, p1y = p
+        def mt2_objective(npar, grad, result, pars, flag):
+            p1x, p1y = pars[0], pars[1]
             p2x = self.px - p1x
             p2y = self.py - p1y
 
             E1 = math.sqrt(m1hyp**2 + p1x**2 + p1y**2)
             E2 = math.sqrt(m2hyp**2 + p2x**2 + p2y**2)
 
-            p1 = FourVec(0, p1x, p1y, 0, E1)
+            p1 = FourVec(0, p1x, p1y, 0, E1) 
             p2 = FourVec(0, p2x, p2y, 0, E2)
 
             mt1 = p1.MTp(leps[0])
             mt2 = p2.MTp(leps[1])
-            return max(mt1, mt2)
 
-        # Set a reasonable initial guess
-        x0 = [self.px / 2.0, self.py / 2.0]
-        bounds = [(-ptmax, ptmax), (-ptmax, ptmax)]
+            result[0] = max(mt1, mt2)
 
-        result = minimize(mt2_objective, x0=x0, bounds=bounds, method='L-BFGS-B', tol=tol)
+    # Create the minimizer
+        minimizer = ROOT.Math.Factory.CreateMinimizer("Minuit2", "Simple")
+        minimizer.SetMaxFunctionCalls(10000)
+        minimizer.SetMaxIterations(1000)
+        minimizer.SetTolerance(tol)
 
-        return result.fun if result.success else float('inf'), result.nit    # Also returns number of iterations for monitoring.                  
- 
+        func = ROOT.Math.Functor(mt2_objective, 2)
+        minimizer.SetFunction(func)
+
+    # Initial guess and variable setup
+        minimizer.SetVariable(0, "p1x", self.px / 2.0, 0.1)
+        minimizer.SetVariableLimits(0, -ptmax, ptmax)
+        minimizer.SetVariable(1, "p1y", self.py / 2.0, 0.1)
+        minimizer.SetVariableLimits(1, -ptmax, ptmax)
+
+    # Run the minimizer
+        success = minimizer.Minimize()
+        mt2min = minimizer.MinValue()
+        n_iters = minimizer.Iterations()
+
+        if verbose:
+            print("MT2 minimization result:", "Success" if success else "Failed")
+            print(f"  MT2 = {mt2min:.6f} in {n_iters} iterations")
+    
+        return mt2min, n_iters
+                       
