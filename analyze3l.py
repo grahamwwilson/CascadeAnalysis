@@ -324,7 +324,7 @@ while True:
             if processID==1:
                 value = fMET.MT2(leptons,mma,sd4,steps,psteps)
                 hmT2.Fill(value, wt)
-                if event < 1000 or event%1000 = 0:
+                if event < 1000 or event%1000 == 0:
                     print('Event ',event,' MT2 = ',value)
 #                hSP90mt2b4.Fill(fMET.MT2(leptons,mmb,sd4,steps,psteps),wt)            
        
