@@ -609,23 +609,43 @@ class FourVec:
 
             return max(mt1, mt2)
 
-    # Create the minimizer
-        minimizer = ROOT.Math.Factory.CreateMinimizer("Minuit2", "Simplex")
-        minimizer.SetMaxFunctionCalls(10000)
-        minimizer.SetMaxIterations(1000)
-        minimizer.SetTolerance(tol)
+        def run_minimizer(algorithm):
+        # Create the minimizer
+            minimizer = ROOT.Math.Factory.CreateMinimizer("Minuit2", algorithm)
+            minimizer.SetMaxFunctionCalls(10000)
+            minimizer.SetMaxIterations(1000)
+            minimizer.SetTolerance(tol)
 
-        func = ROOT.Math.Functor(mt2_objective, 2)
-        minimizer.SetFunction(func)
+            func = ROOT.Math.Functor(mt2_objective, 2)
+            minimizer.SetFunction(func)
 
     # Initial guess and variable setup
-        minimizer.SetVariable(0, "p1x", self.px / 2.0, 0.1)
-        minimizer.SetVariableLimits(0, -ptmax, ptmax)
-        minimizer.SetVariable(1, "p1y", self.py / 2.0, 0.1)
-        minimizer.SetVariableLimits(1, -ptmax, ptmax)
+            minimizer.SetVariable(0, "p1x", self.px / 2.0, 0.5)
+            minimizer.SetVariableLimits(0, -ptmax, ptmax)
+            minimizer.SetVariable(1, "p1y", self.py / 2.0, 0.5)
+            minimizer.SetVariableLimits(1, -ptmax, ptmax)
 
     # Run the minimizer
-        success = minimizer.Minimize()
+            success = minimizer.Minimize()
+            return minimizer, success
+            
+    # Try Simplex
+        minimizer, success = run_minimizer("Simplex")
+
+    # Fallback to Migrad if needed
+        if not success:
+            if verbose:
+                print("Simplex failed. Retrying with Migrad...")
+            minimizer, success = run_minimizer("Migrad")
+
+        mt2val = minimizer.MinValue() if success else float("inf")
+        iters = minimizer.NIterations()
+        calls = minimizer.NCalls()
+
+        if verbose:
+            print(f"{'Success' if success else 'Failure'} after {iters} iterations and {calls} calls. MT2 = {mt2val:.6f}")
+
+        return mt2val, iters, calls            
         mt2min = minimizer.MinValue()
         n_iters = minimizer.NIterations()
 
@@ -633,5 +653,4 @@ class FourVec:
             print("MT2 minimization result:", "Success" if success else "Failed")
             print(f"  MT2 = {mt2min:.6f} in {n_iters} iterations")
     
-        return mt2min, n_iters
-                       
+        return mt2min, n_iters          
