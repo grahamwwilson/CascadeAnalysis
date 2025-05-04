@@ -172,6 +172,7 @@ titles=heading+": pt= "+str(sd4)+" GeV and missing mass of "+str(mma)+" GeV;"+xa
 hmT2 = ROOT.TH1D("hmT2",titles,375,0.0,750.0)
 #titles=heading+": pt= "+str(sd4)+" GeV and missing mass of "+str(mmb)+" GeV;"+xaxis+"; Weighted Count"
 #hSMmt2b4= ROOT.TH1D("hWWP3mt2b4",titles,375,0.0,750.0)
+hnit = ROOT.TH1D("hnit","Number of iterations",10001,-0.5,10000.5)
 steps=50
 psteps=50
  
@@ -322,10 +323,11 @@ while True:
             if leptons[0].ssdimu(leptons[1]): h2lSSmmmass.Fill(leptons[0].mtwo(leptons[1]),wt)
             
             if processID==1:
-                value = fMET.MT2(leptons, mma, mma, sd4, steps, psteps)
+                value, nit = fMET.MT2(leptons, mma, mma, sd4, steps, psteps)
                 hmT2.Fill(value, wt)
-#                if event < 1000 or event%1000 == 0:
-#                print('Event ',event,' MT2 = ',value)
+                hnit.Fill(value, wt)
+                if event < 1000:
+                    print('Event ',event,'MT2 = ',value,'nit = ',nit)
 #                hSP90mt2b4.Fill(fMET.MT2(leptons,mmb,sd4,steps,psteps),wt)            
        
         if len(leptons) == 3:       
