@@ -610,7 +610,7 @@ class FourVec:
             return max(mt1, mt2)
 
     # Create the minimizer
-        minimizer = ROOT.Math.Factory.CreateMinimizer("Minuit2", "Simple")
+        minimizer = ROOT.Math.Factory.CreateMinimizer("Minuit2", "Simplex")
         minimizer.SetMaxFunctionCalls(10000)
         minimizer.SetMaxIterations(1000)
         minimizer.SetTolerance(tol)
