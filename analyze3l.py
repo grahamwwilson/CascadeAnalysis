@@ -323,7 +323,7 @@ while True:
             if leptons[0].ssdimu(leptons[1]): h2lSSmmmass.Fill(leptons[0].mtwo(leptons[1]),wt)
             
             if processID==1:
-                value, nit = fMET.MT2(leptons, mma, mma, sd4, steps, psteps)
+                value, nit = fMET.MT2(leptons, mma, mma, sd4)
                 hmT2.Fill(value, wt)
                 hnit.Fill(value, wt)
                 if event < 1000:
