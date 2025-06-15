@@ -293,7 +293,7 @@ while True:
        
         fMET = fMETnull.addlist(101, METlist)
         
-# Make "OnZ" information for all lepton pairs regardless of lepton multiplicity
+# Make "OnZ" information for all OS lepton pairs regardless of lepton multiplicity
         dmll = []
         if len(leptons) >= 2:
             for i, j in itertools.combinations(range(len(leptons)), 2):
@@ -322,7 +322,9 @@ while True:
             else:
                 h2Code.Fill(-code, wt)
 # Fix me - would be good if it was easier to generalize this
-            if leptons[0].osdiel(leptons[1]): h2lOSeemass.Fill(leptons[0].mtwo(leptons[1]),wt)
+            if leptons[0].osdiel(leptons[1]): 
+                h2lOSeemass.Fill(leptons[0].mtwo(leptons[1]),wt)
+#                print (event, " OS ee mass ", leptons[0].mtwo(leptons[1]) )
             if leptons[0].oselmu(leptons[1]): h2lOSemmass.Fill(leptons[0].mtwo(leptons[1]),wt)          
             if leptons[0].osdimu(leptons[1]): h2lOSmmmass.Fill(leptons[0].mtwo(leptons[1]),wt)            
             if leptons[0].ssdiel(leptons[1]): h2lSSeemass.Fill(leptons[0].mtwo(leptons[1]),wt)
@@ -330,20 +332,20 @@ while True:
             if leptons[0].ssdimu(leptons[1]): h2lSSmmmass.Fill(leptons[0].mtwo(leptons[1]),wt)
             
 #            if processID==1:
-            value, nit, calls = fMET.MT2(leptons, mma, mma, sd4)
-            hmT2.Fill(value, wt)    # Fill for all events
-            hnit.Fill(nit, wt)
-            hcalls.Fill(calls, wt)
-            if processID == 1:
-                hmT2P1.Fill(value, wt)
-            if processID == 2:
-                hmT2P2.Fill(value, wt)
-            if processID == 3:
-                hmT2P3.Fill(value, wt)
-            if processID == 4:
-                hmT2P4.Fill(value, wt)
-            if processID >= 5 and processID <= 8:
-                hmT2P5678.Fill(value, wt)                
+#            value, nit, calls = fMET.MT2(leptons, mma, mma, sd4)
+#            hmT2.Fill(value, wt)    # Fill for all events
+#            hnit.Fill(nit, wt)
+#            hcalls.Fill(calls, wt)
+#            if processID == 1:
+#                hmT2P1.Fill(value, wt)
+#            if processID == 2:
+#                hmT2P2.Fill(value, wt)
+#            if processID == 3:
+#                hmT2P3.Fill(value, wt)
+#            if processID == 4:
+#                hmT2P4.Fill(value, wt)
+#            if processID >= 5 and processID <= 8:
+#                hmT2P5678.Fill(value, wt)                
 #            print('Event ',event,'MT2 = ',value,'nit = ',nit)
 #                hSP90mt2b4.Fill(fMET.MT2(leptons,mmb,sd4,steps,psteps),wt)            
        
@@ -532,14 +534,14 @@ while True:
             h6Code.Fill(code,wt)                        
                       
 # Automate the process of forming a new composite 4-vector
-        fpartons = fpartona.add(1000, fpartonb)
-        hmass.Fill(fpartons.mass(),wt)
+#        fpartons = fpartona.add(1000, fpartonb)
+#        hmass.Fill(fpartons.mass(),wt)
             
 # Do the same for a list of particles like Photons
-        fnull = FourVec(0, 0.0, 0.0, 0.0, 0.0)
-        fparticles = fnull.addlist(2222, Particles)
-        hphmass.Fill(fparticles.mass(),wt)
-        hparticles.Fill(nfinal,wt)         
+#        fnull = FourVec(0, 0.0, 0.0, 0.0, 0.0)
+#        fparticles = fnull.addlist(2222, Particles)
+#        hphmass.Fill(fparticles.mass(),wt)
+#        hparticles.Fill(nfinal,wt)         
  
 fout.Write()
 f.close()
