@@ -14,8 +14,8 @@ module load root
 module list
 root --version
 
-g++ -g -O3 -o ${target} ${target}.cpp `root-config --cflags --glibs`
-#g++ -g -O3 -o ${target} ${target}.cpp `root-config --cflags` -lGenVector `root-config --libs`
+#g++ -g -O3 -o ${target} ${target}.cpp `root-config --cflags --glibs`
+g++ -g -O3 -o ${target} ${target}.cpp `root-config --cflags` -lGenVector `root-config --libs`
 
 module unload root
 
