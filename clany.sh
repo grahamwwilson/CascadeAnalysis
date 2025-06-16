@@ -10,12 +10,12 @@
 target=$1
 echo 'Compiling (with ROOT libraries): '${target}.cpp
 
-module load root/6.32.2
+module load root
 module list
 root --version
 
 g++ -g -O3 -o ${target} ${target}.cpp `root-config --cflags --glibs`
 
-module unload root/6.32.2
+module unload root
 
 exit
