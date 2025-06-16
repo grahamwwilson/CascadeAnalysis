@@ -14,14 +14,14 @@ echo "Using MUMIN: ${MUMIN} GeV for minimum pT for muons"
 echo "Using program based on ${LANGUAGE} coding" 
 
 if [ "$LANGUAGE" == "cpp" ]; then
-    echo "Using C++ version"
+    echo "Using C++ based ROOT/C++ code"
     CMD=./analyse3l
     module load root
 elif [ "$LANGUAGE" == "python" ]; then
-    echo "Using python version"
-    python --version
-    CMD=python analyze.py
+    echo "Using python based ROOT/python code"
     module load root/6.32.2
+    python --version
+    CMD="python analyze.py"
 else
     echo "Unsupported language: $LANGUAGE"
     exit 1
