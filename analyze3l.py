@@ -180,13 +180,17 @@ hmT2P5678 = ROOT.TH1D("hmT2P5678",title,125,0.0,250.0)
 #hSMmt2b4= ROOT.TH1D("hWWP3mt2b4",titles,375,0.0,750.0)
 hnit = ROOT.TH1D("hnit","Number of iterations",10001,-0.5,10000.5)
 hcalls = ROOT.TH1D("hcalls","Number of calls",10001,-0.5,10000.5)
+
+hbetaz = ROOT.TH1D("hbetaz","Beta z for dileptons",100,-1.0,1.0)
+habetaz = ROOT.TH1D("habetaz","|Beta z| for dileptons",100,0.0,1.0)
+
 steps=50
 psteps=50
  
 event = 0
 
 eventWT = 1.0
-print("eventWT ",eventWT)
+print("eventWT",eventWT)
 
 while True:
 
@@ -225,6 +229,7 @@ while True:
         fZnull = FourVec(0, 0.0, 0.0, 0.0, 0.0)
         fWnull = FourVec(0, 0.0, 0.0, 0.0, 0.0)
         fJetsnull = FourVec(0, 0.0, 0.0, 0.0, 0.0)
+        fDiLeptonnull = FourVec(0, 0.0, 0.0, 0.0, 0.0, 0.0)
         fTriLeptonnull = FourVec(0, 0.0, 0.0, 0.0, 0.0, 0.0)
         fQuadLeptonnull = FourVec(0, 0.0, 0.0, 0.0, 0.0, 0.0)       
         fMETnull = FourVec(0, 0.0, 0.0, 0.0, 0.0, 0.0)       
@@ -333,6 +338,9 @@ while True:
             if leptons[0].ssdiel(leptons[1]): h2lSSeemass.Fill(leptons[0].mtwo(leptons[1]),wt)
             if leptons[0].sselmu(leptons[1]): h2lSSemmass.Fill(leptons[0].mtwo(leptons[1]),wt)
             if leptons[0].ssdimu(leptons[1]): h2lSSmmmass.Fill(leptons[0].mtwo(leptons[1]),wt)
+            fDiLepton = fDiLeptonnull.addlist(100, leptons)
+            hbetaz.Fill(fDiLepton.betaz(),wt)
+            habetaz.Fill(abs(fDiLepton.betaz()),wt)
             
 #            if processID==1:
 #            value, nit, calls = fMET.MT2(leptons, mma, mma, sd4)

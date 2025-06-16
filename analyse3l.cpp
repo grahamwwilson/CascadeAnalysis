@@ -291,7 +291,8 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
             if (leptons[0].ssdiel(leptons[1])) h2lSSeemass->Fill(leptons[0].mtwo(leptons[1]), wt);
             if (leptons[0].sselmu(leptons[1])) h2lSSemmass->Fill(leptons[0].mtwo(leptons[1]), wt);
             if (leptons[0].ssdimu(leptons[1])) h2lSSmmmass->Fill(leptons[0].mtwo(leptons[1]), wt);
-  //          hbetaz->Fill(fLeptons.Betaz(),wt);
+            hbetaz->Fill(fLeptons.Betaz(),wt);
+            habetaz->Fill(std::abs(fLeptons.Betaz()),wt);
         }
 
         else if (leptons.size() == 3) {

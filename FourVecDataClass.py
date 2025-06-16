@@ -229,6 +229,11 @@ class FourVec:
         " beta value for the 4-vector "
         p = math.sqrt( (self.px)**2 + (self.py)**2 + (self.pz)**2 )
         b = p/self.E
+        return b
+
+    def betaz(self):
+        " beta z component for the 4-vector "
+        b = self.pz/self.E
         return b        
         
     def momentum(self):
