@@ -10,22 +10,31 @@
 
 bool CompareHistograms(const TH1* h1, const TH1* h2, double tol = 1e-12) {
     if (!h1 || !h2) return false;
-    if (h1->GetNbinsX() != h2->GetNbinsX()) return false;
+    if (h1->GetDimension() != h2->GetDimension()) return false;
+    if (h1->GetNbinsX() != h2->GetNbinsX() || 
+        h1->GetNbinsY() != h2->GetNbinsY() || 
+        h1->GetNbinsZ() != h2->GetNbinsZ()) return false;
 
     bool same = true;
 
-    for (int bin = 0; bin <= h1->GetNbinsX() + 1; ++bin) { // include under/overflow
-        double c1 = h1->GetBinContent(bin);
-        double c2 = h2->GetBinContent(bin);
-        double e1 = h1->GetBinError(bin);
-        double e2 = h2->GetBinError(bin);
-        if (std::abs(c1 - c2) > tol || std::abs(e1 - e2) > tol) {
-            std::cout << "Difference at bin " << bin
-                      << ": content1 = " << c1 << ", content2 = " << c2
-                      << ", error1 = " << e1 << ", error2 = " << e2 << "\n";
-            same = false;
+    for (int x = 0; x <= h1->GetNbinsX() + 1; ++x) {
+        for (int y = 0; y <= (h1->GetDimension() >= 2 ? h1->GetNbinsY() + 1 : 0); ++y) {
+            for (int z = 0; z <= (h1->GetDimension() == 3 ? h1->GetNbinsZ() + 1 : 0); ++z) {
+                int bin = h1->GetBin(x, y, z);
+                double c1 = h1->GetBinContent(bin);
+                double c2 = h2->GetBinContent(bin);
+                double e1 = h1->GetBinError(bin);
+                double e2 = h2->GetBinError(bin);
+                if (std::abs(c1 - c2) > tol || std::abs(e1 - e2) > tol) {
+                    std::cout << "Difference at bin (" << x << "," << y << "," << z << "): "
+                              << "content1 = " << c1 << ", content2 = " << c2
+                              << ", error1 = " << e1 << ", error2 = " << e2 << "\n";
+                    same = false;
+                }
+            }
         }
     }
+
     return same;
 }
 
@@ -73,14 +82,16 @@ int main() {
             continue;
         }
 
+// Note. CompareHistograms is now generalized. Works for TH1 and TH2 as TH2 inherits from TH1.
+
         auto* h1 = dynamic_cast<TH1*>(obj1);
         auto* h2 = dynamic_cast<TH1*>(it->second);
         if (!CompareHistograms(h1, h2)) {
-            std::cout << "Mismatch in histogram: " << name << "\n";
+            std::cout << "Mismatch in histogram: " << name << " " << h1->GetEntries() << " " << h2->GetEntries() << "\n";
             allMatch = false;
         }
         else{
-            std::cout << "Histograms consistent: " << name << "\n";
+            std::cout << "Histograms consistent: " << name << " " << h1->GetEntries() << " " << h2->GetEntries() << "\n";
         }
 
     }
