@@ -17,7 +17,7 @@ if [ "$LANGUAGE" == "cpp" ]; then
     echo "Using C++ version"
     CMD=./analyse3l
     module load root
-elif [ "$LANGUAGE" == "python" ] then
+elif [ "$LANGUAGE" == "python" ]; then
     echo "Using python version"
     python --version
     CMD=python analyze.py
@@ -52,7 +52,7 @@ hadd -f histos_WZZ.root histos_WZZP.root histos_WZZM.root
 
 if [ "$LANGUAGE" == "cpp" ]; then
     module unload root
-elif [ "$LANGUAGE" == "python" ] then
+elif [ "$LANGUAGE" == "python" ]; then
     module unload root/6.32.2
 fi
 
