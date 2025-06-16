@@ -1,6 +1,8 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include "Math/Boost.h"
+#include "Math/Vector3D.h"
 #include "Math/LorentzVector.h"
 #include "Math/Minimizer.h"
 #include "Math/Factory.h"
@@ -246,6 +248,13 @@ public:
         return std::hypot(DPhiR(o), DEta(o));
     }
 
+/////FIXTHIS 
+    double CosthStar(const FourVec& o) const {
+        double dotp = v.Px()*o.Px() + v.Py()*o.Py() + v.Pz()*o.Pz(); 
+        double val = dotp/(v.P()*o.P());
+        return val;
+    }
+
     FourVec Add(int newID, const FourVec& o) const {
         auto w = v + o.v;
         return FourVec(newID, w.Px(), w.Py(), w.Pz(), w.E());
@@ -305,6 +314,18 @@ public:
         } else {
             return 0.5 * std::log((E() + Pz()) / (E() - Pz()));
         }
+    }
+
+    FourVec Boost(const ROOT::Math::XYZVector& beta) const {
+    // Construct Lorentz boost from the beta vector
+        ROOT::Math::Boost boost(beta);
+
+    // Apply the boost to the internal 4-vector
+        LorentzVector boostedVec = v;
+        boostedVec = boost(boostedVec); 
+
+    // Return a new FourVec with the same pdgID and flag, but boosted 4-vector
+        return FourVec(pdgID, boostedVec.Px(), boostedVec.Py(), boostedVec.Pz(), boostedVec.E(), flag);
     }
 
 };

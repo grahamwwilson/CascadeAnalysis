@@ -70,7 +70,7 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
             break;
         }
 
-        if (event%100000 ==0 || event <= 1) std::cout << "event " << event << std::endl;
+        if (event%100000 ==0 || event <= 10) std::cout << "event " << event << std::endl;
 
         // Read the two initial partons lines
         std::string partonALine, partonBLine;
@@ -291,8 +291,35 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
             if (leptons[0].ssdiel(leptons[1])) h2lSSeemass->Fill(leptons[0].mtwo(leptons[1]), wt);
             if (leptons[0].sselmu(leptons[1])) h2lSSemmass->Fill(leptons[0].mtwo(leptons[1]), wt);
             if (leptons[0].ssdimu(leptons[1])) h2lSSmmmass->Fill(leptons[0].mtwo(leptons[1]), wt);
+
+// Add the betaz and costh* variables
             hbetaz->Fill(fLeptons.Betaz(),wt);
             habetaz->Fill(std::abs(fLeptons.Betaz()),wt);
+
+//FourVec muon(13, 10.0, 0.0, 30.0, 32.0);
+//ROOT::Math::XYZVector beta(0.0, 0.0, 0.6);  // boost along z with beta = 0.6
+//FourVec boostedMuon = muon.Boost(beta);
+//boostedMuon.Print();
+
+//            fLeptons.Print();
+// Boost decay leptons back to the di-lepton rest-frame
+            ROOT::Math::XYZVector beta(-fLeptons.Px()/fLeptons.E(), -fLeptons.Py()/fLeptons.E(), -fLeptons.Pz()/fLeptons.E() );
+            FourVec lepton0CM = leptons[0].Boost(beta);
+
+//            FourVec lepton1CM = leptons[1].Boost(beta);
+//            std::cout << "M = " << fLeptons.Mass() << " Boost beta = (" << beta.X() << ", " << beta.Y() << ", " << beta.Z() << ")\n";
+//            leptons[0].Print();
+//            lepton0CM.Print();
+//            leptons[1].Print();
+//            lepton1CM.Print();
+//            std::cout << "Lepton0 costh* " << lepton0CM.CosthStar(fLeptons) << std::endl;
+//            std::cout << "Lepton1 costh* " << lepton1CM.CosthStar(fLeptons) << std::endl;
+// As the two leptons are back-to-back in the rest-frame can simply take the absolute value. 
+// It is not like we have an e+e- or p pbar collider with a preferred direction
+
+            double acosthstar = std::abs(lepton0CM.CosthStar(fLeptons));
+            hacosthstar->Fill(acosthstar,wt);
+
         }
 
         else if (leptons.size() == 3) {

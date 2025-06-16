@@ -164,5 +164,6 @@
     TH1D* hcalls = new TH1D("hcalls", "Number of calls", 10001, -0.5, 10000.5);
 
     TH1D* hbetaz = new TH1D("hbetaz","Beta z for dileptons",100,-1.0,1.0);
-    TH1D* habetaz = new TH1D("habetaz","|Beta z| for dileptons",100,0.0,1.0);
+    TH1D* habetaz = new TH1D("habetaz","|Beta z| for dileptons; |#beta_{z}|",50,0.0,1.0);
+    TH1D* hacosthstar = new TH1D("hacosthstar","costh* for dilepton; |cos#theta*|",50,0.0,1.0);
 
