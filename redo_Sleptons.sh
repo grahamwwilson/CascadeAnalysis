@@ -11,22 +11,42 @@
 
 ELMIN=$1
 MUMIN=$2
+LANGUAGE=${3:-"cpp"}
 
 echo "Using ELMIN: ${ELMIN} GeV for minimum pT for electrons"
 echo "Using MUMIN: ${MUMIN} GeV for minimum pT for muons" 
+echo "Using program based on ${LANGUAGE} coding" 
 
-module load root/6.32.2
+if [ "$LANGUAGE" == "cpp" ]; then
+    echo "Using C++ based ROOT/C++ code"
+    CMD=./analyse3l
+    module load root
+elif [ "$LANGUAGE" == "python" ]; then
+    echo "Using python based ROOT/python code"
+    module load root/6.32.2
+    python --version
+    CMD="python analyze.py"
+else
+    echo "Unsupported language: $LANGUAGE"
+    exit 1
+fi
+
 module list
 root --version
-python --version
-python analyze.py -h
 
-python analyze.py -w "Sleptons-LSP90"  -t 400.0 -l 8.3681e2 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
-python analyze.py -w "Sleptons-LSP220" -t 400.0 -l 2.2893e4 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
-python analyze.py -w "Sleptons-LSP270" -t 400.0 -l 2.2893e4 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
-python analyze.py -w "Sleptons-LSP260" -t 400.0 -l 2.2893e4 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
+${CMD} -h
 
-module unload root/6.32.2
+${CMD} -w "Sleptons-LSP90"  -t 400.0 -l 8.3681e2 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "Sleptons-LSP220" -t 400.0 -l 2.2893e4 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "Sleptons-LSP270" -t 400.0 -l 2.2893e4 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "Sleptons-LSP260" -t 400.0 -l 2.2893e4 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
+
+if [ "$LANGUAGE" == "cpp" ]; then
+    module unload root
+elif [ "$LANGUAGE" == "python" ]; then
+    module unload root/6.32.2
+fi
+
 module list
 
 exit

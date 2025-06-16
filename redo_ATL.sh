@@ -11,26 +11,45 @@
 
 ELMIN=$1
 MUMIN=$2
+LANGUAGE=${3:-"cpp"}
 
 echo "Using ELMIN: ${ELMIN} GeV for minimum pT for electrons"
 echo "Using MUMIN: ${MUMIN} GeV for minimum pT for muons" 
+echo "Using program based on ${LANGUAGE} coding" 
 
-module load root/6.32.2
+if [ "$LANGUAGE" == "cpp" ]; then
+    echo "Using C++ based ROOT/C++ code"
+    CMD=./analyse3l
+    module load root
+elif [ "$LANGUAGE" == "python" ]; then
+    echo "Using python based ROOT/python code"
+    module load root/6.32.2
+    python --version
+    CMD="python analyze.py"
+else
+    echo "Unsupported language: $LANGUAGE"
+    exit 1
+fi
+
 module list
 root --version
-python --version
-python analyze.py -h
+
+${CMD} -h
 
 # Order prioritizes 350
-python analyze.py -w "ATLAS-350-200-100"  -t 400.0 -l 4.6153e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "ATLAS-350-200-100"  -t 400.0 -l 4.6153e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "ATLAS-250-150-100"  -t 400.0 -l 1.2003e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "ATLAS-300-200-100"  -t 400.0 -l 2.4665e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "ATLAS-400-200-100"  -t 400.0 -l 8.0943e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "ATLAS-450-200-100"  -t 400.0 -l 1.3504e5 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "ATLAS-550-200-100"  -t 400.0 -l 3.3610e5 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
 
-python analyze.py -w "ATLAS-250-150-100"  -t 400.0 -l 1.2003e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
-python analyze.py -w "ATLAS-300-200-100"  -t 400.0 -l 2.4665e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
-python analyze.py -w "ATLAS-400-200-100"  -t 400.0 -l 8.0943e4 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
-python analyze.py -w "ATLAS-450-200-100"  -t 400.0 -l 1.3504e5 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
-python analyze.py -w "ATLAS-550-200-100"  -t 400.0 -l 3.3610e5 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
+if [ "$LANGUAGE" == "cpp" ]; then
+    module unload root
+elif [ "$LANGUAGE" == "python" ]; then
+    module unload root/6.32.2
+fi
 
-module unload root/6.32.2
 module list
 
 exit
