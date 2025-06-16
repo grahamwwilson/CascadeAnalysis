@@ -259,14 +259,23 @@ public:
 // Accept muon if |eta| < 2.4 and pt > ptMin
     bool accMu(double ptMin = 3.0) const {
         return std::abs(v.eta()) < 2.4 && v.Pt() > ptMin;
-    }    
+    }
+
+    double mtp(const FourVec& o) const {
+        double m1 = Mass();
+        double m2 = 0.0;     // Assign NO mass to the MET 4-vector in this calculation
+        double ET1 = std::sqrt(m1*m1 + Pt()*Pt());
+        double ET2 = o.Pt();
+        double dpt = Px()*o.Px() + Py()*o.Py();
+        return std::sqrt(m1*m1 + 2.0*(ET1*ET2 - dpt));
+    } 
 
     double MTp(const FourVec& o) const {
         double m1 = Mass(), m2 = o.Mass();
         double ET1 = std::sqrt(m1*m1 + Pt()*Pt());
         double ET2 = std::sqrt(m2*m2 + o.Pt()*o.Pt());
         double dpt = Px()*o.Px() + Py()*o.Py();
-        return std::sqrt(m1*m1 + m2*m2 + 2*(ET1*ET2 - dpt));
+        return std::sqrt(m1*m1 + m2*m2 + 2.0*(ET1*ET2 - dpt));
     }
 
     // Compute transverse mass (using eqn from arXiv:2503.13135)
