@@ -7,23 +7,30 @@
 
 ELMIN=$1
 MUMIN=$2
+LANGUAGE=${3:-"cpp"}
 
 echo "Using ELMIN: ${ELMIN} GeV for minimum pT for electrons"
 echo "Using MUMIN: ${MUMIN} GeV for minimum pT for muons" 
+echo "Using program based on ${LANGUAGE} coding" 
 
-#module load root/6.32.2
-#module list
-#root --version
-#python --version
-#python analyze.py -h
+if [ "$LANGUAGE" == "cpp" ]; then
+    echo "Using C++ version"
+    CMD=./analyse3l
+    module load root
+elif [ "$LANGUAGE" == "python" ] then
+    echo "Using python version"
+    python --version
+    CMD=python analyze.py
+    module load root/6.32.2
+else
+    echo "Unsupported language: $LANGUAGE"
+    exit 1
+fi
 
-module load root
 module list
 root --version
 
-CMD=./analyse3l
 ${CMD} -h
-
 
 ${CMD} -w "WZZP1" -t 400.0 -l 3.9939e5 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
 ${CMD} -w "WZZP2" -t 400.0 -l 1.9872e5 -p "WF-V2" -e ${ELMIN} -m ${MUMIN}
@@ -43,8 +50,12 @@ hadd -f histos_WZZP.root histos_WZZP1.root histos_WZZP2.root histos_WZZP3.root h
 hadd -f histos_WZZM.root histos_WZZM1.root histos_WZZM2.root histos_WZZM3.root histos_WZZM4.root histos_WZZM5.root histos_WZZM6.root
 hadd -f histos_WZZ.root histos_WZZP.root histos_WZZM.root
 
-#module unload root/6.32.2
-module unload root
+if [ "$LANGUAGE" == "cpp" ]; then
+    module unload root
+elif [ "$LANGUAGE" == "python" ] then
+    module unload root/6.32.2
+fi
+
 module list
 
 exit
