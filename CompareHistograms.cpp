@@ -55,8 +55,8 @@ void ScanDirectory(TDirectory* dir, std::map<std::string, TObject*>& outMap, con
 int main() {
 
    // 🔒 Hardcoded ROOT file names
-    const std::string file1Name = "histos_ATLAS-250-150-100_PY.root";
-    const std::string file2Name = "histos_ATLAS-250-150-100_CPP.root";
+    const std::string file1Name = "Test/histos_WZZ_python.root";
+    const std::string file2Name = "Test/histos_WZZ_cpp.root";
 
     std::unique_ptr<TFile> f1(TFile::Open(file1Name.c_str()));
     std::unique_ptr<TFile> f2(TFile::Open(file2Name.c_str()));
