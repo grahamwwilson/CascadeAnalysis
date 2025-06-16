@@ -70,6 +70,8 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
             break;
         }
 
+        if (event%100000 ==0 || event <= 1) std::cout << "event " << event << std::endl;
+
         // Read the two initial partons lines
         std::string partonALine, partonBLine;
         std::getline(infile, partonALine);
@@ -169,9 +171,6 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
                     hmupT->Fill(particle.Pt(),wt);   
                 }
             }
-            else if (absId == 14) {
-                Wlist.push_back(particle);
-            }
             else if (absId == 12 || absId == 14 || absId == 16) {
                 Nulist.push_back(particle);
                 hnupT->Fill(particle.Pt(), wt);
@@ -207,6 +206,7 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
         // Combine all MET components into one vector:
         FourVec fMET(0, 0.0, 0.0, 0.0, 0.0);
         for (const auto& metp : METlist) {
+//           metp.Print();
             fMET += metp;
         }
 
@@ -365,8 +365,10 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
             }
                         
             hTriLeptonMass->Fill(fLeptons.Mass(), wt);
+//            std::cout << "Event " <<  event << " METThree = " << fMET.Pt() << std::endl;
+//            fMET.Print();
             hMETThree->Fill(fMET.Pt(), wt);
-            hmT->Fill(fLeptons.MTp(fMET), wt);
+            hmT->Fill(fLeptons.mtp(fMET), wt);
             hTriLRap->Fill(fLeptons.rapidity(), wt);
 
             int l3code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() - 2;
@@ -445,7 +447,7 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
             hPtFour->Fill(leptons[3].Pt(), wt);
 
             hMETFour->Fill(fMET.Pt(), wt);
-            hmTFour->Fill(fLeptons.MTp(fMET), wt);
+            hmTFour->Fill(fLeptons.mtp(fMET), wt);
 
             int code = leptons[0].lflavor() + leptons[1].lflavor() + leptons[2].lflavor() + leptons[3].lflavor();
             h4Code->Fill(code, wt);

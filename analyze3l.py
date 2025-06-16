@@ -138,7 +138,7 @@ hwhich2 = ROOT.TH2D("hwhich2","; Process ID; N Accepted Leptons",12,0.5,12.5,7,-
 hprocess= ROOT.TH1D("hprocess","; Process ID; ",12,0.5,12.5)
 
 hOnZ1 = ROOT.TH1D("hOnZ1","; (mll - mZ); ",100,-100.0,100.0)
-hOnZ2 = ROOT.TH2D("hOnZ2","; (mll - mZ); ",20,-20.0,20.0,20,-20.0,20.0)
+hOnZ2 = ROOT.TH2D("hOnZ2","; (mll - mZ)_0; (mll - mz)_1",20,-20.0,20.0,20,-20.0,20.0)
 
 h2lOnZ = ROOT.TH1D("h2lOnZ","; (mll - mZ); ",150,-100.0,200.0)
 h3lOnZ = ROOT.TH1D("h3lOnZ","; (mll - mZ); ",150,-100.0,200.0)
@@ -207,14 +207,14 @@ while True:
         event += 1
         
         if nevsToRead > -1 and event > nevsToRead:
-            print("Stopping event reading after ",event-1,"events")
+            print("Stopping event reading after",event-1,"events")
             break
 
         partona = (f.readline()).split()
         partonb = (f.readline()).split() 
     
-        if event%100000 ==0:
-            print("event ",event)
+        if event%100000 ==0 or event <= 1:
+            print("event",event)
        
 # Initial state partons     
         fpartona = FourVec( int(partona[0]), float(partona[6]), float(partona[7]), float(partona[8]), float(partona[9]) )    
@@ -268,16 +268,18 @@ while True:
                     hmuEta.Fill(particle.eta(),wt)
                     hmuRap.Fill(particle.rapidity(),wt)
                     hmupT.Fill(particle.pt(),wt)                  
-            if abs(particle.pdgID) == 14:
-                Wlist.append(particle)
+#            if abs(particle.pdgID) == 14:
+#                Wlist.append(particle)
             if abs(particle.pdgID) == 12 or abs(particle.pdgID) == 14 or abs(particle.pdgID) == 16:
                 Nulist.append(particle)
                 hnupT.Fill(particle.pt(),wt)
-                METlist.append(particle)                
+                METlist.append(particle)
+#                particle.print()                
             if particle.pdgID == 21 or abs(particle.pdgID) < 7:
                 Jets.append(particle)
             if particle.pdgID == 1000022:
                 METlist.append(particle)
+#                particle.print()
                 
 #           particle.print()
             hcosth.Fill(particle.acosth(),wt)
@@ -292,6 +294,7 @@ while True:
         nmu = 0
        
         fMET = fMETnull.addlist(101, METlist)
+#        fMET.print()
         
 # Make "OnZ" information for all OS lepton pairs regardless of lepton multiplicity
         dmll = []
@@ -304,7 +307,7 @@ while True:
         ZCUT = 12.5
         OnZFlag = False
         if sorted_dmll:
-            if dmll[0] > -ZCUT and dmll[0] < ZCUT:
+            if sorted_dmll[0] > -ZCUT and sorted_dmll[0] < ZCUT:
                 OnZFlag = True       
        
         if len(leptons) == 2:
@@ -408,6 +411,7 @@ while True:
            
             fTriLepton = fTriLeptonnull.addlist(100, leptons)
             hTriLeptonMass.Fill(fTriLepton.mass(),wt)
+#            print('Event ',event,' METThree = ',fMET.pt())
             hMETThree.Fill(fMET.pt(),wt)           
             hmT.Fill(fTriLepton.mtp(fMET),wt)
             hTriLRap.Fill(fTriLepton.rapidity(),wt)
@@ -441,13 +445,13 @@ while True:
             nOnZ = 0
             
             if nOSSF==1:
-                hOnZ1.Fill(dmll[0],wt)
-                if abs(dmll[0]) < 10.0:
+                hOnZ1.Fill(sorted_dmll[0],wt)
+                if abs(sorted_dmll[0]) < 10.0:
                     nOnZ = 1
             if nOSSF==2:
-                m1 = dmll[0]
-                m2 = dmll[1]
-                hOnZ2.Fill(dmll[0],dmll[1],wt)
+                m1 = sorted_dmll[0]
+                m2 = sorted_dmll[1]
+                hOnZ2.Fill(sorted_dmll[0],sorted_dmll[1],wt)
                 if abs(m1) < 10.0:
                     nOnZ += 1
                 if abs(m2) < 10.0:
