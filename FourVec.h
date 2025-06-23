@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <limits>
 #include "Math/Boost.h"
 #include "Math/Vector3D.h"
 #include "Math/LorentzVector.h"
@@ -15,8 +16,18 @@ public:
     int flag;
     LorentzVector v;
 
+    // Basic (px, py, pz, E) construction
     explicit FourVec(int id, double px, double py, double pz, double E, int f=1)
       : pdgID(id), flag(f), v(px,py,pz,E) {}
+
+    // Static factory method for (pt, eta, phi, m) construction
+    static FourVec FromPtEtaPhiM(int id, double pt, double eta, double phi, double m, int f = 1) {
+        double px = pt * std::cos(phi);
+        double py = pt * std::sin(phi);
+        double pz = pt * std::sinh(eta);
+        double E  = std::sqrt(px * px + py * py + pz * pz + m * m);
+        return FourVec(id, px, py, pz, E, f);
+    }
 
     FourVec& operator+=(const FourVec& other) {
         this->v += other.v;
