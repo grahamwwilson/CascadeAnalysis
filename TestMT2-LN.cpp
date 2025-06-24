@@ -31,7 +31,7 @@ int main(int argc, char * argv[]) {
     const double invis_massA    = 100; // GeV
     const double invis_massB    = 100; // GeV
 
-    double desiredPrecisionOnMt2 = 0; // Must be >=0.  If 0 alg aims for machine precision.
+    double desiredPrecisionOnMt2 = 0.0001; // Must be >=0.  If 0 alg aims for machine precision.
                                       // If >0, MT2 computed to supplied absolute precision.
 
     std::cout << "Going to calculate MT2 with\n"
@@ -44,6 +44,8 @@ int main(int argc, char * argv[]) {
     
     // Now that we have some visible momenta and some missing transverse
     // momentum we can calculate MT2.
+
+    asymm_mt2_lester_bisect::disableCopyrightMessage();
 
     double MT2 = asymm_mt2_lester_bisect::get_mT2(
                massOfSystemA, pxOfSystemA, pyOfSystemA,

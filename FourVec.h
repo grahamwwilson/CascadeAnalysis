@@ -7,7 +7,9 @@
 #include "Math/LorentzVector.h"
 #include "Math/Minimizer.h"
 #include "Math/Factory.h"
+#include "asymm_mt2_lester_bisect.h"  // Lester-Nachman MT2 implementation
 
+// FIXME should we change to a basic PxPyPzM representation?
 using LorentzVector = ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>>;
 
 class FourVec {
@@ -337,6 +339,48 @@ public:
 
     // Return a new FourVec with the same pdgID and flag, but boosted 4-vector
         return FourVec(pdgID, boostedVec.Px(), boostedVec.Py(), boostedVec.Pz(), boostedVec.E(), flag);
+    }
+
+    double MT2(const FourVec& o, const FourVec& vmiss, double invis_massA, double invis_massB, 
+               double desiredPrecisionOnMt2 = 0.0001, bool debug=false) const {
+
+// Assemble quantities from the appropriate elements of the 3 specified 4-vectors (this=A, o=B, vmiss=MET)
+
+// Best to adjust the masses according to PDGID
+
+        double mA = Mass();  double pxA = Px();  double pyA = Py();
+        double mB = o.Mass();  double pxB = o.Px();  double pyB = o.Py();
+        double pxMiss = vmiss.Px();  double pyMiss = vmiss.Py();
+
+// Calculate MT2 using Lester-Nachman asymmetric MT2 bisection implementation (see 1411.4312).
+// For this it is allowed to have invis_massA != invis_massB.
+
+        const double ME  = 0.5109989500e-3;
+        const double MMU = 0.1056583755;
+
+// Fix up numerical precision issues with 4-vector masses associated with using the pxpypzE 4-vector constructor for leptons
+        if( this->lflavor()== 1 ) mA = ME;
+        if( this->lflavor()== 2 ) mA = MMU;
+        if( o.lflavor()== 1 ) mB = ME;
+        if( o.lflavor()== 2 ) mB = MMU;
+
+        double MT2LN = asymm_mt2_lester_bisect::get_mT2(mA, pxA, pyA, mB, pxB, pyB,
+                       pxMiss, pyMiss,invis_massA, invis_massB, desiredPrecisionOnMt2);
+
+// TODO Add some debug printing
+
+/*
+        if(MT2LN < 0.12){
+            std::cout << "Verbose output for low MT2 " << std::endl;
+            std::cout << "A system " << mA << " " << pxA << " " << pyA << std::endl;
+            std::cout << "B system " << mB << " " << pxB << " " << pyB << std::endl;
+            std::cout << "pTmiss   " << pxMiss << " " << pyMiss << std::endl;
+            std::cout << "MT2 = " << std::setprecision(12) << MT2LN << std::endl;
+        }
+*/
+
+        return MT2LN;
+
     }
 
 };

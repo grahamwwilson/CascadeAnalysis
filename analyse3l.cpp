@@ -15,6 +15,9 @@
 
 int Analyze(int nevsToRead, std::string which, double target, double lumi, std::string prefix, double elPtMin, double muPtMin){
 
+// Turn-off copyright notice
+    asymm_mt2_lester_bisect::disableCopyrightMessage();    
+
     double wt = target / lumi;
     std::cout << "Using event weight of " << wt << std::endl;
 
@@ -319,6 +322,25 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
 
             double acosthstar = std::abs(lepton0CM.CosthStar(fLeptons));
             hacosthstar->Fill(acosthstar,wt);
+
+// Calculate MT2 using the Lester-Nachman implementation for various assumptions on LSP mass
+            double MT2LN0   = leptons[0].MT2(leptons[1], fMET,   0.0,   0.0,  0.0);
+            double MT2LN90  = leptons[0].MT2(leptons[1], fMET,  90.0,  90.0);
+            double MT2LN150 = leptons[0].MT2(leptons[1], fMET, 150.0, 150.0);
+            double MT2LN200 = leptons[0].MT2(leptons[1], fMET, 200.0, 200.0);
+            double MT2LN220 = leptons[0].MT2(leptons[1], fMET, 220.0, 220.0);
+            double MT2LN260 = leptons[0].MT2(leptons[1], fMET, 260.0, 260.0);
+            double MT2LN270 = leptons[0].MT2(leptons[1], fMET, 270.0, 270.0);
+
+            hMT2LNTINY->Fill(MT2LN0, wt);
+            hMT2LNSMALL->Fill(MT2LN0, wt);
+            hMT2LN0->Fill(MT2LN0, wt);
+            hMT2LN90->Fill(MT2LN90, wt);
+            hMT2LN150->Fill(MT2LN150, wt);
+            hMT2LN200->Fill(MT2LN200, wt);
+            hMT2LN220->Fill(MT2LN220, wt);
+            hMT2LN260->Fill(MT2LN260, wt);
+            hMT2LN270->Fill(MT2LN270, wt);
 
         }
 

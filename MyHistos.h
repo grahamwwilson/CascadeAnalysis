@@ -145,25 +145,20 @@
     hSROSon->GetXaxis()->LabelsOption("h");
     hSROSoff->GetXaxis()->LabelsOption("h");
 
-    // MT2 histograms
-    double ptmax = 550;
-    double sd4 = 24.265 * 4;
-    double mma = 0.0;
-    std::string heading = "MT2";
-    std::string xaxis = "MT2 [GeV]";
-    std::string title = heading + ";" + xaxis + "; Weighted Event Count";
-
-    TH1D* hmT2 = new TH1D("hmT2", title.c_str(), 125, 0.0, 250.0);
-    TH1D* hmT2P1 = new TH1D("hmT2P1", title.c_str(), 125, 0.0, 250.0);
-    TH1D* hmT2P2 = new TH1D("hmT2P2", title.c_str(), 125, 0.0, 250.0);
-    TH1D* hmT2P3 = new TH1D("hmT2P3", title.c_str(), 125, 0.0, 250.0);
-    TH1D* hmT2P4 = new TH1D("hmT2P4", title.c_str(), 125, 0.0, 250.0);
-    TH1D* hmT2P5678 = new TH1D("hmT2P5678", title.c_str(), 125, 0.0, 250.0);
-
     TH1D* hnit = new TH1D("hnit", "Number of iterations", 10001, -0.5, 10000.5);
     TH1D* hcalls = new TH1D("hcalls", "Number of calls", 10001, -0.5, 10000.5);
 
     TH1D* hbetaz = new TH1D("hbetaz","Beta z for dileptons",100,-1.0,1.0);
     TH1D* habetaz = new TH1D("habetaz","|Beta z| for dileptons; |#beta_{z}|",50,0.0,1.0);
     TH1D* hacosthstar = new TH1D("hacosthstar","costh* for dilepton; |cos#theta*|",50,0.0,1.0);
+
+    TH1D* hMT2LNTINY = new TH1D("hMT2LNTINY", "M(IA), M(IB) = 0;  MT2 (GeV); Events per bin", 1000, 0.0, 0.001);
+    TH1D* hMT2LNSMALL = new TH1D("hMT2LNSMALL", "M(IA), M(IB) = 0;  MT2 (GeV); Events per bin", 1000, 0.0, 1.0);
+    TH1D* hMT2LN0 = new TH1D("hMT2LN0", "M(IA), M(IB) = 0;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
+    TH1D* hMT2LN90 = new TH1D("hMT2LN90", "M(IA), M(IB) = 90;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
+    TH1D* hMT2LN150 = new TH1D("hMT2LN150", "M(IA), M(IB) = 150;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
+    TH1D* hMT2LN200 = new TH1D("hMT2LN200", "M(IA), M(IB) = 200;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
+    TH1D* hMT2LN220 = new TH1D("hMT2LN220", "M(IA), M(IB) = 220;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
+    TH1D* hMT2LN260 = new TH1D("hMT2LN260", "M(IA), M(IB) = 260;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
+    TH1D* hMT2LN270 = new TH1D("hMT2LN270", "M(IA), M(IB) = 270;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
 
