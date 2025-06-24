@@ -154,11 +154,11 @@
 
     TH1D* hMT2LNTINY = new TH1D("hMT2LNTINY", "M(IA), M(IB) = 0;  MT2 (GeV); Events per bin", 1000, 0.0, 0.001);
     TH1D* hMT2LNSMALL = new TH1D("hMT2LNSMALL", "M(IA), M(IB) = 0;  MT2 (GeV); Events per bin", 1000, 0.0, 1.0);
-    TH1D* hMT2LN0 = new TH1D("hMT2LN0", "M(IA), M(IB) = 0;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
-    TH1D* hMT2LN90 = new TH1D("hMT2LN90", "M(IA), M(IB) = 90;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
-    TH1D* hMT2LN150 = new TH1D("hMT2LN150", "M(IA), M(IB) = 150;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
-    TH1D* hMT2LN200 = new TH1D("hMT2LN200", "M(IA), M(IB) = 200;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
-    TH1D* hMT2LN220 = new TH1D("hMT2LN220", "M(IA), M(IB) = 220;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
-    TH1D* hMT2LN260 = new TH1D("hMT2LN260", "M(IA), M(IB) = 260;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
-    TH1D* hMT2LN270 = new TH1D("hMT2LN270", "M(IA), M(IB) = 270;  MT2 (GeV); Events per bin", 400, 0.0, 800.0);
+    TH1D* hMT2LN0 = new TH1D("hMT2LN0", "M(IA), M(IB) = 0;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
+    TH1D* hMT2LN90 = new TH1D("hMT2LN90", "M(IA), M(IB) = 90;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
+    TH1D* hMT2LN150 = new TH1D("hMT2LN150", "M(IA), M(IB) = 150;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
+    TH1D* hMT2LN200 = new TH1D("hMT2LN200", "M(IA), M(IB) = 200;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
+    TH1D* hMT2LN220 = new TH1D("hMT2LN220", "M(IA), M(IB) = 220;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
+    TH1D* hMT2LN260 = new TH1D("hMT2LN260", "M(IA), M(IB) = 260;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
+    TH1D* hMT2LN270 = new TH1D("hMT2LN270", "M(IA), M(IB) = 270;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
 
