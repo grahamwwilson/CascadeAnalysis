@@ -37,6 +37,8 @@ root --version
 ${CMD} -h
 
 ${CMD} -w "TSlepSlep220-200"  -t 400.0 -l 4.0288e3 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "TSlepSlep250-200"  -t 400.0 -l 6.5892e3 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
+${CMD} -w "TSlepSlep300-200"  -t 400.0 -l 1.3468e4 -p "WF-V1" -e ${ELMIN} -m ${MUMIN}
 
 if [ "$LANGUAGE" == "cpp" ]; then
     module unload root
