@@ -54,6 +54,8 @@ time ./redo_New4l_Mopup2.sh ${ELMIN} ${MUMIN} ${LANG}
 # are not included explicitly as separate contributions in the plots).
 time ./assembleSM.sh ${LANG}
 
+time ./redo_TSlepSlep.sh ${ELMIN} ${MUMIN} ${LANG}
+
 # The four Sleptons files. Once the sleptons_90 file finishes we can display 
 # the standard histograms.
 time ./redo_Sleptons.sh ${ELMIN} ${MUMIN} ${LANG}
