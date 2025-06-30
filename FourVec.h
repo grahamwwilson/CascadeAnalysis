@@ -9,47 +9,94 @@
 #include "Math/Factory.h"
 #include "asymm_mt2_lester_bisect.h"  // Lester-Nachman MT2 implementation
 
-// FIXME should we change to a basic PxPyPzM representation?
-using LorentzVector = ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>>;
+#include "FourVecUtils.h" // Define my own PxPyPzM4D as it seems that the ROOT version is incompatible.
+
+// Use PxPyPzM to store mass precisely
+//using LorentzVectorM = ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>>;
+using LorentzVectorM = ROOT::Math::LorentzVector<FourVecUtils::PxPyPzM4D<double>>;
+using LorentzVectorE = ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>>;
 
 class FourVec {
 public:
     int pdgID;
     int flag;
-    LorentzVector v;
+    LorentzVectorM v;
 
-    // Basic (px, py, pz, E) construction
-    explicit FourVec(int id, double px, double py, double pz, double E, int f=1)
-      : pdgID(id), flag(f), v(px,py,pz,E) {}
+    // Basic constructor using (px, py, pz, m)
+    explicit FourVec(int id, double px, double py, double pz, double m, int f = 1)
+        : pdgID(id), flag(f), v(px, py, pz, m) {}
 
-    // Static factory method for (pt, eta, phi, m) construction
+    // Optional factory method using (pt, eta, phi, m) constructor
     static FourVec FromPtEtaPhiM(int id, double pt, double eta, double phi, double m, int f = 1) {
         double px = pt * std::cos(phi);
         double py = pt * std::sin(phi);
         double pz = pt * std::sinh(eta);
-        double E  = std::sqrt(px * px + py * py + pz * pz + m * m);
-        return FourVec(id, px, py, pz, E, f);
+        return FourVec(id, px, py, pz, m, f);
     }
 
+    // Optional factory method for (px, py, pz, E) for backwards compatibility. 
+    // (but need to switch to this ...) - preferred is to use the (px, py, pz, m) case directly.
+    static FourVec FromPxPyPzE(int id, double px, double py, double pz, double E, int f = 1) {
+        double msq = E*E - (px*px + py*py + pz*pz);
+        double m  = msq > 0 ? std::sqrt(msq) : 0.0;
+        return FourVec(id, px, py, pz, m, f);
+    }
+
+    // Four-momentum addition (physically correct)
     FourVec& operator+=(const FourVec& other) {
-        this->v += other.v;
+        LorentzVectorE v1 = AsPxPyPzE();
+        LorentzVectorE v2 = other.AsPxPyPzE();
+        LorentzVectorE sum = v1 + v2;
+        v = ToPxPyPzM(sum);
         return *this;
     }
 
-    // You may also want to define operator+
+    // Non-mutating 4-vector addition
     FourVec operator+(const FourVec& other) const {
-        FourVec result(*this);  // Copy current FourVec
-        result += other;
+        FourVec result = *this;
+        result += other;  // Reuse operator+= logic
         return result;
     }
 
+    // Convert to energy-based 4-vector
+    LorentzVectorE AsPxPyPzE() const {
+        double px = v.Px();
+        double py = v.Py();
+        double pz = v.Pz();
+        double m  = v.M();
+        double E  = std::sqrt(px*px + py*py + pz*pz + m*m);
+        return LorentzVectorE(px, py, pz, E);
+    }
+
+    // Convert from E-based to M-based
+    static LorentzVectorM ToPxPyPzM(const LorentzVectorE& ve) {
+        double px = ve.Px();
+        double py = ve.Py();
+        double pz = ve.Pz();
+        double E  = ve.E();
+        double m2 = E*E - (px*px + py*py + pz*pz);
+        double m  = m2 > 0 ? std::sqrt(m2) : 0.0;
+        return LorentzVectorM(px, py, pz, m);
+    }
+
+   // Accessors
+    double Px() const { return v.Px(); }
+    double Py() const { return v.Py(); }
+    double Pz() const { return v.Pz(); }
+    double M()  const { return v.M(); }
+    double P()  const { return std::sqrt(Px()*Px() + Py()*Py() + Pz()*Pz()); }
+    double E()  const { return std::sqrt(Px()*Px() + Py()*Py() + Pz()*Pz() + M()*M()); }
+    double Pt() const { return std::sqrt(Px()*Px() + Py()*Py()); }
+    double Eta() const { return v.Eta(); }
+    double Phi() const { return v.Phi(); }
+    double Beta() const { return P()/E(); }
+    double Betaz() const { return Pz()/E(); }
+
     void Print() const {
-        std::cout << "4-vector has pdgID " << pdgID
-                  << " (" << v.Px()<<", "<<v.Py()<<", "<<v.Pz()<<", "<<v.E()<<")"
-                  << " flag="<<flag
-                  << " m="<<Mass()<<" pt="<<Pt()
-                  << " costh="<<CosTh()<<" qsinth="<<QSinth()
-                  << "\n";
+        std::cout << "4-vector has pdgID " << pdgID << ", Flag=" << flag 
+                  << " (" << Px() <<", "<< Py()<<", "<< Pz()<<", "<< E()<<", " << M() 
+                  << ", pt=" << Pt() << " costh=" << CosTh() << " qsinth="<<QSinth()
+                  << std::endl;
     }
 
     double Theta() const {
@@ -228,23 +275,14 @@ public:
         return (p>1e-6 ? v.Pz()/p : 0);
     }
 
-    double Pt() const { return v.Pt(); }
-    double Mass() const { return v.M(); }
+    double Mass() const { return v.M(); }   // redundant?
 
-    double E() const { return v.E(); }
-    double P() const { return v.P(); }
-    double Px() const { return v.Px(); }
-    double Py() const { return v.Py(); }
-    double Pz() const { return v.Pz(); }        
-    double Beta() const { return v.P()/v.E(); }
-    double Betaz() const { return v.Pz()/v.E(); }
+
 
     double QSinth() const {
         double s = Pt()/P();
         return (v.Pz()<0 ? -s : s);
     }
-
-    double Phi() const { return v.Phi(); }
 
     double DPhiR(const FourVec& o) const {
         double d = o.Phi() - Phi();
@@ -270,7 +308,7 @@ public:
 
     FourVec Add(int newID, const FourVec& o) const {
         auto w = v + o.v;
-        return FourVec(newID, w.Px(), w.Py(), w.Pz(), w.E());
+        return FourVec(newID, w.Px(), w.Py(), w.Pz(), w.M());
     }
     
 // Accept electron if |eta| < 2.5 and pt > ptMin
@@ -329,22 +367,23 @@ public:
         }
     }
 
+
     FourVec Boost(const ROOT::Math::XYZVector& beta) const {
     // Construct Lorentz boost from the beta vector
         ROOT::Math::Boost boost(beta);
 
     // Apply the boost to the internal 4-vector
-        LorentzVector boostedVec = v;
-        boostedVec = boost(boostedVec); 
+        LorentzVectorM boosted = boost(v);
 
-    // Return a new FourVec with the same pdgID and flag, but boosted 4-vector
-        return FourVec(pdgID, boostedVec.Px(), boostedVec.Py(), boostedVec.Pz(), boostedVec.E(), flag);
+    // Return a new FourVec with the same pdgID and flag, but boosted 4-vector. 
+    // Since it is boosted it should have the same mass as before - so overwrite that part.
+        return FourVec(pdgID, boosted.Px(), boosted.Py(), boosted.Pz(), v.M(), flag);
     }
 
     double MT2(const FourVec& o, const FourVec& vmiss, double invis_massA, double invis_massB, 
                double desiredPrecisionOnMt2 = 0.0001, bool debug=false) const {
 
-// Assemble quantities from the appropriate elements of the 3 specified 4-vectors (this=A, o=B, vmiss=MET)
+// Assemble quantities from the appropriate elements of the 3 specified 4-vectors (this = A, o = B, vmiss = MET)
 
 // Best to adjust the masses according to PDGID
 
@@ -359,6 +398,7 @@ public:
         const double MMU = 0.1056583755;
 
 // Fix up numerical precision issues with 4-vector masses associated with using the pxpypzE 4-vector constructor for leptons
+
         if( this->lflavor()== 1 ) mA = ME;
         if( this->lflavor()== 2 ) mA = MMU;
         if( o.lflavor()== 1 ) mB = ME;
@@ -369,15 +409,14 @@ public:
 
 // TODO Add some debug printing
 
-/*
-        if(MT2LN < 0.12){
+        if( debug && MT2LN < 0.12 ){
             std::cout << "Verbose output for low MT2 " << std::endl;
             std::cout << "A system " << mA << " " << pxA << " " << pyA << std::endl;
             std::cout << "B system " << mB << " " << pxB << " " << pyB << std::endl;
             std::cout << "pTmiss   " << pxMiss << " " << pyMiss << std::endl;
+            std::cout << "Recoil system " << pxA + pxB + pxMiss << " " << pyA + pyB + pyMiss << std::endl;
             std::cout << "MT2 = " << std::setprecision(12) << MT2LN << std::endl;
         }
-*/
 
         return MT2LN;
 

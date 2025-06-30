@@ -33,19 +33,7 @@
 #include "FourVec.h"
 
 // Declare histograms globally here
-TH1D *hMET = new TH1D("hMET","MET; MET [GeV]; Events per bin",100,0.0,1000.0);
-TH1D *hMET_phi = new TH1D("hMET_phi","MET phi; MET phi [rad]; Events per bin",100,-6.3,6.3); //probably should be [-pi, pi]
-TH1D *haltMET = new TH1D("haltMET","altMET; altMET [GeV]; Events per bin",100,0.0,1000.0);
-TH1D *haltMET_phi = new TH1D("haltMET_phi","altMET phi; altMET phi [rad]; Events per bin",100,-6.3,6.3); //probably should be [-pi, pi]
-TH1D *hleptonPT = new TH1D("hleptonPT","PT (lepton); PT [GeV]; Leptons per bin",200,0.0,200.0);
-TH1D *hnleptons = new TH1D("hnleptons"," G+S leptons; Nleptons (Gold+Silver); Events per bin",10,-0.5,9.5);
-TH1D *hnleptons10 = new TH1D("hnleptons10"," G+S leptons with pT>10 GeV; Nleptons (Gold+Silver); Events per bin",10,-0.5,9.5);
-
-TH1D *hmll = new TH1D("hmll","Dilepton Mass; mll [GeV]; Dileptons per bin",200,0.0,200.0);
-TH1D *hMT2LN0 = new TH1D("hMT2LN0", "M(IA), M(IB) = 0;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
-TH1D *hMT2LN0SMALL = new TH1D("hMT2LN0SMALL", "M(IA), M(IB) = 0;  MT2 (GeV); Events per bin", 1000, 0.0, 2.0);
-
-TH1D* habetaz = new TH1D("habetaz","|Beta z| for dileptons; |#beta_{z}|",50,0.0,1.0);
+#include "AnaHistos.h"
 
 void Ana::Begin(TTree * /*tree*/)
 {
@@ -104,20 +92,25 @@ bool Ana::Process(Long64_t entry)
 
     std::vector<unsigned int> vlidx;
 
-    int nleptons = 0; int nleptons10 = 0;
+    int nleptons = 0; int nleptons_hipt = 0;
     for (unsigned int i = 0; i < LepQual_lep.GetSize(); ++i){
         if(LepQual_lep[i] <=1){
             nleptons ++;
-            if(PT_lep[i] > 10.0) {
-                nleptons10++;
+            if(PT_lep[i] > 5.0) {
+                nleptons_hipt++;
                 vlidx.push_back(i);
             }
         }
     }
     hnleptons->Fill(nleptons, wt);
-    hnleptons10->Fill(nleptons10, wt);
+    hnleptons_hipt->Fill(nleptons_hipt, wt);
 
-    if(nleptons10==2){
+    bool surviveBtagVeto = true;     
+    for (unsigned int i = 0; i < BtagID_jet.GetSize(); ++i){
+        if(BtagID_jet[i] >=2) surviveBtagVeto = false;
+    }
+
+    if(nleptons_hipt==2){
 
          FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
          FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
@@ -133,24 +126,60 @@ bool Ana::Process(Long64_t entry)
          
     }
 
-    if(nleptons10==3){
+    if(nleptons_hipt==3){
 
          FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
          FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
          FourVec l3 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[2]], PT_lep[vlidx[2]], Eta_lep[vlidx[2]], Phi_lep[vlidx[2]], M_lep[vlidx[2]]);
-         double mll12 = l1.mtwo(l2);
-         double mll13 = l1.mtwo(l3);
-         double mll23 = l2.mtwo(l3);
-//         hmll3->Fill(mll12, wt);
-//         hmll3->Fill(mll13, wt);
-//         hmll3->Fill(mll23, wt);
 
-// Calculate MT2 using the Lester-Nachman implementation for various assumptions on LSP mass
-//         double MT2LN0   = l1.MT2(l2, fMET,   0.0,   0.0,  0.0);
-//         hMT2LN0->Fill ( MT2LN0, wt);
-//         hMT2LN0SMALL->Fill ( MT2LN0, wt);
-         
+         FourVec l12 = l1 + l2;
+         FourVec l13 = l1 + l3;
+         FourVec l23 = l2 + l3;
+         FourVec l123 = l12 + l3;
+         int charge3 = l1.lcharge() + l2.lcharge() + l3.lcharge();
+         int TightCharge3 = TightCharge_lep[vlidx[0]]*TightCharge_lep[vlidx[1]]*TightCharge_lep[vlidx[2]];
+         hmll3->Fill(l12.Mass(), wt);
+         hmll3->Fill(l13.Mass(), wt);
+         hmll3->Fill(l23.Mass(), wt);
+         hm3l->Fill(l123.Mass(), wt);
+         if(surviveBtagVeto){
+             hm3lbtv->Fill(l123.Mass(), wt);
+             h3lcharge->Fill(charge3, wt);
+             if(TightCharge3==8)h3lchargetight->Fill(charge3, wt);
+         }
+
+         hmT1->Fill(l1.mtp(fMET), wt);
+         hmT2->Fill(l2.mtp(fMET), wt);
+         hmT3->Fill(l3.mtp(fMET), wt);
+// Also fill inclusively
+         hmT->Fill(l1.mtp(fMET), wt);
+         hmT->Fill(l2.mtp(fMET), wt);
+         hmT->Fill(l3.mtp(fMET), wt);
+
+         hmT3l->Fill(l123.mtp(fMET), wt);
+
     }
+
+    if(nleptons_hipt==4){
+         FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
+         FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
+         FourVec l3 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[2]], PT_lep[vlidx[2]], Eta_lep[vlidx[2]], Phi_lep[vlidx[2]], M_lep[vlidx[2]]);
+         FourVec l4 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[3]], PT_lep[vlidx[3]], Eta_lep[vlidx[3]], Phi_lep[vlidx[3]], M_lep[vlidx[3]]);
+
+         FourVec l12 = l1 + l2;
+         FourVec l34 = l3 + l4;
+         FourVec l1234 = l12 + l34;
+         int charge4 = l1.lcharge() + l2.lcharge() + l3.lcharge() + l4.lcharge();
+         int TightCharge4 = TightCharge_lep[vlidx[0]]*TightCharge_lep[vlidx[1]]*TightCharge_lep[vlidx[2]]*TightCharge_lep[vlidx[3]];
+
+         hm4l->Fill(l1234.Mass(), wt);
+         if(surviveBtagVeto){
+             hm4lbtv->Fill(l1234.Mass(), wt);
+             h4lcharge->Fill(charge4, wt);
+             if(TightCharge4==16)h4lchargetight->Fill(charge4, wt);
+         }
+    }
+
 
     return true;
 

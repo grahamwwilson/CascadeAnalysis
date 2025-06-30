@@ -117,26 +117,27 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
             std::istringstream pstream(line);
 
             int pdgID, status;
-            double px, py, pz, e;
+            double px, py, pz, e, mass;
             // LHE format line has many fields; the python code uses indices 0 for pdgID,
-            // 1 for status, and 6-9 for px,py,pz,e:
-            // indices: 0-pdgID,1-status,6-px,7-py,8-pz,9-e
+            // 1 for status, and 6-10 for px,py,pz,e,m:
+            // indices: 0-pdgID,1-status,6-px,7-py,8-pz,9-e, 10-m
             // so read fields accordingly:
             std::vector<std::string> tokens;
             std::string token;
             while (pstream >> token) tokens.push_back(token);
-            if (tokens.size() < 10) continue; // malformed line, skip
+            if (tokens.size() < 11) continue; // malformed line, skip
 
             pdgID = std::stoi(tokens[0]);
             status = std::stoi(tokens[1]);
             px = std::stod(tokens[6]);
             py = std::stod(tokens[7]);
             pz = std::stod(tokens[8]);
-            e = std::stod(tokens[9]);
+            // e = std::stod(tokens[9]);
+            mass = std::stod(tokens[10]);
 
             if (status != 1) continue; // Only final state particles
 
-            FourVec particle(pdgID, px, py, pz, e);
+            FourVec particle(pdgID, px, py, pz, mass);
             Particles.push_back(particle);
 
             int absId = std::abs(pdgID);
