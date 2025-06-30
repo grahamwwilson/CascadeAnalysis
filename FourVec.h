@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include "PreciseFloat.h"  // Optionally use boost multiprecision for adding 4-vectors to better preserve mass precision
 #include "Math/Boost.h"
 #include "Math/Vector3D.h"
 #include "Math/LorentzVector.h"
@@ -42,14 +43,54 @@ public:
         return FourVec(id, px, py, pz, m, f);
     }
 
-    // Four-momentum addition (physically correct)
     FourVec& operator+=(const FourVec& other) {
+        using Precise::pfloat;    // can be double or quadruple precision 
+
+    // Do computation using pfloat representation
+    // if boost::multiprecision available can do the mass calculation in quadruple precision
+
+    // Extract components from this and other, using PxPyPzM representation
+        const auto& p1 = this->v;
+        const auto& p2 = other.v;
+
+    // Get Px, Py, Pz, M for both vectors
+        pfloat px1 = p1.Px(), py1 = p1.Py(), pz1 = p1.Pz(), m1 = p1.M();
+        pfloat px2 = p2.Px(), py2 = p2.Py(), pz2 = p2.Pz(), m2 = p2.M();
+
+    // Compute momentum magnitudes
+        pfloat p2_1 = px1*px1 + py1*py1 + pz1*pz1;
+        pfloat p2_2 = px2*px2 + py2*py2 + pz2*pz2;
+
+    // Compute energies using E = sqrt(p^2 + m^2)
+        pfloat e1 = sqrt(p2_1 + m1*m1);
+        pfloat e2 = sqrt(p2_2 + m2*m2);
+
+    // Sum Px, Py, Pz, and E
+        pfloat px = px1 + px2;
+        pfloat py = py1 + py2;
+        pfloat pz = pz1 + pz2;
+        pfloat e  = e1  + e2;
+
+    // Compute invariant mass squared
+        pfloat p2_sum = px*px + py*py + pz*pz;
+        pfloat msq = e*e - p2_sum;
+        pfloat m = (msq > 0) ? sqrt(msq) : 0;
+
+    // Overwrite the vector using PxPyPzM constructor
+       this->v = LorentzVectorM(FourVecUtils::PxPyPzM4D<double> (static_cast<double>(px), static_cast<double>(py), static_cast<double>(pz), static_cast<double>(m) ));
+       return *this;
+
+}
+
+    // Four-momentum addition (physically correct)
+/*    FourVec& operator+=(const FourVec& other) {
         LorentzVectorE v1 = AsPxPyPzE();
         LorentzVectorE v2 = other.AsPxPyPzE();
         LorentzVectorE sum = v1 + v2;
         v = ToPxPyPzM(sum);
         return *this;
     }
+*/
 
     // Non-mutating 4-vector addition
     FourVec operator+(const FourVec& other) const {
