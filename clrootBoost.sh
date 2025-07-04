@@ -13,7 +13,7 @@ echo 'Compiling (with ROOT libraries): '${target}.cpp
 root --version
 
 # With Boost multiprecision option
-g++ -std=c++17 -g -O3 -DUSE_BOOST_MULTIPRECISION -o ${target} ${target}.cpp `root-config --cflags` -lGenVector `root-config --libs`
+g++ -std=c++17 -g -O3 -DUSE_BOOST_MULTIPRECISION -o ${target} ${target}.cpp `root-config --cflags` -lGenVector -lquadmath `root-config --libs`
 
 
 exit

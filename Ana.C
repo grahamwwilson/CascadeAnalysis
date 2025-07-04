@@ -24,16 +24,41 @@
 // root> T->Process("Ana.C+")
 //
 
-
 #include "Ana.h"
 #include <TH1.h>
 #include <TH2.h>
 #include <TStyle.h>
 #include <string>
 #include "FourVec.h"
+#include "TriCuts.h"
+#include <algorithm>
+#include <bitset> 
 
 // Declare histograms globally here
 #include "AnaHistos.h"
+// Declare helper functions with bits for selection
+#include "SelectionBits.h"
+
+void FillCutFlow(unsigned int trisel, TH1* hCutFlow, double wt) {
+// Note this histogram is defined in Ana.h
+
+    // Fill the preselection bin
+    hCutFlow->Fill(-1.0, wt);
+
+    // Loop over all cuts
+    for (unsigned int i = 0; i < static_cast<unsigned int>(TriCuts::NUMCUTS); ++i) {
+        TriCuts cut = static_cast<TriCuts>(i);
+        if (PassesAllCutsSoFar(trisel, cut)) {
+            hCutFlow->Fill(i, wt);
+        }
+    }
+
+    // Optional: final bin if all cuts passed
+    if (trisel == 0) {
+        hCutFlow->Fill(static_cast<unsigned int>(TriCuts::NUMCUTS), wt);
+    }
+}
+
 
 void Ana::Begin(TTree * /*tree*/)
 {
@@ -90,24 +115,113 @@ bool Ana::Process(Long64_t entry)
 //       std::cout << "Lepton " << i << " pT = " << PT_lep[i] << std::endl;
     }
 
-    std::vector<unsigned int> vlidx;
+    std::vector<unsigned int> vlidx;    // For gold and silver quality leptons of arbitrary pt
+    std::vector<unsigned int> vbidx;    // For bronze leptons of arbitrary pt
 
     int nleptons = 0; int nleptons_hipt = 0;
+    int nbronze = 0;
+    int ngs = 0;
+// Loop over leptons separating into two quality categories
     for (unsigned int i = 0; i < LepQual_lep.GetSize(); ++i){
         if(LepQual_lep[i] <=1){
-            nleptons ++;
-            if(PT_lep[i] > 5.0) {
-                nleptons_hipt++;
-                vlidx.push_back(i);
-            }
+            ngs ++;                // Gold or silver
+            vlidx.push_back(i);
+        }
+        else{
+            nbronze++;             // Bronze
+            vbidx.push_back(i);
         }
     }
     hnleptons->Fill(nleptons, wt);
     hnleptons_hipt->Fill(nleptons_hipt, wt);
+    hngs->Fill(ngs, wt);
+    hnbronze->Fill(nbronze, wt);
 
+// FIXME - keep track of b-tag MVA score 
     bool surviveBtagVeto = true;     
     for (unsigned int i = 0; i < BtagID_jet.GetSize(); ++i){
         if(BtagID_jet[i] >=2) surviveBtagVeto = false;
+    }
+
+// Start on 3-lepton selection using enum class TriCuts
+    unsigned int trisel = 0;
+    std::vector<double> ptcuts = {20.0, 15.0, 10.0};
+    double ptcutVeto = 5.0;
+    double sip3dcut = 3.5;
+    double maxSIP3D{};
+
+    bool failFourthLeptonVeto = false;
+    double ptFourthLepton = -1.5;  // Default to invalid value
+
+    if ( ngs < 3 ){
+        trisel = setFailureBit(trisel, TriCuts::GSNumber);
+    }
+    else{   // We have at least 3 G + S leptons
+        if ( PT_lep[vlidx[0]] < ptcuts[0] ) trisel = setFailureBit(trisel, TriCuts::PtOne);
+        if ( PT_lep[vlidx[1]] < ptcuts[1] ) trisel = setFailureBit(trisel, TriCuts::PtTwo);
+        if ( PT_lep[vlidx[2]] < ptcuts[2] ) trisel = setFailureBit(trisel, TriCuts::PtThree);
+// Implement 4th lepton veto.  Loop over all leptons. If lepton is not already one considered as one of the 3 high quality leptons, 
+// then set veto flag if any are above the 4th lepton veto pT cut. This also includes bronze leptons. 
+        for (unsigned int i = 0; i < LepQual_lep.GetSize(); ++i){             // All leptons
+             if( i != vlidx[0] && i != vlidx[1] && i != vlidx[2] ){           // Not lepton already considered
+                 ptFourthLepton = PT_lep[i];
+                 if ( PT_lep[i] > ptcutVeto ) {
+                     failFourthLeptonVeto = true;
+                     break;
+                 }
+             }
+        }
+        if ( failFourthLeptonVeto ) trisel = setFailureBit(trisel, TriCuts::PtFourVeto);
+        if ( !surviveBtagVeto ) trisel = setFailureBit(trisel, TriCuts::BTagVeto);
+        maxSIP3D = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]], SIP3D_lep[vlidx[2]]});
+        if ( maxSIP3D > sip3dcut ) trisel = setFailureBit(trisel, TriCuts::SIP3DCut);
+    }
+
+//    std::cout << "trisel = " << trisel << std::endl;
+    htrisel->Fill(trisel, wt);
+
+/*    hCutFlow->Fill(-1.0, wt);
+    if(isPassingCut( trisel, TriCuts::GSNumber)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::GSNumber), wt);  // FIXME - make this a function
+    if(isPassingCut( trisel, TriCuts::PtOne)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtOne), wt);
+    if(isPassingCut( trisel, TriCuts::PtTwo)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtTwo), wt);
+    if(isPassingCut( trisel, TriCuts::PtThree)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtThree), wt);
+    if(isPassingCut( trisel, TriCuts::PtFourVeto)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtFourVeto), wt);
+    if(isPassingCut( trisel, TriCuts::BTagVeto)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::BTagVeto), wt);
+    if(isPassingCut( trisel, TriCuts::SIP3DCut)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::SIP3DCut), wt);
+    if(trisel==0)hCutFlow->Fill(7.0, wt);
+*/
+
+/*
+    hCutFlow->Fill(-1.0, wt);
+    if(PassesAllCutsSoFar( trisel, TriCuts::GSNumber)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::GSNumber), wt);  // FIXME - make this a function
+    if(PassesAllCutsSoFar( trisel, TriCuts::PtOne)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtOne), wt);
+    if(PassesAllCutsSoFar( trisel, TriCuts::PtTwo)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtTwo), wt);
+    if(PassesAllCutsSoFar( trisel, TriCuts::PtThree)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtThree), wt);
+    if(PassesAllCutsSoFar( trisel, TriCuts::PtFourVeto)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtFourVeto), wt);
+    if(PassesAllCutsSoFar( trisel, TriCuts::BTagVeto)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::BTagVeto), wt);
+    if(PassesAllCutsSoFar( trisel, TriCuts::SIP3DCut)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::SIP3DCut), wt); 
+    if(trisel==0)hCutFlow->Fill(7.0, wt);  
+*/
+    FillCutFlow(trisel, hCutFlow, wt);
+
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::SIP3DCut ) ) {
+        hmaxSIP3D->Fill(maxSIP3D , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::PtOne )) {
+        hPtOne->Fill(PT_lep[vlidx[0]] , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::PtTwo )) {
+        hPtTwo->Fill(PT_lep[vlidx[1]] , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::PtThree )) {
+        hPtThree->Fill(PT_lep[vlidx[2]] , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::PtFourVeto )) {
+        hPtFourVeto->Fill(ptFourthLepton , wt);
     }
 
     if(nleptons_hipt==2){
@@ -126,7 +240,13 @@ bool Ana::Process(Long64_t entry)
          
     }
 
-    if(nleptons_hipt==3){
+//    if(trisel ==0){
+//
+//    }
+
+
+
+    if( isSelected( trisel ) ){
 
          FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
          FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);

@@ -8,6 +8,7 @@
 #ifndef Ana_h
 #define Ana_h
 
+#include <TH1.h>
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
@@ -20,8 +21,7 @@
 
 // Headers needed by this particular selector
 #include <vector>
-
-
+#include "PreciseDouble.h"
 
 class Ana : public TSelector {
 public :
@@ -29,6 +29,8 @@ public :
 // Populate these strings in Init
    std::string     inputFilePrefix;
    std::string     treeName;
+
+   TH1D* hCutFlow = nullptr;  // member variable
 
    TTreeReader     fReader;  //!the tree reader
    TTree          *fChain = 0;   //!pointer to the analyzed TTree or TChain
@@ -344,6 +346,17 @@ void Ana::Init(TTree *tree)
    // Init() will be called many times when running on PROOF
    // (once per file to be processed).
 
+// Make clear which pdouble we have under the hood.
+    using Precise::pdouble;
+
+    std::cout << "Using pdouble implementation: " << Precise::implementation << "\n";
+    std::cout << "Precision for Precise::pdouble:\n";
+    std::cout << "Binary digits: " << std::numeric_limits<pdouble>::digits << "\n";
+    std::cout << "Decimal digits: " << std::numeric_limits<pdouble>::digits10 << "\n";
+    std::cout << "Max value: " << std::numeric_limits<pdouble>::max() << "\n";
+    std::cout << "Epsilon: " << std::numeric_limits<pdouble>::epsilon() << "\n";
+
+
 // Turn-off Lester-Nachman bisection code copyright notice
     asymm_mt2_lester_bisect::disableCopyrightMessage(); 
 
@@ -358,6 +371,18 @@ void Ana::Init(TTree *tree)
             std::cout << "Init() -> inputFilePrefix: " << inputFilePrefix << " analyzing tree " << treeName << std::endl;
         }
     }
+
+// Should move this into its own function
+hCutFlow = new TH1D("hCutFlow", "Trileptons; Cut Flow; Events per bin scaled to 400 inv fb", 9, -1.5, 7.5);
+hCutFlow->GetXaxis()->SetBinLabel(1, "All");
+hCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
+hCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
+hCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
+hCutFlow->GetXaxis()->SetBinLabel(5, "PtThree");
+hCutFlow->GetXaxis()->SetBinLabel(6, "PtFourVeto");
+hCutFlow->GetXaxis()->SetBinLabel(7, "BTagVeto");
+hCutFlow->GetXaxis()->SetBinLabel(8, "SIP3DCut");
+hCutFlow->GetXaxis()->SetBinLabel(9, "Selected");
 
 }
 

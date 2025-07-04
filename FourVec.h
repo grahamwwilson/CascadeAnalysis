@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
-#include "PreciseFloat.h"  // Optionally use boost multiprecision for adding 4-vectors to better preserve mass precision
+#include "PreciseDouble.h"  // Optionally use boost multiprecision for adding 4-vectors to better preserve mass precision
 #include "Math/Boost.h"
 #include "Math/Vector3D.h"
 #include "Math/LorentzVector.h"
@@ -44,9 +44,9 @@ public:
     }
 
     FourVec& operator+=(const FourVec& other) {
-        using Precise::pfloat;    // can be double or quadruple precision 
+        using Precise::pdouble;    // can be double or quadruple precision 
 
-    // Do computation using pfloat representation
+    // Do computation using pdouble representation
     // if boost::multiprecision available can do the mass calculation in quadruple precision
 
     // Extract components from this and other, using PxPyPzM representation
@@ -54,27 +54,27 @@ public:
         const auto& p2 = other.v;
 
     // Get Px, Py, Pz, M for both vectors
-        pfloat px1 = p1.Px(), py1 = p1.Py(), pz1 = p1.Pz(), m1 = p1.M();
-        pfloat px2 = p2.Px(), py2 = p2.Py(), pz2 = p2.Pz(), m2 = p2.M();
+        pdouble px1 = p1.Px(), py1 = p1.Py(), pz1 = p1.Pz(), m1 = p1.M();
+        pdouble px2 = p2.Px(), py2 = p2.Py(), pz2 = p2.Pz(), m2 = p2.M();
 
     // Compute momentum magnitudes
-        pfloat p2_1 = px1*px1 + py1*py1 + pz1*pz1;
-        pfloat p2_2 = px2*px2 + py2*py2 + pz2*pz2;
+        pdouble p2_1 = px1*px1 + py1*py1 + pz1*pz1;
+        pdouble p2_2 = px2*px2 + py2*py2 + pz2*pz2;
 
     // Compute energies using E = sqrt(p^2 + m^2)
-        pfloat e1 = sqrt(p2_1 + m1*m1);
-        pfloat e2 = sqrt(p2_2 + m2*m2);
+        pdouble e1 = sqrt(p2_1 + m1*m1);
+        pdouble e2 = sqrt(p2_2 + m2*m2);
 
     // Sum Px, Py, Pz, and E
-        pfloat px = px1 + px2;
-        pfloat py = py1 + py2;
-        pfloat pz = pz1 + pz2;
-        pfloat e  = e1  + e2;
+        pdouble px = px1 + px2;
+        pdouble py = py1 + py2;
+        pdouble pz = pz1 + pz2;
+        pdouble e  = e1  + e2;
 
     // Compute invariant mass squared
-        pfloat p2_sum = px*px + py*py + pz*pz;
-        pfloat msq = e*e - p2_sum;
-        pfloat m = (msq > 0) ? sqrt(msq) : 0;
+        pdouble p2_sum = px*px + py*py + pz*pz;
+        pdouble msq = e*e - p2_sum;
+        pdouble m = (msq > 0) ? sqrt(msq) : 0;
 
     // Overwrite the vector using PxPyPzM constructor
        this->v = LorentzVectorM(FourVecUtils::PxPyPzM4D<double> (static_cast<double>(px), static_cast<double>(py), static_cast<double>(pz), static_cast<double>(m) ));
