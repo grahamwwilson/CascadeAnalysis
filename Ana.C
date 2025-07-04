@@ -167,8 +167,8 @@ bool Ana::Process(Long64_t entry)
                  ptFourthLepton = PT_lep[i];
                  if ( PT_lep[i] > ptcutVeto ) {
                      failFourthLeptonVeto = true;
-                     break;
                  }
+                 break;                                                   // break out so we store the highest pT additional lepton independent of whether it asserts the veto
              }
         }
         if ( failFourthLeptonVeto ) trisel = setFailureBit(trisel, TriCuts::PtFourVeto);
@@ -299,7 +299,6 @@ bool Ana::Process(Long64_t entry)
              if(TightCharge4==16)h4lchargetight->Fill(charge4, wt);
          }
     }
-
 
     return true;
 
