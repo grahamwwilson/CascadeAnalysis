@@ -350,7 +350,7 @@ void Ana::Init(TTree *tree)
     using Precise::pdouble;
 
     std::cout << "Using pdouble implementation: " << Precise::implementation << "\n";
-    std::cout << "Precision for Precise::pdouble:\n";
+    std::cout << "Precision for Precise::pdouble\n";
     std::cout << "Binary digits: " << std::numeric_limits<pdouble>::digits << "\n";
     std::cout << "Decimal digits: " << std::numeric_limits<pdouble>::digits10 << "\n";
     std::cout << "Max value: " << std::numeric_limits<pdouble>::max() << "\n";
@@ -372,17 +372,19 @@ void Ana::Init(TTree *tree)
         }
     }
 
-// Should move this into its own function
-hCutFlow = new TH1D("hCutFlow", "Trileptons; Cut Flow; Events per bin scaled to 400 inv fb", 9, -1.5, 7.5);
-hCutFlow->GetXaxis()->SetBinLabel(1, "All");
-hCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
-hCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
-hCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
-hCutFlow->GetXaxis()->SetBinLabel(5, "PtThree");
-hCutFlow->GetXaxis()->SetBinLabel(6, "PtFourVeto");
-hCutFlow->GetXaxis()->SetBinLabel(7, "BTagVeto");
-hCutFlow->GetXaxis()->SetBinLabel(8, "SIP3DCut");
-hCutFlow->GetXaxis()->SetBinLabel(9, "Selected");
+    TH1D* old = (TH1D*)gDirectory->Get("hCutFlow");
+    if (old) delete old;
+    // Should move this into its own function
+    hCutFlow = new TH1D("hCutFlow", "Trileptons; Cut Flow; Events per bin scaled to 400 inv fb", 9, -1.5, 7.5);
+    hCutFlow->GetXaxis()->SetBinLabel(1, "All");
+    hCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
+    hCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
+    hCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
+    hCutFlow->GetXaxis()->SetBinLabel(5, "PtThree");
+    hCutFlow->GetXaxis()->SetBinLabel(6, "PtFourVeto");
+    hCutFlow->GetXaxis()->SetBinLabel(7, "BTagVeto");
+    hCutFlow->GetXaxis()->SetBinLabel(8, "SIP3DCut");
+    hCutFlow->GetXaxis()->SetBinLabel(9, "Selected");
 
 }
 

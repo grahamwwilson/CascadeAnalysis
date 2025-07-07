@@ -21,17 +21,30 @@ TH1D *hm3l = new TH1D("hm3l","Trilepton Mass; mlll [GeV]; Events per bin",400,0.
 TH1D *hm3lbtv = new TH1D("hm3lbtv","Trileptons with loose b-tag veto; mlll [GeV]; Events per bin",400,0.0,400.0);
 TH1D *h3lcharge = new TH1D("h3lcharge","Trileptons ; Trilepton Charge; Events per bin", 4, -4.0, 4.0);
 TH1D *h3lchargetight = new TH1D("h3lchargetight","Trileptons ; Trilepton Charge (Tight Charge Cut); Events per bin", 4, -4.0, 4.0);
+TH1D *h3lflavor = new TH1D("h3lflavor","Trileptons; Trilepton Flavor; Events per bin scaled to 400 inv fb", 4, 2.5, 6.5);
+TH1D *hminmll3l = new TH1D("hminmll3l","Trileptons ; min(mll) [GeV]; Events per bin",100,0.0,100.0);
+TH1D *hmaxmll3l = new TH1D("hmaxmll3l","Trileptons ; max(mll) [GeV]; Events per bin",80,0.0,200.0);
+TH1D *h3lMET = new TH1D("h3lMET","Trileptons; MET [GeV]; Events per bin",80,0.0,200.0);
+TH1D *h3lHTid = new TH1D("h3lHTid","Trileptons; HT [GeV]; Events per bin",80,0.0,200.0);
+TH1D *h3lHTnoid = new TH1D("h3lHTnoid","Trileptons; HT [GeV]; Events per bin",80,0.0,200.0);
+
+TH1D *hm3lF3 = new TH1D("hm3lF3","Trilepton Mass (eee); mlll [GeV]; Events per bin",400,0.0,400.0);
+TH1D *hm3lF4 = new TH1D("hm3lF4","Trilepton Mass (ee#mu); mlll [GeV]; Events per bin",400,0.0,400.0);
+TH1D *hm3lF5 = new TH1D("hm3lF5","Trilepton Mass (e#mu#mu); mlll [GeV]; Events per bin",400,0.0,400.0);
+TH1D *hm3lF6 = new TH1D("hm3lF6","Trilepton Mass (#mu#mu#mu); mlll [GeV]; Events per bin",400,0.0,400.0);
 
 TH1D *hm4l = new TH1D("hm4l","Four leptons; Mass (4l) [GeV]; Events per bin",400,0.0,400.0);
 TH1D *hm4lbtv = new TH1D("hm4lbtv","Four leptons with loose b-tag veto; Mass (4l) [GeV]; Events per bin",400,0.0,400.0);
 TH1D *h4lcharge = new TH1D("h4lcharge","Four leptons ; Four-lepton Charge; Events per bin", 5, -5.0, 5.0);
 TH1D *h4lchargetight = new TH1D("h4lchargetight","Four leptons ; Four-lepton Charge (Tight Charge Cut); Events per bin", 5, -5.0, 5.0);
+TH1D *h4lflavor = new TH1D("h4lflavor","Four leptons; Four-lepton Flavor; Events per bin scaled to 400 inv fb", 5, 3.5, 8.5);
 
 TH1D* hmT = new TH1D("hmT", "Trileptons;  Transverse mass [GeV]; Leptons per bin", 200, 0.0, 400.0);
 TH1D* hmT1 = new TH1D("hmT1", "Trileptons; L1 transverse mass [GeV]; Events per bin", 200, 0.0, 400.0);
 TH1D* hmT2 = new TH1D("hmT2", "Trileptons; L2 transverse mass [GeV]; Events per bin", 200, 0.0, 400.0);
 TH1D* hmT3 = new TH1D("hmT3", "Trileptons; L3 transverse mass [GeV]; Events per bin", 200, 0.0, 400.0);
 TH1D* hmT3l = new TH1D("hmT3l", "Trileptons; L123 transverse mass [GeV]; Events per bin", 200, 0.0, 400.0);
+TH1D* h3lmaxmT = new TH1D("h3lmaxmT", "Trileptons; Max. single lepton mT [GeV]; Events per bin", 80, 0.0, 400.0);
 
 TH1D* htrisel = new TH1D("htrisel","Trileptons; Selection word; Events per bin scaled to 400 inv fb",128,-0.5,127.5);
 TH1D* hmaxSIP3D = new TH1D("hmaxSIP3D","Trileptons; max(SIP3D); Events per bin scaled to 400 inv fb",80, 0.0 ,8.0);

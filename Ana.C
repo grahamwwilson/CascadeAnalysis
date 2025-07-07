@@ -30,7 +30,8 @@
 #include <TStyle.h>
 #include <string>
 #include "FourVec.h"
-#include "TriCuts.h"
+#include "DiCuts.h"       // Dilepton selection
+#include "TriCuts.h"      // Trilepton selection
 #include <algorithm>
 #include <bitset> 
 
@@ -257,11 +258,22 @@ bool Ana::Process(Long64_t entry)
          FourVec l23 = l2 + l3;
          FourVec l123 = l12 + l3;
          int charge3 = l1.lcharge() + l2.lcharge() + l3.lcharge();
+         int flavor3 = l1.lflavor() + l2.lflavor() + l3.lflavor();
+         h3lflavor->Fill(flavor3, wt);
          int TightCharge3 = TightCharge_lep[vlidx[0]]*TightCharge_lep[vlidx[1]]*TightCharge_lep[vlidx[2]];
-         hmll3->Fill(l12.Mass(), wt);
-         hmll3->Fill(l13.Mass(), wt);
-         hmll3->Fill(l23.Mass(), wt);
-         hm3l->Fill(l123.Mass(), wt);
+         hmll3->Fill(l12.M(), wt);
+         hmll3->Fill(l13.M(), wt);
+         hmll3->Fill(l23.M(), wt);
+         hm3l->Fill(l123.M(), wt);
+         hminmll3l->Fill( std::min( { l12.M(), l13.M(), l23.M() }) );
+         hmaxmll3l->Fill( std::max( { l12.M(), l13.M(), l23.M() }) );
+
+// May be better with an enum
+         if(flavor3==3)hm3lF3->Fill(l123.Mass(), wt); 
+         if(flavor3==4)hm3lF4->Fill(l123.Mass(), wt); 
+         if(flavor3==5)hm3lF5->Fill(l123.Mass(), wt); 
+         if(flavor3==6)hm3lF6->Fill(l123.Mass(), wt); 
+
          if(surviveBtagVeto){
              hm3lbtv->Fill(l123.Mass(), wt);
              h3lcharge->Fill(charge3, wt);
@@ -277,6 +289,10 @@ bool Ana::Process(Long64_t entry)
          hmT->Fill(l3.mtp(fMET), wt);
 
          hmT3l->Fill(l123.mtp(fMET), wt);
+         h3lMET->Fill(fMET.Pt(), wt);
+         h3lHTid->Fill(*HT_eta24_id, wt);
+         h3lHTnoid->Fill(*HT_eta24, wt);
+         h3lmaxmT->Fill(std::max( {l1.mtp(fMET), l2.mtp(fMET), l3.mtp(fMET) } )  , wt);
 
     }
 
