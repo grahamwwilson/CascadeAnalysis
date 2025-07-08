@@ -30,7 +30,7 @@ public :
    std::string     inputFilePrefix;
    std::string     treeName;
 
-   TH1D* hCutFlow = nullptr;  // member variable
+//   TH1D* hCutFlow = nullptr;  // member variable
 
    TTreeReader     fReader;  //!the tree reader
    TTree          *fChain = 0;   //!pointer to the analyzed TTree or TChain
@@ -372,6 +372,7 @@ void Ana::Init(TTree *tree)
         }
     }
 
+/*
     TH1D* old = (TH1D*)gDirectory->Get("hCutFlow");
     if (old) delete old;
     // Should move this into its own function
@@ -385,6 +386,7 @@ void Ana::Init(TTree *tree)
     hCutFlow->GetXaxis()->SetBinLabel(7, "BTagVeto");
     hCutFlow->GetXaxis()->SetBinLabel(8, "SIP3DCut");
     hCutFlow->GetXaxis()->SetBinLabel(9, "Selected");
+*/
 
 }
 

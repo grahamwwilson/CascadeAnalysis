@@ -1,4 +1,7 @@
-unsigned int setFailureBit(unsigned int selword, TriCuts value) {
+
+
+template<typename Enum>    // Generalize this so that it works for all enums
+unsigned int setFailureBit(unsigned int selword, Enum value) {
 // Set corresponding bit in word when event fails the specified cut
     unsigned int bit = 1u << static_cast<unsigned int>(value);
     unsigned int newword = selword | bit;
@@ -11,7 +14,8 @@ unsigned int setFailureBit(unsigned int selword, TriCuts value) {
     return newword;
 }
 
-bool isPassingCut(unsigned int selword, TriCuts value) {
+template<typename Enum>    // Generalize this so that it works for all enums
+bool isPassingCut(unsigned int selword, Enum value) {
 // Check whether the selword indicates that the event passes the specified cut 
     unsigned int mask = 1u << static_cast<unsigned int>(value);
     bool result = (selword & mask) == 0;
@@ -27,14 +31,16 @@ bool isPassingCut(unsigned int selword, TriCuts value) {
 
 }
 
-bool PassesAllCutsSoFar(unsigned int selword, TriCuts value) {
+template<typename Enum>    // Generalize this so that it works for all enums
+bool PassesAllCutsSoFar(unsigned int selword, Enum value) {
 // Checks whether the event satisfies cuts 0 through value.
     unsigned int bitLimit = static_cast<unsigned int>(value);
     unsigned int mask = (1u << (bitLimit + 1)) - 1u;  // mask of all bits 0..value
     return (selword & mask) == 0;
 }
 
-bool isOnlyBitSet(unsigned int selword, TriCuts value) {
+template<typename Enum>    // Generalize this so that it works for all enums
+bool isOnlyBitSet(unsigned int selword, Enum value) {
 // Check if the event only fails the specified cut
     unsigned int expected = 1u << static_cast<unsigned int>(value);
     bool result = (selword == expected);
@@ -48,7 +54,8 @@ bool isOnlyBitSet(unsigned int selword, TriCuts value) {
     return result; 
 }
 
-bool isSelectedOrFailsJustOneCut(unsigned int selword, TriCuts value) {
+template<typename Enum>    // Generalize this so that it works for all enums
+bool isSelectedOrFailsJustOneCut(unsigned int selword, Enum value) {
 // Check if the event is selected or only fails the specified cut
     unsigned int mask = 1u << static_cast<unsigned int>(value);
     bool result = (selword == 0 || selword == mask);

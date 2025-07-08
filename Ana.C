@@ -41,7 +41,17 @@
 #include "SelectionBits.h"
 
 void FillCutFlow(unsigned int trisel, TH1* hCutFlow, double wt) {
-// Note this histogram is defined in Ana.h
+// Note this histogram used to be defined in Ana.h
+
+    hCutFlow->GetXaxis()->SetBinLabel(1, "All");
+    hCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
+    hCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
+    hCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
+    hCutFlow->GetXaxis()->SetBinLabel(5, "PtThree");
+    hCutFlow->GetXaxis()->SetBinLabel(6, "PtFourVeto");
+    hCutFlow->GetXaxis()->SetBinLabel(7, "BTagVeto");
+    hCutFlow->GetXaxis()->SetBinLabel(8, "SIP3DCut");
+    hCutFlow->GetXaxis()->SetBinLabel(9, "Selected");
 
     // Fill the preselection bin
     hCutFlow->Fill(-1.0, wt);
@@ -57,6 +67,35 @@ void FillCutFlow(unsigned int trisel, TH1* hCutFlow, double wt) {
     // Optional: final bin if all cuts passed
     if (trisel == 0) {
         hCutFlow->Fill(static_cast<unsigned int>(TriCuts::NUMCUTS), wt);
+    }
+}
+
+void FillDiCutFlow(unsigned int disel, TH1* hDiCutFlow, double wt) {
+// Note this histogram used to be defined in Ana.h
+
+    hDiCutFlow->GetXaxis()->SetBinLabel(1, "All");
+    hDiCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
+    hDiCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
+    hDiCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
+    hDiCutFlow->GetXaxis()->SetBinLabel(5, "PtThreeVeto");
+    hDiCutFlow->GetXaxis()->SetBinLabel(6, "BTagVeto");
+    hDiCutFlow->GetXaxis()->SetBinLabel(7, "SIP3DCut");
+    hDiCutFlow->GetXaxis()->SetBinLabel(8, "Selected");
+
+    // Fill the preselection bin
+    hDiCutFlow->Fill(-1.0, wt);
+
+    // Loop over all cuts
+    for (unsigned int i = 0; i < static_cast<unsigned int>(DiCuts::NUMCUTS); ++i) {
+        DiCuts cut = static_cast<DiCuts>(i);
+        if (PassesAllCutsSoFar(disel, cut)) {
+            hDiCutFlow->Fill(i, wt);
+        }
+    }
+
+    // Optional: final bin if all cuts passed
+    if (disel == 0) {
+        hDiCutFlow->Fill(static_cast<unsigned int>(DiCuts::NUMCUTS), wt);
     }
 }
 
@@ -169,7 +208,7 @@ bool Ana::Process(Long64_t entry)
                  if ( PT_lep[i] > ptcutVeto ) {
                      failFourthLeptonVeto = true;
                  }
-                 break;                                                   // break out so we store the highest pT additional lepton independent of whether it asserts the veto
+                 break;                       // break out so we store the highest pT additional lepton independent of whether it asserts the veto
              }
         }
         if ( failFourthLeptonVeto ) trisel = setFailureBit(trisel, TriCuts::PtFourVeto);
@@ -177,9 +216,43 @@ bool Ana::Process(Long64_t entry)
         maxSIP3D = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]], SIP3D_lep[vlidx[2]]});
         if ( maxSIP3D > sip3dcut ) trisel = setFailureBit(trisel, TriCuts::SIP3DCut);
     }
-
-//    std::cout << "trisel = " << trisel << std::endl;
     htrisel->Fill(trisel, wt);
+    FillCutFlow(trisel, hCutFlow, wt);
+
+// Similar logic for 2-lepton selection using enum class DiCuts
+    unsigned int disel = 0;
+    std::vector<double> qtcuts = {25.0, 20.0};
+    ptcutVeto = 5.0;
+    sip3dcut = 3.0;
+
+    bool failThirdLeptonVeto = false;
+    double ptThirdLepton = -1.5;  // Default to invalid value
+
+    if ( ngs < 2 ){
+        disel = setFailureBit(disel, DiCuts::GSNumber);
+    }
+    else{   // We have at least 3 G + S leptons
+        if ( PT_lep[vlidx[0]] < qtcuts[0] ) disel = setFailureBit(disel, DiCuts::PtOne);
+        if ( PT_lep[vlidx[1]] < qtcuts[1] ) disel = setFailureBit(disel, DiCuts::PtTwo);
+// Implement 3rd lepton veto.  Loop over all leptons. If lepton is not already one considered as one of the 2 high quality leptons, 
+// then set veto flag if any are above the 3rd lepton veto pT cut. This also includes bronze leptons. 
+        for (unsigned int i = 0; i < LepQual_lep.GetSize(); ++i){             // All leptons
+             if( i != vlidx[0] && i != vlidx[1] ){                            // Not lepton already considered
+                 ptThirdLepton = PT_lep[i];
+                 if ( PT_lep[i] > ptcutVeto ) {
+                     failThirdLeptonVeto = true;
+                 }
+                 break;                       // break out so we store the highest pT additional lepton independent of whether it asserts the veto
+             }
+        }
+        if ( failThirdLeptonVeto ) disel = setFailureBit(disel, DiCuts::PtThreeVeto);
+        if ( !surviveBtagVeto ) disel = setFailureBit(disel, DiCuts::BTagVeto);
+        maxSIP3D = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]]});
+        if ( maxSIP3D > sip3dcut ) disel = setFailureBit(disel, DiCuts::SIP3DCut);
+    }
+//    hdisel->Fill(disel, wt);
+    FillDiCutFlow(disel, hDiCutFlow, wt);
+
 
 /*    hCutFlow->Fill(-1.0, wt);
     if(isPassingCut( trisel, TriCuts::GSNumber)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::GSNumber), wt);  // FIXME - make this a function
@@ -225,7 +298,7 @@ bool Ana::Process(Long64_t entry)
         hPtFourVeto->Fill(ptFourthLepton , wt);
     }
 
-    if(nleptons_hipt==2){
+    if( isSelected( disel) ){
 
          FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
          FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
@@ -233,6 +306,10 @@ bool Ana::Process(Long64_t entry)
 //         double mll = l1.mtwo(l2);
          hmll->Fill(dilepton.Mass(), wt);
          habetaz->Fill(std::abs(dilepton.Betaz()), wt);
+         hptll->Fill(dilepton.Pt(), wt);
+         hacop->Fill(l1.Acop(l2), wt);
+         hphistar->Fill(l1.phistar(l2), wt);
+         hcosthEta->Fill(l1.CosThetaStarEta(l2), wt);
 
 // Calculate MT2 using the Lester-Nachman implementation for various assumptions on LSP mass
          double MT2LN0   = l1.MT2(l2, fMET,   0.0,   0.0,  0.0);

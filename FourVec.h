@@ -331,6 +331,7 @@ public:
         if (d> M_PI) d-=2*M_PI;
         return d;
     }
+
     double DEta(const FourVec& o) const {
         double e1 = -std::log(std::tan(0.5*v.Theta()));
         double e2 = -std::log(std::tan(0.5*o.v.Theta()));
@@ -338,6 +339,13 @@ public:
     }
     double DeltaR(const FourVec& o) const {
         return std::hypot(DPhiR(o), DEta(o));
+    }
+
+    double DPhi(const FourVec& o) const {
+        double dphi  = o.Phi() - Phi();
+        double cdphi = std::cos(dphi);
+        double d = std::acos(cdphi);    // Should be in the range [0, pi]
+        return d;
     }
 
 /////FIXTHIS 
@@ -361,6 +369,35 @@ public:
     bool accMu(double ptMin = 3.0) const {
         return std::abs(v.eta()) < 2.4 && v.Pt() > ptMin;
     }
+ 
+
+    double Acop(const FourVec& o) const {
+        double d = DPhi(o);
+        return M_PI - d;
+    }
+
+    double SinThetaStarEta(const FourVec & o) const {
+// Use calling order to define first and second lepton
+        double costh = std::tanh( ( v.eta() - o.eta() )/2.0 );
+        double sinth = std::sqrt(1.0 - costh*costh);
+        return sinth;
+    }
+
+    double CosThetaStarEta(const FourVec & o) const {
+// Use calling order to define first and second lepton
+        double costh = std::tanh( ( v.eta() - o.eta() )/2.0 );
+        return costh;
+    }
+
+    double phistar(const FourVec& o) const {
+// Compute the phi*_eta variable following 
+// Banfi, Redford, Vesterinen, Waller and Wyatt, EPJC 2011 (71) 1600
+
+        double value = std::tan( Acop(o)/2.0 ) * SinThetaStarEta(o);
+        return value;
+
+    }
+
 
     double mtp(const FourVec& o) const {
         double m1 = Mass();

@@ -10,6 +10,11 @@ TH1D *hngs = new TH1D("hngs"," G+S leptons; Nleptons (Gold+Silver); Events per b
 TH1D *hnbronze = new TH1D("hnbronze"," Bronze leptons; Nleptons (Bronze); Events per bin",10,-0.5,9.5);
 
 TH1D *hmll = new TH1D("hmll","Dilepton Events; mll [GeV]; Events per bin",400,0.0,400.0);
+TH1D *hptll = new TH1D("hptll","Dilepton Events; ptll [GeV]; Events per bin",100,0.0,200.0);
+TH1D *hphistar = new TH1D("hphistar","Dilepton Events; phistar; Events per bin",100,0.0,5.0);
+TH1D *hacop = new TH1D("hacop","Dilepton Events; Acoplanarity [rad]; Events per bin",200,0.0,M_PI);
+TH1D *hcosthEta = new TH1D("hcosthEta","Dilepton Events; costh(Eta); Events per bin",50,0.0,1.0);
+
 TH1D *hmll3 = new TH1D("hmll3","Trilepton Events; mll [GeV]; Dileptons per bin",400,0.0,400.0);
 
 TH1D *hMT2LN0 = new TH1D("hMT2LN0", "M(IA), M(IB) = 0;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
@@ -57,8 +62,9 @@ TH1D* hPtFourVeto = new TH1D("hPtFourVeto","Trileptons; PtFourVeto [GeV]; Events
 
 //TH1D* hCutFlow = new TH1D("hCutFlow","Trileptons; Cut Flow; Events per bin scaled to 400 inv fb",20,-1.5,18.5);
 //TH1D* hCutFlow = nullptr;
+TH1D* hCutFlow = new TH1D("hCutFlow", "Trileptons; Cut Flow; Events per bin scaled to 400 inv fb", 9, -1.5, 7.5);
+TH1D* hDiCutFlow = new TH1D("hDiCutFlow", "Dileptons; Cut Flow; Events per bin scaled to 400 inv fb", 8, -1.5, 6.5);
 /*
-TH1D* hCutFlow = new TH1D("hCutFlow", "Trileptons; Cut Flow; Events per bin scaled to 400 inv fb", 8, -1.5, 6.5);
 hCutFlow->GetXaxis()->SetBinLabel(1, "All");
 hCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
 hCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
