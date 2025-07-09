@@ -40,18 +40,7 @@
 // Declare helper functions with bits for selection
 #include "SelectionBits.h"
 
-void FillCutFlow(unsigned int trisel, TH1* hCutFlow, double wt) {
-// Note this histogram used to be defined in Ana.h
-
-    hCutFlow->GetXaxis()->SetBinLabel(1, "All");
-    hCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
-    hCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
-    hCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
-    hCutFlow->GetXaxis()->SetBinLabel(5, "PtThree");
-    hCutFlow->GetXaxis()->SetBinLabel(6, "PtFourVeto");
-    hCutFlow->GetXaxis()->SetBinLabel(7, "BTagVeto");
-    hCutFlow->GetXaxis()->SetBinLabel(8, "SIP3DCut");
-    hCutFlow->GetXaxis()->SetBinLabel(9, "Selected");
+void FillCutFlow(unsigned int trisel, double wt) {
 
     // Fill the preselection bin
     hCutFlow->Fill(-1.0, wt);
@@ -70,17 +59,10 @@ void FillCutFlow(unsigned int trisel, TH1* hCutFlow, double wt) {
     }
 }
 
-void FillDiCutFlow(unsigned int disel, TH1* hDiCutFlow, double wt) {
+void FillDiCutFlow(unsigned int disel, double wt) {
 // Note this histogram used to be defined in Ana.h
 
-    hDiCutFlow->GetXaxis()->SetBinLabel(1, "All");
-    hDiCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
-    hDiCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
-    hDiCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
-    hDiCutFlow->GetXaxis()->SetBinLabel(5, "PtThreeVeto");
-    hDiCutFlow->GetXaxis()->SetBinLabel(6, "BTagVeto");
-    hDiCutFlow->GetXaxis()->SetBinLabel(7, "SIP3DCut");
-    hDiCutFlow->GetXaxis()->SetBinLabel(8, "Selected");
+
 
     // Fill the preselection bin
     hDiCutFlow->Fill(-1.0, wt);
@@ -217,7 +199,7 @@ bool Ana::Process(Long64_t entry)
         if ( maxSIP3D > sip3dcut ) trisel = setFailureBit(trisel, TriCuts::SIP3DCut);
     }
     htrisel->Fill(trisel, wt);
-    FillCutFlow(trisel, hCutFlow, wt);
+    FillCutFlow(trisel, wt);
 
 // Similar logic for 2-lepton selection using enum class DiCuts
     unsigned int disel = 0;
@@ -250,33 +232,8 @@ bool Ana::Process(Long64_t entry)
         maxSIP3D = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]]});
         if ( maxSIP3D > sip3dcut ) disel = setFailureBit(disel, DiCuts::SIP3DCut);
     }
-//    hdisel->Fill(disel, wt);
-    FillDiCutFlow(disel, hDiCutFlow, wt);
 
-
-/*    hCutFlow->Fill(-1.0, wt);
-    if(isPassingCut( trisel, TriCuts::GSNumber)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::GSNumber), wt);  // FIXME - make this a function
-    if(isPassingCut( trisel, TriCuts::PtOne)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtOne), wt);
-    if(isPassingCut( trisel, TriCuts::PtTwo)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtTwo), wt);
-    if(isPassingCut( trisel, TriCuts::PtThree)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtThree), wt);
-    if(isPassingCut( trisel, TriCuts::PtFourVeto)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtFourVeto), wt);
-    if(isPassingCut( trisel, TriCuts::BTagVeto)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::BTagVeto), wt);
-    if(isPassingCut( trisel, TriCuts::SIP3DCut)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::SIP3DCut), wt);
-    if(trisel==0)hCutFlow->Fill(7.0, wt);
-*/
-
-/*
-    hCutFlow->Fill(-1.0, wt);
-    if(PassesAllCutsSoFar( trisel, TriCuts::GSNumber)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::GSNumber), wt);  // FIXME - make this a function
-    if(PassesAllCutsSoFar( trisel, TriCuts::PtOne)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtOne), wt);
-    if(PassesAllCutsSoFar( trisel, TriCuts::PtTwo)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtTwo), wt);
-    if(PassesAllCutsSoFar( trisel, TriCuts::PtThree)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtThree), wt);
-    if(PassesAllCutsSoFar( trisel, TriCuts::PtFourVeto)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::PtFourVeto), wt);
-    if(PassesAllCutsSoFar( trisel, TriCuts::BTagVeto)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::BTagVeto), wt);
-    if(PassesAllCutsSoFar( trisel, TriCuts::SIP3DCut)) hCutFlow->Fill( static_cast<unsigned int>(TriCuts::SIP3DCut), wt); 
-    if(trisel==0)hCutFlow->Fill(7.0, wt);  
-*/
-    FillCutFlow(trisel, hCutFlow, wt);
+    FillDiCutFlow(disel, wt);
 
     if( isSelectedOrFailsJustOneCut( trisel, TriCuts::SIP3DCut ) ) {
         hmaxSIP3D->Fill(maxSIP3D , wt);
@@ -303,8 +260,7 @@ bool Ana::Process(Long64_t entry)
          FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
          FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
          FourVec dilepton = l1 + l2;
-//         double mll = l1.mtwo(l2);
-         hmll->Fill(dilepton.Mass(), wt);
+         hmll->Fill(dilepton.M(), wt);
          habetaz->Fill(std::abs(dilepton.Betaz()), wt);
          hptll->Fill(dilepton.Pt(), wt);
          hacop->Fill(l1.Acop(l2), wt);
@@ -315,14 +271,12 @@ bool Ana::Process(Long64_t entry)
          double MT2LN0   = l1.MT2(l2, fMET,   0.0,   0.0,  0.0);
          hMT2LN0->Fill ( MT2LN0, wt);
          hMT2LN0SMALL->Fill ( MT2LN0, wt);
+
+         h2lnjets->Fill(*Njet, wt);
+         h2lMET->Fill(*MET, wt);
+         h2lHTid->Fill(*HT_eta24_id, wt);
          
     }
-
-//    if(trisel ==0){
-//
-//    }
-
-
 
     if( isSelected( trisel ) ){
 
@@ -342,8 +296,9 @@ bool Ana::Process(Long64_t entry)
          hmll3->Fill(l13.M(), wt);
          hmll3->Fill(l23.M(), wt);
          hm3l->Fill(l123.M(), wt);
-         hminmll3l->Fill( std::min( { l12.M(), l13.M(), l23.M() }) );
-         hmaxmll3l->Fill( std::max( { l12.M(), l13.M(), l23.M() }) );
+         hpt3l->Fill(l123.Pt(), wt);
+         hminmll3l->Fill( std::min( { l12.M(), l13.M(), l23.M() }) , wt );
+         hmaxmll3l->Fill( std::max( { l12.M(), l13.M(), l23.M() }) , wt );
 
 // May be better with an enum
          if(flavor3==3)hm3lF3->Fill(l123.Mass(), wt); 
@@ -370,6 +325,7 @@ bool Ana::Process(Long64_t entry)
          h3lHTid->Fill(*HT_eta24_id, wt);
          h3lHTnoid->Fill(*HT_eta24, wt);
          h3lmaxmT->Fill(std::max( {l1.mtp(fMET), l2.mtp(fMET), l3.mtp(fMET) } )  , wt);
+         h3lnjets->Fill(*Njet, wt);
 
     }
 
@@ -410,6 +366,36 @@ void Ana::Terminate()
    // The Terminate() function is the last function to be called during
    // a query. It always runs on the client, it can be used to present
    // the results graphically or save the results to file.
+
+// These bin labels can be done at Terminate stage.
+
+    hDiCutFlow->GetXaxis()->SetBinLabel(1, "All");
+    hDiCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
+    hDiCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
+    hDiCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
+    hDiCutFlow->GetXaxis()->SetBinLabel(5, "PtThreeVeto");
+    hDiCutFlow->GetXaxis()->SetBinLabel(6, "BTagVeto");
+    hDiCutFlow->GetXaxis()->SetBinLabel(7, "SIP3DCut");
+    hDiCutFlow->GetXaxis()->SetBinLabel(8, "Selected");
+    std::cout << "Dilepton selected event count  " << hDiCutFlow->GetBinContent(8) << std::endl;
+
+    hCutFlow->GetXaxis()->SetBinLabel(1, "All");
+    hCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
+    hCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
+    hCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
+    hCutFlow->GetXaxis()->SetBinLabel(5, "PtThree");
+    hCutFlow->GetXaxis()->SetBinLabel(6, "PtFourVeto");
+    hCutFlow->GetXaxis()->SetBinLabel(7, "BTagVeto");
+    hCutFlow->GetXaxis()->SetBinLabel(8, "SIP3DCut");
+    hCutFlow->GetXaxis()->SetBinLabel(9, "Selected");
+    std::cout << "Trilepton selected event count " << hCutFlow->GetBinContent(9) << std::endl;
+
+    h3lflavor->GetXaxis()->SetBinLabel(1,"eee");
+    h3lflavor->GetXaxis()->SetBinLabel(2,"ee#mu");
+    h3lflavor->GetXaxis()->SetBinLabel(3,"e#mu#mu");
+    h3lflavor->GetXaxis()->SetBinLabel(4,"#mu#mu#mu");
+    h3lflavor->GetXaxis()->SetLabelSize(0.07);
+    
 
    // Get a list of all objects in memory (for saving histograms)
    TList *list = gDirectory->GetList();

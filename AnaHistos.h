@@ -14,6 +14,9 @@ TH1D *hptll = new TH1D("hptll","Dilepton Events; ptll [GeV]; Events per bin",100
 TH1D *hphistar = new TH1D("hphistar","Dilepton Events; phistar; Events per bin",100,0.0,5.0);
 TH1D *hacop = new TH1D("hacop","Dilepton Events; Acoplanarity [rad]; Events per bin",200,0.0,M_PI);
 TH1D *hcosthEta = new TH1D("hcosthEta","Dilepton Events; costh(Eta); Events per bin",50,0.0,1.0);
+TH1D *h2lnjets = new TH1D("h2lnjets","Dilepton Events; N jets; Events per bin",12,-0.5,11.5);
+TH1D *h2lMET = new TH1D("h2lMET","Dileptons; MET [GeV]; Events per bin",80,0.0,200.0);
+TH1D *h2lHTid = new TH1D("h2lHTid","Dileptons; HT [GeV]; Events per bin",80,0.0,200.0);
 
 TH1D *hmll3 = new TH1D("hmll3","Trilepton Events; mll [GeV]; Dileptons per bin",400,0.0,400.0);
 
@@ -23,15 +26,17 @@ TH1D *hMT2LN0SMALL = new TH1D("hMT2LN0SMALL", "M(IA), M(IB) = 0;  MT2 (GeV); Eve
 TH1D* habetaz = new TH1D("habetaz","|Beta z| for dileptons; |#beta_{z}|",50,0.0,1.0);
 
 TH1D *hm3l = new TH1D("hm3l","Trilepton Mass; mlll [GeV]; Events per bin",400,0.0,400.0);
+TH1D *hpt3l = new TH1D("hpt3l","Trilepton Events; pt3l [GeV]; Events per bin",100,0.0,200.0);
 TH1D *hm3lbtv = new TH1D("hm3lbtv","Trileptons with loose b-tag veto; mlll [GeV]; Events per bin",400,0.0,400.0);
 TH1D *h3lcharge = new TH1D("h3lcharge","Trileptons ; Trilepton Charge; Events per bin", 4, -4.0, 4.0);
 TH1D *h3lchargetight = new TH1D("h3lchargetight","Trileptons ; Trilepton Charge (Tight Charge Cut); Events per bin", 4, -4.0, 4.0);
-TH1D *h3lflavor = new TH1D("h3lflavor","Trileptons; Trilepton Flavor; Events per bin scaled to 400 inv fb", 4, 2.5, 6.5);
+TH1D *h3lflavor = new TH1D("h3lflavor","Trileptons; ; Events per bin scaled to 400 inv fb", 4, 2.5, 6.5);
 TH1D *hminmll3l = new TH1D("hminmll3l","Trileptons ; min(mll) [GeV]; Events per bin",100,0.0,100.0);
 TH1D *hmaxmll3l = new TH1D("hmaxmll3l","Trileptons ; max(mll) [GeV]; Events per bin",80,0.0,200.0);
 TH1D *h3lMET = new TH1D("h3lMET","Trileptons; MET [GeV]; Events per bin",80,0.0,200.0);
 TH1D *h3lHTid = new TH1D("h3lHTid","Trileptons; HT [GeV]; Events per bin",80,0.0,200.0);
 TH1D *h3lHTnoid = new TH1D("h3lHTnoid","Trileptons; HT [GeV]; Events per bin",80,0.0,200.0);
+TH1D *h3lnjets = new TH1D("h3lnjets","Trileptons; N jets; Events per bin",12,-0.5,11.5);
 
 TH1D *hm3lF3 = new TH1D("hm3lF3","Trilepton Mass (eee); mlll [GeV]; Events per bin",400,0.0,400.0);
 TH1D *hm3lF4 = new TH1D("hm3lF4","Trilepton Mass (ee#mu); mlll [GeV]; Events per bin",400,0.0,400.0);
@@ -60,20 +65,6 @@ TH1D* hPtTwo = new TH1D("hPtTwo","Trileptons; PtTwo [GeV]; Events per bin scaled
 TH1D* hPtThree = new TH1D("hPtThree","Trileptons; PtThree [GeV]; Events per bin scaled to 400 inv fb",40, 0.0, 100.0);
 TH1D* hPtFourVeto = new TH1D("hPtFourVeto","Trileptons; PtFourVeto [GeV]; Events per bin scaled to 400 inv fb",55, -5.0, 55.0);
 
-//TH1D* hCutFlow = new TH1D("hCutFlow","Trileptons; Cut Flow; Events per bin scaled to 400 inv fb",20,-1.5,18.5);
-//TH1D* hCutFlow = nullptr;
 TH1D* hCutFlow = new TH1D("hCutFlow", "Trileptons; Cut Flow; Events per bin scaled to 400 inv fb", 9, -1.5, 7.5);
 TH1D* hDiCutFlow = new TH1D("hDiCutFlow", "Dileptons; Cut Flow; Events per bin scaled to 400 inv fb", 8, -1.5, 6.5);
-/*
-hCutFlow->GetXaxis()->SetBinLabel(1, "All");
-hCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
-hCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
-hCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
-hCutFlow->GetXaxis()->SetBinLabel(5, "PtThree");
-hCutFlow->GetXaxis()->SetBinLabel(6, "PtFourVeto");
-hCutFlow->GetXaxis()->SetBinLabel(7, "BTagVeto");
-hCutFlow->GetXaxis()->SetBinLabel(8, "SIP3DCut");
-*/
-// All moved to Ana.h ::Init method
-
 
