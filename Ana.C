@@ -29,9 +29,11 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <string>
+#include <tuple>
 #include "FourVec.h"
 #include "DiCuts.h"       // Dilepton selection
 #include "TriCuts.h"      // Trilepton selection
+#include "QuadCuts.h"     // Quadlepton selection
 #include <algorithm>
 #include <bitset> 
 
@@ -39,6 +41,88 @@
 #include "AnaHistos.h"
 // Declare helper functions with bits for selection
 #include "SelectionBits.h"
+
+std::tuple<double, double, int, double> TriLeptonInfo(double m12, double m13, double m23, bool os12, bool os13, bool os23){
+
+// Calculate a number of quantities related to trilepton topologies and return in a tuple.
+
+// 1. The min dilepton mass independent of flavor/charge
+     double minmll = std::min( { m12, m13, m23 });
+// 2. The max dilepton mass independent of flavor/charge
+     double maxmll = std::max( { m12, m13, m23 });
+     const double MZ = 91.2;
+// 3. The number of opposite-sign same flavor (OSSF) dileptons
+     int nossf = 0;
+// 4. For OSSF dileptons the smallest SIGNED deviation with respect to the nominal Z mass. If no 
+     double devZ = -95.0;   // default value
+     if( os12 ){
+         nossf++;
+         double thisdevZ = m12 - MZ;
+         if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
+     }
+     if( os13 ){
+         nossf++;
+         double thisdevZ = m13 - MZ;
+         if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
+     }
+     if( os23 ){
+         nossf++;
+         double thisdevZ = m23 - MZ;
+         if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
+     }
+ 
+     return std::make_tuple(minmll, maxmll, nossf, devZ);
+ 
+}
+
+std::tuple<double, double, int, double> QuadLeptonInfo(double m12, double m13, double m14, double m23, double m24, double m34, 
+                                                       bool os12, bool os13, bool os14, bool os23, bool os24, bool os34){
+
+// Calculate a number of quantities related to trilepton topologies and return in a tuple.
+
+// 1. The min dilepton mass independent of flavor/charge
+     double minmll = std::min( { m12, m13, m14, m23, m24, m34 });
+// 2. The max dilepton mass independent of flavor/charge
+     double maxmll = std::max( { m12, m13, m14, m23, m24, m34 });
+     const double MZ = 91.2;
+// 3. The number of opposite-sign same flavor (OSSF) dileptons
+     int nossf = 0;
+// 4. For OSSF dileptons the smallest SIGNED deviation with respect to the nominal Z mass. If no 
+     double devZ = -95.0;   // default value
+     if( os12 ){
+         nossf++;
+         double thisdevZ = m12 - MZ;
+         if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
+     }
+     if( os13 ){
+         nossf++;
+         double thisdevZ = m13 - MZ;
+         if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
+     }
+     if( os14 ){
+         nossf++;
+         double thisdevZ = m14 - MZ;
+         if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
+     }
+     if( os23 ){
+         nossf++;
+         double thisdevZ = m23 - MZ;
+         if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
+     }
+     if( os24 ){
+         nossf++;
+         double thisdevZ = m24 - MZ;
+         if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
+     }
+     if( os34 ){
+         nossf++;
+         double thisdevZ = m34 - MZ;
+         if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
+     }
+ 
+     return std::make_tuple(minmll, maxmll, nossf, devZ);
+ 
+}
 
 void FillCutFlow(unsigned int trisel, double wt) {
 
@@ -62,8 +146,6 @@ void FillCutFlow(unsigned int trisel, double wt) {
 void FillDiCutFlow(unsigned int disel, double wt) {
 // Note this histogram used to be defined in Ana.h
 
-
-
     // Fill the preselection bin
     hDiCutFlow->Fill(-1.0, wt);
 
@@ -78,6 +160,26 @@ void FillDiCutFlow(unsigned int disel, double wt) {
     // Optional: final bin if all cuts passed
     if (disel == 0) {
         hDiCutFlow->Fill(static_cast<unsigned int>(DiCuts::NUMCUTS), wt);
+    }
+}
+
+void FillQuadCutFlow(unsigned int quadsel, double wt) {
+// Note this histogram used to be defined in Ana.h
+
+    // Fill the preselection bin
+    hQuadCutFlow->Fill(-1.0, wt);
+
+    // Loop over all cuts
+    for (unsigned int i = 0; i < static_cast<unsigned int>(QuadCuts::NUMCUTS); ++i) {
+        QuadCuts cut = static_cast<QuadCuts>(i);
+        if (PassesAllCutsSoFar(quadsel, cut)) {
+            hQuadCutFlow->Fill(i, wt);
+        }
+    }
+
+    // Optional: final bin if all cuts passed
+    if (quadsel == 0) {
+        hQuadCutFlow->Fill(static_cast<unsigned int>(QuadCuts::NUMCUTS), wt);
     }
 }
 
@@ -167,13 +269,19 @@ bool Ana::Process(Long64_t entry)
 
 // Start on 3-lepton selection using enum class TriCuts
     unsigned int trisel = 0;
-    std::vector<double> ptcuts = {20.0, 15.0, 10.0};
-    double ptcutVeto = 5.0;
+//    std::vector<double> ptcuts = {20.0, 15.0, 10.0};
+    std::vector<double> ptcuts = {20.0, 12.5, 7.5};
+    double ptcutVeto = 3.0;
     double sip3dcut = 3.5;
     double maxSIP3D{};
 
     bool failFourthLeptonVeto = false;
     double ptFourthLepton = -1.5;  // Default to invalid value
+
+    double minmll = 0.0;
+    double maxmll = 0.0;
+    int nossf = 0;
+    double devZ = 0.0;
 
     if ( ngs < 3 ){
         trisel = setFailureBit(trisel, TriCuts::GSNumber);
@@ -197,9 +305,85 @@ bool Ana::Process(Long64_t entry)
         if ( !surviveBtagVeto ) trisel = setFailureBit(trisel, TriCuts::BTagVeto);
         maxSIP3D = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]], SIP3D_lep[vlidx[2]]});
         if ( maxSIP3D > sip3dcut ) trisel = setFailureBit(trisel, TriCuts::SIP3DCut);
+// Kinematics for the 3 G+S leptons
+        FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
+        FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
+        FourVec l3 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[2]], PT_lep[vlidx[2]], Eta_lep[vlidx[2]], Phi_lep[vlidx[2]], M_lep[vlidx[2]]);
+        FourVec l12 = l1 + l2;
+        FourVec l13 = l1 + l3;
+        FourVec l23 = l2 + l3;
+        double m12 = l12.M();   double m13 = l13.M();  double m23 = l23.M();
+        bool os12 = l1.osdil(l2);   bool os13 = l1.osdil(l3);  bool os23 = l2.osdil(l3);
+        auto result = TriLeptonInfo(m12, m13, m23, os12, os13, os23);
+        minmll = std::get<0>(result);
+        maxmll = std::get<1>(result);
+        nossf = std::get<2>(result);
+        devZ = std::get<3>(result);
+        if(minmll < 4.0) trisel = setFailureBit(trisel, TriCuts::MinMll);
+        if(minmll > 35.0) trisel = setFailureBit(trisel, TriCuts::MxMinMll);
+        if(std::abs(devZ) < 7.5) trisel = setFailureBit(trisel, TriCuts::OffZ);
     }
     htrisel->Fill(trisel, wt);
     FillCutFlow(trisel, wt);
+
+// 4l selection
+// Start on 4-lepton selection using enum class QuadCuts
+    unsigned int quadsel = 0;
+
+    std::vector<double> quadptcuts = {20.0, 12.5, 7.5, 5.0};
+    bool failFifthLeptonVeto = false;
+    double ptFifthLepton = -1.5;  // Default to invalid value
+
+    ptcutVeto = 3.0;
+
+    if ( ngs < 4 ){
+        quadsel = setFailureBit(quadsel, QuadCuts::GSNumber);
+    }
+    else{   // We have at least 3 G + S leptons
+        if ( PT_lep[vlidx[0]] < quadptcuts[0] ) quadsel = setFailureBit(quadsel, QuadCuts::PtOne);
+        if ( PT_lep[vlidx[1]] < quadptcuts[1] ) quadsel = setFailureBit(quadsel, QuadCuts::PtTwo);
+        if ( PT_lep[vlidx[2]] < quadptcuts[2] ) quadsel = setFailureBit(quadsel, QuadCuts::PtThree);
+        if ( PT_lep[vlidx[3]] < quadptcuts[3] ) quadsel = setFailureBit(quadsel, QuadCuts::PtFour);
+// Implement 4th lepton veto.  Loop over all leptons. If lepton is not already one considered as one of the 3 high quality leptons, 
+// then set veto flag if any are above the 4th lepton veto pT cut. This also includes bronze leptons. 
+        for (unsigned int i = 0; i < LepQual_lep.GetSize(); ++i){             // All leptons
+             if( i != vlidx[0] && i != vlidx[1] && i != vlidx[2] && i!=vlidx[3]){           // Not lepton already considered
+                 ptFifthLepton = PT_lep[i];
+                 if ( PT_lep[i] > ptcutVeto ) {
+                     failFifthLeptonVeto = true;
+                 }
+                 break;                       // break out so we store the highest pT additional lepton independent of whether it asserts the veto
+             }
+        }
+        if ( failFifthLeptonVeto ) quadsel = setFailureBit(quadsel, QuadCuts::PtFiveVeto);
+        if ( !surviveBtagVeto ) quadsel = setFailureBit(quadsel, QuadCuts::BTagVeto);
+        maxSIP3D = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]], SIP3D_lep[vlidx[2]], SIP3D_lep[vlidx[3]]});
+        if ( maxSIP3D > 4.0 ) quadsel = setFailureBit(quadsel, QuadCuts::SIP3DCut);
+// Kinematics for the 3 G+S leptons
+        FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
+        FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
+        FourVec l3 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[2]], PT_lep[vlidx[2]], Eta_lep[vlidx[2]], Phi_lep[vlidx[2]], M_lep[vlidx[2]]);
+        FourVec l4 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[3]], PT_lep[vlidx[3]], Eta_lep[vlidx[3]], Phi_lep[vlidx[3]], M_lep[vlidx[3]]);
+        FourVec l12 = l1 + l2;
+        FourVec l13 = l1 + l3;
+        FourVec l14 = l1 + l4;
+        FourVec l23 = l2 + l3;
+        FourVec l24 = l2 + l4;
+        FourVec l34 = l3 + l4;
+        double m12 = l12.M();   double m13 = l13.M();  double m14 = l14.M(); double m23 = l23.M(); double m24 = l24.M(); double m34 = l34.M();
+        bool os12 = l1.osdil(l2);   bool os13 = l1.osdil(l3);  bool os23 = l2.osdil(l3);
+        bool os14 = l1.osdil(l4);   bool os24 = l2.osdil(l4);  bool os34 = l3.osdil(l4);
+        auto result = QuadLeptonInfo(m12, m13, m14, m23, m24, m24, os12, os13, os14, os23, os24, os34);
+        minmll = std::get<0>(result);
+        maxmll = std::get<1>(result);
+        nossf = std::get<2>(result);
+        devZ = std::get<3>(result);
+        if(minmll < 4.0) quadsel = setFailureBit(quadsel, QuadCuts::MinMll);
+        if(minmll > 65.0) quadsel = setFailureBit(quadsel, QuadCuts::MxMinMll);
+        if(std::abs(devZ) < 7.5) quadsel = setFailureBit(quadsel, QuadCuts::OffZ);
+    }
+ //   hquadsel->Fill(quadsel, wt);
+    FillQuadCutFlow(quadsel, wt);
 
 // Similar logic for 2-lepton selection using enum class DiCuts
     unsigned int disel = 0;
@@ -255,6 +439,18 @@ bool Ana::Process(Long64_t entry)
         hPtFourVeto->Fill(ptFourthLepton , wt);
     }
 
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::MinMll ) || isSelectedOrFailsJustOneCut( trisel, TriCuts::MxMinMll )) {
+        hminmll->Fill(minmll , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::OffZ )) {
+        h3ldevZ->Fill(devZ , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::OffZ )) {
+        h4ldevZ->Fill(devZ , wt);
+    }
+
     if( isSelected( disel) ){
 
          FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
@@ -297,8 +493,10 @@ bool Ana::Process(Long64_t entry)
          hmll3->Fill(l23.M(), wt);
          hm3l->Fill(l123.M(), wt);
          hpt3l->Fill(l123.Pt(), wt);
-         hminmll3l->Fill( std::min( { l12.M(), l13.M(), l23.M() }) , wt );
-         hmaxmll3l->Fill( std::max( { l12.M(), l13.M(), l23.M() }) , wt );
+         hminmll3l->Fill( minmll , wt );
+         hmaxmll3l->Fill( maxmll , wt );
+         h3lnossf->Fill(nossf, wt);
+//         h3ldevZ->Fill(devZ,wt);
 
 // May be better with an enum
          if(flavor3==3)hm3lF3->Fill(l123.Mass(), wt); 
@@ -329,7 +527,7 @@ bool Ana::Process(Long64_t entry)
 
     }
 
-    if(nleptons_hipt==4){
+    if( isSelected(quadsel) ){
          FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
          FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
          FourVec l3 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[2]], PT_lep[vlidx[2]], Eta_lep[vlidx[2]], Phi_lep[vlidx[2]], M_lep[vlidx[2]]);
@@ -347,6 +545,7 @@ bool Ana::Process(Long64_t entry)
              h4lcharge->Fill(charge4, wt);
              if(TightCharge4==16)h4lchargetight->Fill(charge4, wt);
          }
+         h4lnossf->Fill(nossf, wt);
     }
 
     return true;
@@ -371,24 +570,42 @@ void Ana::Terminate()
 
     hDiCutFlow->GetXaxis()->SetBinLabel(1, "All");
     hDiCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
-    hDiCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
-    hDiCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
-    hDiCutFlow->GetXaxis()->SetBinLabel(5, "PtThreeVeto");
+    hDiCutFlow->GetXaxis()->SetBinLabel(3, "Pt1");
+    hDiCutFlow->GetXaxis()->SetBinLabel(4, "Pt2");
+    hDiCutFlow->GetXaxis()->SetBinLabel(5, "Pt3Veto");
     hDiCutFlow->GetXaxis()->SetBinLabel(6, "BTagVeto");
     hDiCutFlow->GetXaxis()->SetBinLabel(7, "SIP3DCut");
     hDiCutFlow->GetXaxis()->SetBinLabel(8, "Selected");
     std::cout << "Dilepton selected event count  " << hDiCutFlow->GetBinContent(8) << std::endl;
 
     hCutFlow->GetXaxis()->SetBinLabel(1, "All");
-    hCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
-    hCutFlow->GetXaxis()->SetBinLabel(3, "PtOne");
-    hCutFlow->GetXaxis()->SetBinLabel(4, "PtTwo");
-    hCutFlow->GetXaxis()->SetBinLabel(5, "PtThree");
-    hCutFlow->GetXaxis()->SetBinLabel(6, "PtFourVeto");
+    hCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
+    hCutFlow->GetXaxis()->SetBinLabel(3, "Pt1");
+    hCutFlow->GetXaxis()->SetBinLabel(4, "Pt2");
+    hCutFlow->GetXaxis()->SetBinLabel(5, "Pt3");
+    hCutFlow->GetXaxis()->SetBinLabel(6, "Pt4Veto");
     hCutFlow->GetXaxis()->SetBinLabel(7, "BTagVeto");
     hCutFlow->GetXaxis()->SetBinLabel(8, "SIP3DCut");
-    hCutFlow->GetXaxis()->SetBinLabel(9, "Selected");
-    std::cout << "Trilepton selected event count " << hCutFlow->GetBinContent(9) << std::endl;
+    hCutFlow->GetXaxis()->SetBinLabel(9,  "MnMll");
+    hCutFlow->GetXaxis()->SetBinLabel(10, "MxMnMll");
+    hCutFlow->GetXaxis()->SetBinLabel(11, "OffZ");
+    hCutFlow->GetXaxis()->SetBinLabel(12, "Selected");
+    std::cout << "Trilepton selected event count " << hCutFlow->GetBinContent(12) << std::endl;
+
+    hQuadCutFlow->GetXaxis()->SetBinLabel(1, "All");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(3, "Pt1");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(4, "Pt2");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(5, "Pt3");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(6, "Pt4");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(7, "Pt5Veto");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(8, "BTagVeto");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(9, "SIP3DCut");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(10,  "MnMll");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(11, "MxMnMll");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(12, "OffZ");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(13, "Selected");
+    std::cout << "Quadlepton selected event count " << hQuadCutFlow->GetBinContent(13) << std::endl;
 
     h3lflavor->GetXaxis()->SetBinLabel(1,"eee");
     h3lflavor->GetXaxis()->SetBinLabel(2,"ee#mu");
