@@ -174,7 +174,7 @@ public:
 
     int lcharge() const {
         if (abs(pdgID)==11 || abs(pdgID)==13)
-            return pdgID<0 ? +1 : -1;
+            return pdgID<0 ? +1 : -1; 
         return 0;
     }
 
@@ -216,6 +216,7 @@ public:
     }
 
     bool osdil(const FourVec& o) const {
+ // Here require that a dilepton pair is OSSF.
         return lflavor()==o.lflavor()
             && lcharge()*o.lcharge()==-1;
     }
