@@ -1,3 +1,39 @@
+double zBi(double ns, double mub, double syst){
+//  Based on 
+//  @article{Cousins:2008zz,
+//     author = "Cousins, Robert D. and Linnemann, James T. and Tucker, Jordan",
+//     title = "{Evaluation of three methods for calculating 
+//     statistical significance when incorporating a systematic uncertainty 
+//     into a test of the background-only hypothesis for a Poisson process}",
+//     eprint = "physics/0702156",
+//     archivePrefix = "arXiv",
+//     doi = "10.1016/j.nima.2008.07.086",
+//     journal = "Nucl. Instrum. Meth. A",
+//     volume = "595",
+//     number = "2",
+//     pages = "480--501",
+//     year = "2008"
+
+// ns  = Nsignal events
+// mub = Background mean
+// syst = Fractional systematic uncertainty on background mean
+//
+// See Appendix E for essentially this implementation
+//
+    double sb = syst*mub;
+    double tau = mub/(sb*sb);
+    double non  = mub + ns;
+    double noff = tau*mub;
+
+//    cout << "Calculating pBi for ns = " << ns << " mub= " << mub << " syst = " << syst << endl;
+//    cout << "Using auxiliary parameters tau, non, and noff of " << tau << " " << non << " " << noff << endl;
+
+    double pBi = TMath::BetaIncomplete(1.0/(1.0+tau), non, noff+1.0);
+// And transform to single-sided z score.
+    double zBi = sqrt(2.0)*TMath::ErfInverse(1.0 - 2.0*pBi);
+//    cout << "Found pBi, zBi values of " << pBi << " " << zBi << endl;
+    return zBi;
+}
 
 // Function to calculate the uncertainty of the histogram integral
 double GetIntegralError(TH1D* hist) {
@@ -51,14 +87,14 @@ void AddHistogramToLegend(TLegend* legend, TH1D* hist, const std::string& label)
 }
 
 // Function to draw a TPaveText with PT label and FOM values
-void AddFOMBox(const std::string& ptLabel, double S, double FOM1, double FOM2, double FOM3, 
+void AddFOMBox(const std::string& ptLabel, double S, double FOM1, double FOM2, double FOM3, double FOM4, 
                float x1 = 0.12, float y1 = 0.67, float x2 = 0.37, float y2 = 0.86) {
     
     // Format FOM values into strings
     char buf1[100], buf2[100], buf3[100];
     sprintf(buf1, "S = %.2f, S/B = %.4f", S, FOM1);
-    sprintf(buf2, "S/#sqrt{B} = %.2f", FOM2);
-    sprintf(buf3, "med[Z_{0}^{A} |#mu=1] = %.2f#sigma", FOM3); 
+    sprintf(buf2, "S/#sqrt{B} = %.2f, Z_{Bi}^{1%%} = %.2f", FOM2, FOM4);
+    sprintf(buf3, "med[Z_{0}^{A} |#mu=1] = %.2f", FOM3); 
 
     // Create and configure TPaveText
     TPaveText* ptbox = new TPaveText(x1, y1, x2, y2, "NDC");
@@ -78,7 +114,7 @@ void AddFOMBox(const std::string& ptLabel, double S, double FOM1, double FOM2, d
     ptbox->Draw();
 }
 
-void Present(string htype="h3lflavor", float ymax=1.0e5, float ymin=0.5, string MLSP="260", int labelchoice = 1, int which = 0, int mode=0, float xlmin=0.45, float ylmin=0.54){
+void Present(string htype="hDiCutFlow", float ymax=1.0e6, float ymin=0.1, string MLSP="260", int labelchoice = 1, int which = 0, int mode=0, float xlmin=0.45, float ylmin=0.54){
 
 // Vector of PT labels
 //std::vector<std::string> ptLabels = {"p_{T} Cuts (2, 3 GeV)", "p_{T} Cuts (5 GeV)", "p_{T} Cuts (7.5 GeV)", "p_{T} Cuts (10 GeV)"};
@@ -216,6 +252,7 @@ leg->SetTextFont(42);
 leg->SetTextSize(0.024);
 string signalstr;
 if (MLSP=="90")signalstr = "(130/115/110/100/90)";
+if (MLSP=="180")signalstr = "(220/209/200/190/180)";
 if (MLSP=="260")signalstr = "(300/289/280/270/260)";
 if (MLSP=="270")signalstr = "(300/289/280/275/270)";
 if (MLSP=="220")signalstr = "(300/289/260/240/220)";
@@ -247,14 +284,16 @@ double FOM1 = S/B;
 double FOM2 = S/std::sqrt(B);
 // Cowan, Cranmer, Gross, Vitells, asymptotic discovery significance, Eqn 97 in 1007.1727.
 double FOM3 = std::sqrt(2.0*( (S+B)*std::log(1.0 + (S/B)) - S ));
+double FOM4 = zBi(S, B, 0.01);   // Use 2% uncertainty for now
 std::cout << "Signal      : " << pSignal.first << " +- " << pSignal.second << std::endl;
 std::cout << "Bkgd        : " << pBkgd.first << " +- " << pBkgd.second << std:: endl;
 std::cout << "S/B         : " << FOM1 << std::endl;
 std::cout << "S/sqrt(B)   : " << FOM2 << std::endl;
 std::cout << "Z Asimov    : " << FOM3 << std::endl;
+std::cout << "Z Bi        : " << FOM4 << std::endl;
 
 // Draw FOM box
-AddFOMBox(ptLabel, S, FOM1, FOM2, FOM3);
+AddFOMBox(ptLabel, S, FOM1, FOM2, FOM3, FOM4);
 
 leg->SetBorderSize(1);                          // Include border
 leg->Draw();
