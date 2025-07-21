@@ -30,7 +30,7 @@ TH1D *hpt3l = new TH1D("hpt3l","Trilepton Events; pt3l [GeV]; Events per bin",10
 TH1D *hm3lbtv = new TH1D("hm3lbtv","Trileptons with loose b-tag veto; mlll [GeV]; Events per bin",200,0.0,400.0);
 TH1D *h3lcharge = new TH1D("h3lcharge","Trileptons ; Trilepton Charge; Events per bin", 4, -4.0, 4.0);
 TH1D *h3lchargetight = new TH1D("h3lchargetight","Trileptons ; Trilepton Charge (Tight Charge Cut); Events per bin", 4, -4.0, 4.0);
-TH1D *h3lflavor = new TH1D("h3lflavor","Trileptons; ; Events per bin scaled to 400 inv fb", 4, 2.5, 6.5);
+TH1D *h3lflavor = new TH1D("h3lflavor","Trileptons; Three-lepton flavor; Events per bin scaled to 400 inv fb", 4, 2.5, 6.5);
 TH1D *hminmll = new TH1D("hminmll","Trileptons ; min(mll) [GeV]; Events per bin",100,0.0,200.0);
 TH1D *hminmll3l = new TH1D("hminmll3l","Trileptons ; min(mll) [GeV]; Events per bin",100,0.0,100.0);
 TH1D *hmaxmll3l = new TH1D("hmaxmll3l","Trileptons ; max(mll) [GeV]; Events per bin",80,0.0,200.0);
@@ -40,7 +40,6 @@ TH1D *h3lHTnoid = new TH1D("h3lHTnoid","Trileptons; HT [GeV]; Events per bin",80
 TH1D *h3lnjets = new TH1D("h3lnjets","Trileptons; N jets; Events per bin",12,-0.5,11.5);
 TH1D *h3lnossf = new TH1D("h3lnossf","Trileptons; n OSSF; Events per bin",3,-0.5,2.5);
 TH1D *h3ldevZ = new TH1D("h3ldevZ","Trileptons; On Z (mll - mZ) variable [GeV]; Events per bin",78,-97.5,97.5);
-
 
 TH1D *h4lnossf = new TH1D("h4lnossf","Quadleptons; n OSSF (combinations); Events per bin",7,-0.5,6.5);
 TH1D *h4ldevZ = new TH1D("h4ldevZ","Quadleptons; On Z (mll - mZ) variable [GeV]; Events per bin",78,-97.5,97.5);
@@ -52,9 +51,9 @@ TH1D *hm3lF6 = new TH1D("hm3lF6","Trilepton Mass (#mu#mu#mu); mlll [GeV]; Events
 
 TH1D *hm4l = new TH1D("hm4l","Four leptons; Mass (4l) [GeV]; Events per bin",200,0.0,400.0);
 TH1D *hm4lbtv = new TH1D("hm4lbtv","Four leptons with loose b-tag veto; Mass (4l) [GeV]; Events per bin",400,0.0,400.0);
-TH1D *h4lcharge = new TH1D("h4lcharge","Four leptons ; Four-lepton Charge; Events per bin", 5, -5.0, 5.0);
-TH1D *h4lchargetight = new TH1D("h4lchargetight","Four leptons ; Four-lepton Charge (Tight Charge Cut); Events per bin", 5, -5.0, 5.0);
-TH1D *h4lflavor = new TH1D("h4lflavor","Four leptons; Four-lepton Flavor; Events per bin scaled to 400 inv fb", 5, 3.5, 8.5);
+TH1D *h4lcharge = new TH1D("h4lcharge","Four leptons ; Four-lepton charge; Events per bin", 5, -5.0, 5.0);
+TH1D *h4lchargetight = new TH1D("h4lchargetight","Four leptons ; Four-lepton charge (tight charge cut); Events per bin", 5, -5.0, 5.0);
+TH1D *h4lflavor = new TH1D("h4lflavor","Four leptons; Four-lepton flavor; Events per bin scaled to 400 inv fb", 5, 3.5, 8.5);
 
 TH1D* hmT = new TH1D("hmT", "Trileptons;  Transverse mass [GeV]; Leptons per bin", 200, 0.0, 400.0);
 TH1D* hmT1 = new TH1D("hmT1", "Trileptons; L1 transverse mass [GeV]; Events per bin", 200, 0.0, 400.0);
@@ -75,4 +74,10 @@ TH1D* hPtFourVeto = new TH1D("hPtFourVeto","Trileptons; PtFourVeto [GeV]; Events
 TH1D* hCutFlow = new TH1D("hCutFlow", "Trileptons; Cut Flow; Events per bin scaled to 400 inv fb", 12, -1.5, 10.5);
 TH1D* hDiCutFlow = new TH1D("hDiCutFlow", "Dileptons; Cut Flow; Events per bin scaled to 400 inv fb", 8, -1.5, 6.5);
 TH1D* hQuadCutFlow = new TH1D("hQuadCutFlow", "Quadleptons; Cut Flow; Events per bin scaled to 400 inv fb", 13, -1.5, 11.5);
+
+TH1D* hTriProcess = new TH1D("hTriProcess", "Trileptons; Production process; Events per bin scaled to 400 inv fb", 8, 0.5, 8.5);
+TH1D* hQuadProcess = new TH1D("hQuadProcess", "Four leptons; Production process; Events per bin scaled to 400 inv fb", 8, 0.5, 8.5);
+
+TH1D* hTriTrigger = new TH1D("hTriTrigger", "Trileptons; Trigger; Events per bin scaled to 400 inv fb", 11, -0.5, 10.5);
+TH1D* hQuadTrigger = new TH1D("hQuadTrigger", "Four leptons; Trigger; Events per bin scaled to 400 inv fb", 11, -0.5, 11.5);
 
