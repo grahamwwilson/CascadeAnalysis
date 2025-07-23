@@ -114,7 +114,7 @@ void AddFOMBox(const std::string& ptLabel, double S, double FOM1, double FOM2, d
     ptbox->Draw();
 }
 
-void Present(string htype="hDiCutFlow", float ymax=1.0e6, float ymin=0.1, string MLSP="260", int labelchoice = 1, int which = 0, int mode=0, float xlmin=0.45, float ylmin=0.54){
+void Present(string htype="hCutFlow", float ymax=1.0e6, float ymin=0.1, string MLSP="180", int labelchoice = 1, int which = 0, int mode=0, float xlmin=0.45, float ylmin=0.54){
 
 // Vector of PT labels
 //std::vector<std::string> ptLabels = {"p_{T} Cuts (2, 3 GeV)", "p_{T} Cuts (5 GeV)", "p_{T} Cuts (7.5 GeV)", "p_{T} Cuts (10 GeV)"};

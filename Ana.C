@@ -318,7 +318,7 @@ bool Ana::Process(Long64_t entry)
         nossf3l  = std::get<2>(result);
         devZ3l   = std::get<3>(result);
         if(minmll3l < 4.0) trisel = setFailureBit(trisel, TriCuts::MinMll);
-        if(minmll3l > 35.0) trisel = setFailureBit(trisel, TriCuts::MxMinMll);
+        if(minmll3l > 35.0) trisel = setFailureBit(trisel, TriCuts::MxMinMll);  // This is signal hypothesis sensitive.  35 GeV is OK for LSP=260 and 270, but NOT 220.
         if(std::abs(devZ3l) < 7.5) trisel = setFailureBit(trisel, TriCuts::OffZ);
     }
     FillCutFlow(trisel, wt);
