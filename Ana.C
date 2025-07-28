@@ -36,6 +36,7 @@
 #include "QuadCuts.h"     // Quadlepton selection
 #include <algorithm>
 #include <bitset> 
+#include <TMath.h>
 
 // Declare histograms globally here
 #include "AnaHistos.h"    // Try moving to SlaveBegin ?
@@ -124,7 +125,7 @@ std::tuple<double, double, int, double> QuadLeptonInfo(double m12, double m13, d
  
 }
 
-void FillCutFlow(unsigned int trisel, double wt) {
+void FillCutFlow(unsigned int sel, double wt) {
 
     // Fill the preselection bin
     hCutFlow->Fill(-1.0, wt);
@@ -132,18 +133,31 @@ void FillCutFlow(unsigned int trisel, double wt) {
     // Loop over all cuts
     for (unsigned int i = 0; i < static_cast<unsigned int>(TriCuts::NUMCUTS); ++i) {
         TriCuts cut = static_cast<TriCuts>(i);
-        if (PassesAllCutsSoFar(trisel, cut)) {
+        if (PassesAllCutsSoFar(sel, cut)) {
             hCutFlow->Fill(i, wt);
         }
     }
 
     // Optional: final bin if all cuts passed
-    if (trisel == 0) {
+    if (sel == 0) {
         hCutFlow->Fill(static_cast<unsigned int>(TriCuts::NUMCUTS), wt);
     }
+
+// Now do the exclusive one.
+    if (sel == 0) {
+        hXCutFlow->Fill(-1.0, wt);    // this bin is for those events passing all cuts to encode the level
+    }
+    // Loop over all cuts
+    for (unsigned int i = 0; i < static_cast<unsigned int>(TriCuts::NUMCUTS); ++i) {
+        TriCuts cut = static_cast<TriCuts>(i);
+        if (isOnlyBitSet(sel, cut)) {                 // event fails this and only this one
+            hXCutFlow->Fill(i, wt);
+        }
+    }
+
 }
 
-void FillDiCutFlow(unsigned int disel, double wt) {
+void FillDiCutFlow(unsigned int sel, double wt) {
 // Note this histogram used to be defined in Ana.h
 
     // Fill the preselection bin
@@ -152,18 +166,30 @@ void FillDiCutFlow(unsigned int disel, double wt) {
     // Loop over all cuts
     for (unsigned int i = 0; i < static_cast<unsigned int>(DiCuts::NUMCUTS); ++i) {
         DiCuts cut = static_cast<DiCuts>(i);
-        if (PassesAllCutsSoFar(disel, cut)) {
+        if (PassesAllCutsSoFar(sel, cut)) {
             hDiCutFlow->Fill(i, wt);
         }
     }
 
     // Optional: final bin if all cuts passed
-    if (disel == 0) {
+    if (sel == 0) {
         hDiCutFlow->Fill(static_cast<unsigned int>(DiCuts::NUMCUTS), wt);
+    }
+
+// Now do the exclusive one.
+    if (sel == 0) {
+        hXDiCutFlow->Fill(-1.0, wt);    // this bin is for those events passing all cuts to encode the level
+    }
+    // Loop over all cuts
+    for (unsigned int i = 0; i < static_cast<unsigned int>(DiCuts::NUMCUTS); ++i) {
+        DiCuts cut = static_cast<DiCuts>(i);
+        if (isOnlyBitSet(sel, cut)) {                 // event fails this and only this one
+            hXDiCutFlow->Fill(i, wt);
+        }
     }
 }
 
-void FillQuadCutFlow(unsigned int quadsel, double wt) {
+void FillQuadCutFlow(unsigned int sel, double wt) {
 // Note this histogram used to be defined in Ana.h
 
     // Fill the preselection bin
@@ -172,14 +198,26 @@ void FillQuadCutFlow(unsigned int quadsel, double wt) {
     // Loop over all cuts
     for (unsigned int i = 0; i < static_cast<unsigned int>(QuadCuts::NUMCUTS); ++i) {
         QuadCuts cut = static_cast<QuadCuts>(i);
-        if (PassesAllCutsSoFar(quadsel, cut)) {
+        if (PassesAllCutsSoFar(sel, cut)) {
             hQuadCutFlow->Fill(i, wt);
         }
     }
 
     // Optional: final bin if all cuts passed
-    if (quadsel == 0) {
+    if (sel == 0) {
         hQuadCutFlow->Fill(static_cast<unsigned int>(QuadCuts::NUMCUTS), wt);
+    }
+
+// Now do the exclusive one.
+    if (sel == 0) {
+        hXQuadCutFlow->Fill(-1.0, wt);    // this bin is for those events passing all cuts to encode the level
+    }
+    // Loop over all cuts
+    for (unsigned int i = 0; i < static_cast<unsigned int>(QuadCuts::NUMCUTS); ++i) {
+        QuadCuts cut = static_cast<QuadCuts>(i);
+        if (isOnlyBitSet(sel, cut)) {                 // event fails this and only this one
+            hXQuadCutFlow->Fill(i, wt);
+        }
     }
 }
 
@@ -226,7 +264,18 @@ bool Ana::Process(Long64_t entry)
 
     fReader.SetLocalEntry(entry);
 
+    const double MLLCUT = 24.0; 
+
     double wt = 400.0*(*weight);
+
+#if ANA_NTUPLE_VERSION == 3
+    if(*weight<0.00032){
+        hprocesslowt->Fill(*cascades_prod, wt);
+    }
+    else{
+        hprocesshiwt->Fill(*cascades_prod, wt);
+    }
+#endif
 
     hMET->Fill(*MET, wt);
     hMET_phi->Fill(*MET_phi, wt);
@@ -268,12 +317,18 @@ bool Ana::Process(Long64_t entry)
         if(BtagID_jet[i] >=2) surviveBtagVeto = false;
     }
 
+// Trigger info
+    bool passTrig = false;
+    if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger)passTrig = true;
+
 // Start on 3-lepton selection using enum class TriCuts
     unsigned int trisel = 0;
     std::vector<double> ptcuts3l = {20.0, 12.5, 7.5};
     double ptcutVeto3l = 3.0;
     double sip3dcut3l = 3.5;
     double maxSIP3D3l{};
+    double minSIP3D3l{};
+    double SIP3DChisq3l{};
     bool failFourthLeptonVeto = false;
     double ptFourthLepton = -1.5;  // Default to invalid value
     double minmll3l = 0.0;
@@ -299,9 +354,12 @@ bool Ana::Process(Long64_t entry)
                  break;                       // break out so we store the highest pT additional lepton independent of whether it asserts the veto
              }
         }
+        if ( !passTrig ) trisel = setFailureBit(trisel, TriCuts::Trigger);
         if ( failFourthLeptonVeto ) trisel = setFailureBit(trisel, TriCuts::PtFourVeto);
         if ( !surviveBtagVeto ) trisel = setFailureBit(trisel, TriCuts::BTagVeto);
         maxSIP3D3l = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]], SIP3D_lep[vlidx[2]]});
+        minSIP3D3l = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]], SIP3D_lep[vlidx[2]]});
+        SIP3DChisq3l = ( std::pow(SIP3D_lep[vlidx[0]], 2) + std::pow(SIP3D_lep[vlidx[1]], 2) + std::pow(SIP3D_lep[vlidx[2]], 2) );
         if ( maxSIP3D3l > sip3dcut3l ) trisel = setFailureBit(trisel, TriCuts::SIP3DCut);
 // Kinematics for the 3 G+S leptons
         FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
@@ -318,7 +376,7 @@ bool Ana::Process(Long64_t entry)
         nossf3l  = std::get<2>(result);
         devZ3l   = std::get<3>(result);
         if(minmll3l < 4.0) trisel = setFailureBit(trisel, TriCuts::MinMll);
-        if(minmll3l > 35.0) trisel = setFailureBit(trisel, TriCuts::MxMinMll);  // This is signal hypothesis sensitive.  35 GeV is OK for LSP=260 and 270, but NOT 220.
+        if(minmll3l > MLLCUT) trisel = setFailureBit(trisel, TriCuts::MxMinMll);  // This is signal hypothesis sensitive.  35 GeV is OK for LSP=260 and 270, but NOT 220.
         if(std::abs(devZ3l) < 7.5) trisel = setFailureBit(trisel, TriCuts::OffZ);
     }
     FillCutFlow(trisel, wt);
@@ -331,6 +389,7 @@ bool Ana::Process(Long64_t entry)
     double ptFifthLepton = -1.5;  // Default to invalid value
     double ptcutVeto4l = 3.0;
     double maxSIP3D4l{};
+    double SIP3DChisq4l{};
     double minmll4l = 0.0;
     double maxmll4l = 0.0;
     int nossf4l = 0;
@@ -355,10 +414,12 @@ bool Ana::Process(Long64_t entry)
                  break;                       // break out so we store the highest pT additional lepton independent of whether it asserts the veto
              }
         }
+        if ( !passTrig ) quadsel = setFailureBit(quadsel, QuadCuts::Trigger);
         if ( failFifthLeptonVeto ) quadsel = setFailureBit(quadsel, QuadCuts::PtFiveVeto);
         if ( !surviveBtagVeto ) quadsel = setFailureBit(quadsel, QuadCuts::BTagVeto);
         maxSIP3D4l = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]], SIP3D_lep[vlidx[2]], SIP3D_lep[vlidx[3]]});
-        if ( maxSIP3D4l > 4.0 ) quadsel = setFailureBit(quadsel, QuadCuts::SIP3DCut);
+        SIP3DChisq4l = std::pow(SIP3D_lep[vlidx[0]], 2) + std::pow(SIP3D_lep[vlidx[1]], 2) + std::pow(SIP3D_lep[vlidx[2]], 2) + std::pow(SIP3D_lep[vlidx[3]], 2) ;
+        if ( maxSIP3D4l > 5.0 ) quadsel = setFailureBit(quadsel, QuadCuts::SIP3DCut);
 // Kinematics for the 3 G+S leptons
         FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
         FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
@@ -379,7 +440,7 @@ bool Ana::Process(Long64_t entry)
         nossf4l = std::get<2>(result);
         devZ4l = std::get<3>(result);
         if(minmll4l < 4.0) quadsel = setFailureBit(quadsel, QuadCuts::MinMll);
-        if(minmll4l > 65.0) quadsel = setFailureBit(quadsel, QuadCuts::MxMinMll);
+        if(minmll4l > MLLCUT) quadsel = setFailureBit(quadsel, QuadCuts::MxMinMll);        // Needs to be checked/adjusted for each signal hypothesis
         if(std::abs(devZ4l) < 7.5) quadsel = setFailureBit(quadsel, QuadCuts::OffZ);
     }
     FillQuadCutFlow(quadsel, wt);
@@ -417,10 +478,6 @@ bool Ana::Process(Long64_t entry)
     }
     FillDiCutFlow(disel, wt);
 
-    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::SIP3DCut ) ) {
-        hmaxSIP3D->Fill(maxSIP3D3l , wt);
-    }
-
     if( isSelectedOrFailsJustOneCut( trisel, TriCuts::PtOne )) {
         hPtOne->Fill(PT_lep[vlidx[0]] , wt);
     }
@@ -433,8 +490,27 @@ bool Ana::Process(Long64_t entry)
         hPtThree->Fill(PT_lep[vlidx[2]] , wt);
     }
 
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::Trigger )) {
+// Trigger logic
+         hTriTrigger->Fill(0.0, wt);
+         if (*SingleElectrontrigger) hTriTrigger->Fill(1.0, wt);
+         if (*SingleMuontrigger) hTriTrigger->Fill(2.0, wt);
+         if (*DoubleElectrontrigger) hTriTrigger->Fill(3.0, wt);
+         if (*DoubleMuontrigger) hTriTrigger->Fill(4.0, wt);
+         if (*EMutrigger) hTriTrigger->Fill(5.0, wt);
+         if (*METORtrigger) hTriTrigger->Fill(6.0, wt);
+         if (*SingleElectrontrigger || *SingleMuontrigger) hTriTrigger->Fill(7.0, wt);
+         if (*DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hTriTrigger->Fill(8.0, wt);
+         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hTriTrigger->Fill(9.0, wt);   
+         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger || *METORtrigger) hTriTrigger->Fill(10.0, wt);                 
+    }
+
     if( isSelectedOrFailsJustOneCut( trisel, TriCuts::PtFourVeto )) {
         hPtFourVeto->Fill(ptFourthLepton , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::SIP3DCut ) ) {
+        hmaxSIP3D->Fill(maxSIP3D3l , wt);
     }
 
     if( isSelectedOrFailsJustOneCut( trisel, TriCuts::MinMll ) || isSelectedOrFailsJustOneCut( trisel, TriCuts::MxMinMll )) {
@@ -443,10 +519,38 @@ bool Ana::Process(Long64_t entry)
 
     if( isSelectedOrFailsJustOneCut( trisel, TriCuts::OffZ )) {
         h3ldevZ->Fill(devZ3l , wt);
+        h3ldevZf->Fill(devZ3l , wt);    //finely-binned version
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::Trigger )) {
+         hQuadTrigger->Fill(0.0, wt);
+         if (*SingleElectrontrigger) hQuadTrigger->Fill(1.0, wt);
+         if (*SingleMuontrigger) hQuadTrigger->Fill(2.0, wt);
+         if (*DoubleElectrontrigger) hQuadTrigger->Fill(3.0, wt);
+         if (*DoubleMuontrigger) hQuadTrigger->Fill(4.0, wt);
+         if (*EMutrigger) hQuadTrigger->Fill(5.0, wt);
+         if (*METORtrigger) hQuadTrigger->Fill(6.0, wt);
+         if (*SingleElectrontrigger || *SingleMuontrigger) hQuadTrigger->Fill(7.0, wt);
+         if (*DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hQuadTrigger->Fill(8.0, wt);
+         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hQuadTrigger->Fill(9.0, wt);   
+         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger || *METORtrigger) hQuadTrigger->Fill(10.0, wt);  
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::PtFiveVeto )) {
+        hPtFiveVeto->Fill(ptFifthLepton , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::SIP3DCut ) ) {
+        hmaxSIP3D4l->Fill(maxSIP3D4l , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MinMll ) || isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MxMinMll )) {
+        hminmll4l->Fill(minmll4l , wt);
     }
 
     if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::OffZ )) {
         h4ldevZ->Fill(devZ4l , wt);
+        h4ldevZf->Fill(devZ4l , wt);
     }
 
     if( isSelected( disel) ){
@@ -508,6 +612,11 @@ bool Ana::Process(Long64_t entry)
              if(TightCharge3==8)h3lchargetight->Fill(charge3, wt);
          }
 
+         if(charge3==-3 || charge3==3){
+             hTriQ3->Fill(flavor3, wt);
+             if(TightCharge3==8)hTriQ3Tight->Fill(flavor3,wt);
+         }
+
          hmT1->Fill(l1.mtp(fMET), wt);
          hmT2->Fill(l2.mtp(fMET), wt);
          hmT3->Fill(l3.mtp(fMET), wt);
@@ -522,19 +631,16 @@ bool Ana::Process(Long64_t entry)
          h3lHTnoid->Fill(*HT_eta24, wt);
          h3lmaxmT->Fill(std::max( {l1.mtp(fMET), l2.mtp(fMET), l3.mtp(fMET) } )  , wt);
          h3lnjets->Fill(*Njet, wt);
-
-// Trigger logic
-         hTriTrigger->Fill(0.0, wt);
-         if (*SingleElectrontrigger) hTriTrigger->Fill(1.0, wt);
-         if (*SingleMuontrigger) hTriTrigger->Fill(2.0, wt);
-         if (*DoubleElectrontrigger) hTriTrigger->Fill(3.0, wt);
-         if (*DoubleMuontrigger) hTriTrigger->Fill(4.0, wt);
-         if (*EMutrigger) hTriTrigger->Fill(5.0, wt);
-         if (*METORtrigger) hTriTrigger->Fill(6.0, wt);
-         if (*SingleElectrontrigger || *SingleMuontrigger) hTriTrigger->Fill(7.0, wt);
-         if (*DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hTriTrigger->Fill(8.0, wt);
-         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hTriTrigger->Fill(9.0, wt);   
-         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger || *METORtrigger) hTriTrigger->Fill(10.0, wt);         
+         hminSIP3D->Fill(minSIP3D3l, wt);
+         h3lSIP3DRChisq->Fill(SIP3DChisq3l/3.0, wt);   // divide by degrees of freedom for this plot
+         int ndof = 3;
+         double pfit = TMath::Prob(SIP3DChisq3l, ndof);
+         double cdf = TMath::Gamma(ndof/2.0, SIP3DChisq3l/2.0);  // CDF of chi-squared
+         double signed_z = TMath::NormQuantile(cdf);             // z such that P(Z < z) = CDF
+// Now fill the other related histogram representations
+         h3lSIP3DProb->Fill(pfit, wt);
+         h3lSIP3DLogProb->Fill(std::log10(pfit), wt);
+         h3lSIP3DSignificance->Fill(signed_z, wt);
 
 #if ANA_NTUPLE_VERSION == 3
          hTriProcess->Fill(*cascades_prod, wt);
@@ -566,17 +672,20 @@ bool Ana::Process(Long64_t entry)
          }
          h4lnossf->Fill(nossf4l, wt);
 
-         hQuadTrigger->Fill(0.0, wt);
-         if (*SingleElectrontrigger) hQuadTrigger->Fill(1.0, wt);
-         if (*SingleMuontrigger) hQuadTrigger->Fill(2.0, wt);
-         if (*DoubleElectrontrigger) hQuadTrigger->Fill(3.0, wt);
-         if (*DoubleMuontrigger) hQuadTrigger->Fill(4.0, wt);
-         if (*EMutrigger) hQuadTrigger->Fill(5.0, wt);
-         if (*METORtrigger) hQuadTrigger->Fill(6.0, wt);
-         if (*SingleElectrontrigger || *SingleMuontrigger) hQuadTrigger->Fill(7.0, wt);
-         if (*DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hQuadTrigger->Fill(8.0, wt);
-         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hQuadTrigger->Fill(9.0, wt);   
-         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger || *METORtrigger) hQuadTrigger->Fill(10.0, wt);    
+         h4lSIP3DRChisq->Fill(SIP3DChisq4l/4.0, wt);   // divide by degrees of freedom for this plot
+         int ndof = 4;
+         double pfit = TMath::Prob(SIP3DChisq4l, ndof);
+         double cdf = TMath::Gamma(ndof/2.0, SIP3DChisq4l/2.0);  // CDF of chi-squared
+         double signed_z = TMath::NormQuantile(cdf);             // z such that P(Z < z) = CDF
+// Now fill the other related histogram representations
+         h4lSIP3DProb->Fill(pfit, wt);
+         h4lSIP3DLogProb->Fill(std::log10(pfit), wt);
+         h4lSIP3DSignificance->Fill(signed_z, wt);
+
+         if(charge4==-2 || charge4==2){
+             hQuadQ2->Fill(flavor4, wt);
+             if(TightCharge4==16)hQuadQ2Tight->Fill(flavor4,wt);
+         }
 
 #if ANA_NTUPLE_VERSION == 3
          hQuadProcess->Fill(*cascades_prod, wt);
@@ -613,19 +722,41 @@ void Ana::Terminate()
     hDiCutFlow->GetXaxis()->SetBinLabel(8, "Selected");
     std::cout << "Dilepton selected event count  " << hDiCutFlow->GetBinContent(8) << std::endl;
 
+    hXDiCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
+    hXDiCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
+    hXDiCutFlow->GetXaxis()->SetBinLabel(3, "Pt1");
+    hXDiCutFlow->GetXaxis()->SetBinLabel(4, "Pt2");
+    hXDiCutFlow->GetXaxis()->SetBinLabel(5, "Pt3Veto");
+    hXDiCutFlow->GetXaxis()->SetBinLabel(6, "BTagVeto");
+    hXDiCutFlow->GetXaxis()->SetBinLabel(7, "SIP3DCut");
+
     hCutFlow->GetXaxis()->SetBinLabel(1, "All");
     hCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
     hCutFlow->GetXaxis()->SetBinLabel(3, "Pt1");
     hCutFlow->GetXaxis()->SetBinLabel(4, "Pt2");
     hCutFlow->GetXaxis()->SetBinLabel(5, "Pt3");
-    hCutFlow->GetXaxis()->SetBinLabel(6, "Pt4Veto");
-    hCutFlow->GetXaxis()->SetBinLabel(7, "BTagVeto");
-    hCutFlow->GetXaxis()->SetBinLabel(8, "SIP3DCut");
-    hCutFlow->GetXaxis()->SetBinLabel(9,  "MnMll");
-    hCutFlow->GetXaxis()->SetBinLabel(10, "MxMnMll");
-    hCutFlow->GetXaxis()->SetBinLabel(11, "OffZ");
-    hCutFlow->GetXaxis()->SetBinLabel(12, "Selected");
-    std::cout << "Trilepton selected event count " << hCutFlow->GetBinContent(12) << std::endl;
+    hCutFlow->GetXaxis()->SetBinLabel(6, "TRG");
+    hCutFlow->GetXaxis()->SetBinLabel(7, "Pt4Veto");
+    hCutFlow->GetXaxis()->SetBinLabel(8, "BTagVeto");
+    hCutFlow->GetXaxis()->SetBinLabel(9, "SIP3DCut");
+    hCutFlow->GetXaxis()->SetBinLabel(10,  "MnMll");
+    hCutFlow->GetXaxis()->SetBinLabel(11, "MxMnMll");
+    hCutFlow->GetXaxis()->SetBinLabel(12, "OffZ");
+    hCutFlow->GetXaxis()->SetBinLabel(13, "Selected");
+    std::cout << "Trilepton selected event count " << hCutFlow->GetBinContent(13) << std::endl;
+
+    hXCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
+    hXCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
+    hXCutFlow->GetXaxis()->SetBinLabel(3, "Pt1");
+    hXCutFlow->GetXaxis()->SetBinLabel(4, "Pt2");
+    hXCutFlow->GetXaxis()->SetBinLabel(5, "Pt3");
+    hXCutFlow->GetXaxis()->SetBinLabel(6, "TRG");
+    hXCutFlow->GetXaxis()->SetBinLabel(7, "Pt4Veto");
+    hXCutFlow->GetXaxis()->SetBinLabel(8, "BTagVeto");
+    hXCutFlow->GetXaxis()->SetBinLabel(9, "SIP3DCut");
+    hXCutFlow->GetXaxis()->SetBinLabel(10,  "MnMll");
+    hXCutFlow->GetXaxis()->SetBinLabel(11, "MxMnMll");
+    hXCutFlow->GetXaxis()->SetBinLabel(12, "OffZ");
 
     hQuadCutFlow->GetXaxis()->SetBinLabel(1, "All");
     hQuadCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
@@ -633,20 +764,47 @@ void Ana::Terminate()
     hQuadCutFlow->GetXaxis()->SetBinLabel(4, "Pt2");
     hQuadCutFlow->GetXaxis()->SetBinLabel(5, "Pt3");
     hQuadCutFlow->GetXaxis()->SetBinLabel(6, "Pt4");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(7, "Pt5Veto");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(8, "BTagVeto");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(9, "SIP3DCut");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(10,  "MnMll");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(11, "MxMnMll");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(12, "OffZ");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(13, "Selected");
-    std::cout << "Quadlepton selected event count " << hQuadCutFlow->GetBinContent(13) << std::endl;
+    hQuadCutFlow->GetXaxis()->SetBinLabel(7, "TRG");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(8, "Pt5Veto");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(9, "BTagVeto");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(10, "SIP3DCut");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(11,  "MnMll");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(12, "MxMnMll");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(13, "OffZ");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(14, "Selected");
+    std::cout << "Quadlepton selected event count " << hQuadCutFlow->GetBinContent(14) << std::endl;
+
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(3, "Pt1");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(4, "Pt2");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(5, "Pt3");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(6, "Pt4");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(7, "TRG");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(8, "Pt5Veto");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(9, "BTagVeto");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(10, "SIP3DCut");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(11,  "MnMll");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(12, "MxMnMll");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(13, "OffZ");
 
     h3lflavor->GetXaxis()->SetBinLabel(1,"eee");
     h3lflavor->GetXaxis()->SetBinLabel(2,"ee#mu");
     h3lflavor->GetXaxis()->SetBinLabel(3,"e#mu#mu");
     h3lflavor->GetXaxis()->SetBinLabel(4,"#mu#mu#mu");
     h3lflavor->GetXaxis()->SetLabelSize(0.07);
+
+    hTriQ3->GetXaxis()->SetBinLabel(1,"eee");
+    hTriQ3->GetXaxis()->SetBinLabel(2,"ee#mu");
+    hTriQ3->GetXaxis()->SetBinLabel(3,"e#mu#mu");
+    hTriQ3->GetXaxis()->SetBinLabel(4,"#mu#mu#mu");
+    hTriQ3->GetXaxis()->SetLabelSize(0.07);
+
+    hTriQ3Tight->GetXaxis()->SetBinLabel(1,"eee");
+    hTriQ3Tight->GetXaxis()->SetBinLabel(2,"ee#mu");
+    hTriQ3Tight->GetXaxis()->SetBinLabel(3,"e#mu#mu");
+    hTriQ3Tight->GetXaxis()->SetBinLabel(4,"#mu#mu#mu");
+    hTriQ3Tight->GetXaxis()->SetLabelSize(0.07);
 
     h4lflavor->GetXaxis()->SetBinLabel(1,"eeee");
     h4lflavor->GetXaxis()->SetBinLabel(2,"eee#mu");
@@ -655,24 +813,58 @@ void Ana::Terminate()
     h4lflavor->GetXaxis()->SetBinLabel(5,"#mu#mu#mu#mu");
     h4lflavor->GetXaxis()->SetLabelSize(0.06);
 
+    hQuadQ2->GetXaxis()->SetBinLabel(1,"eeee");
+    hQuadQ2->GetXaxis()->SetBinLabel(2,"eee#mu");
+    hQuadQ2->GetXaxis()->SetBinLabel(3,"ee#mu#mu");
+    hQuadQ2->GetXaxis()->SetBinLabel(4,"e#mu#mu#mu");
+    hQuadQ2->GetXaxis()->SetBinLabel(5,"#mu#mu#mu#mu");
+    hQuadQ2->GetXaxis()->SetLabelSize(0.06);
+
+    hQuadQ2Tight->GetXaxis()->SetBinLabel(1,"eeee");
+    hQuadQ2Tight->GetXaxis()->SetBinLabel(2,"eee#mu");
+    hQuadQ2Tight->GetXaxis()->SetBinLabel(3,"ee#mu#mu");
+    hQuadQ2Tight->GetXaxis()->SetBinLabel(4,"e#mu#mu#mu");
+    hQuadQ2Tight->GetXaxis()->SetBinLabel(5,"#mu#mu#mu#mu");
+    hQuadQ2Tight->GetXaxis()->SetLabelSize(0.06);
+
+    hprocesslowt->GetXaxis()->SetBinLabel(1,"ee");
+    hprocesslowt->GetXaxis()->SetBinLabel(2,"ev+");
+    hprocesslowt->GetXaxis()->SetBinLabel(3,"ev-");
+    hprocesslowt->GetXaxis()->SetBinLabel(4,"veve");
+    hprocesslowt->GetXaxis()->SetBinLabel(5,"#mu#mu");
+    hprocesslowt->GetXaxis()->SetBinLabel(6,"#muv+");
+    hprocesslowt->GetXaxis()->SetBinLabel(7,"#muv-");
+    hprocesslowt->GetXaxis()->SetBinLabel(8,"v#muv#mu");
+    hprocesslowt->GetXaxis()->SetLabelSize(0.07);
+
+    hprocesshiwt->GetXaxis()->SetBinLabel(1,"ee");
+    hprocesshiwt->GetXaxis()->SetBinLabel(2,"ev+");
+    hprocesshiwt->GetXaxis()->SetBinLabel(3,"ev-");
+    hprocesshiwt->GetXaxis()->SetBinLabel(4,"veve");
+    hprocesshiwt->GetXaxis()->SetBinLabel(5,"#mu#mu");
+    hprocesshiwt->GetXaxis()->SetBinLabel(6,"#muv+");
+    hprocesshiwt->GetXaxis()->SetBinLabel(7,"#muv-");
+    hprocesshiwt->GetXaxis()->SetBinLabel(8,"v#muv#mu");
+    hprocesshiwt->GetXaxis()->SetLabelSize(0.07);
+
     hTriProcess->GetXaxis()->SetBinLabel(1,"ee");
     hTriProcess->GetXaxis()->SetBinLabel(2,"ev+");
     hTriProcess->GetXaxis()->SetBinLabel(3,"ev-");
     hTriProcess->GetXaxis()->SetBinLabel(4,"veve");
-    hTriProcess->GetXaxis()->SetBinLabel(5,"mm");
-    hTriProcess->GetXaxis()->SetBinLabel(6,"mv+");
-    hTriProcess->GetXaxis()->SetBinLabel(7,"mv-");
-    hTriProcess->GetXaxis()->SetBinLabel(8,"vmvm");
+    hTriProcess->GetXaxis()->SetBinLabel(5,"#mu#mu");
+    hTriProcess->GetXaxis()->SetBinLabel(6,"#muv+");
+    hTriProcess->GetXaxis()->SetBinLabel(7,"#muv-");
+    hTriProcess->GetXaxis()->SetBinLabel(8,"v#muv#mu");
     hTriProcess->GetXaxis()->SetLabelSize(0.07);
 
     hQuadProcess->GetXaxis()->SetBinLabel(1,"ee");
     hQuadProcess->GetXaxis()->SetBinLabel(2,"ev+");
     hQuadProcess->GetXaxis()->SetBinLabel(3,"ev-");
     hQuadProcess->GetXaxis()->SetBinLabel(4,"veve");
-    hQuadProcess->GetXaxis()->SetBinLabel(5,"mm");
-    hQuadProcess->GetXaxis()->SetBinLabel(6,"mv+");
-    hQuadProcess->GetXaxis()->SetBinLabel(7,"mv-");
-    hQuadProcess->GetXaxis()->SetBinLabel(8,"vmvm");
+    hQuadProcess->GetXaxis()->SetBinLabel(5,"#mu#mu");
+    hQuadProcess->GetXaxis()->SetBinLabel(6,"#muv+");
+    hQuadProcess->GetXaxis()->SetBinLabel(7,"#muv-");
+    hQuadProcess->GetXaxis()->SetBinLabel(8,"v#muv#mu");
     hQuadProcess->GetXaxis()->SetLabelSize(0.07);
 
     hTriTrigger->GetXaxis()->SetBinLabel(1,"None");

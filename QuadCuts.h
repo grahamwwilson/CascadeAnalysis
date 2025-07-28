@@ -2,7 +2,7 @@
 
 enum class QuadCuts {
     GSNumber = 0, 
-    PtOne, PtTwo, PtThree, PtFour, PtFiveVeto,
+    PtOne, PtTwo, PtThree, PtFour, Trigger, PtFiveVeto,
     BTagVeto, SIP3DCut, 
     MinMll, MxMinMll, OffZ, NUMCUTS
 };
@@ -14,6 +14,7 @@ std::string to_string(QuadCuts value) {
         case QuadCuts::PtTwo:      return "PtTwo";            // 2nd highest pt G+S lepton pT>15 GeV
         case QuadCuts::PtThree:    return "PtThree";          // 3rd highest pt G+S lepton pT>10  
         case QuadCuts::PtFour:     return "PtFour";           // 4th highest pt G+S lepton pT>5 GeV
+        case QuadCuts::Trigger:    return "Trigger";          // Single or double lepton trigger 
         case QuadCuts::PtFiveVeto: return "PtFiveVeto";           // No appropriate lepton with pT > 3 GeV
         case QuadCuts::BTagVeto:   return "BTagVeto";         // no b-tagged jets (uses loose criterion)
         case QuadCuts::SIP3DCut:   return "SIP3DCut";         // reject events with any of the 3 selected leptons with SIP3D > eg. 3.5

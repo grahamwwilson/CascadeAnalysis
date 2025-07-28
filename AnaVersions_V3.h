@@ -1,0 +1,3 @@
+#ifndef ANA_NTUPLE_VERSION
+#define ANA_NTUPLE_VERSION 3
+#endif

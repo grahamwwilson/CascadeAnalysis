@@ -2,7 +2,7 @@
 
 enum class TriCuts {
     GSNumber = 0, 
-    PtOne, PtTwo, PtThree, PtFourVeto,
+    PtOne, PtTwo, PtThree, Trigger, PtFourVeto,
     BTagVeto, SIP3DCut, 
     MinMll, MxMinMll, OffZ, NUMCUTS
 };
@@ -12,7 +12,8 @@ std::string to_string(TriCuts value) {
         case TriCuts::GSNumber:   return "GSNumber";         // eg. >=3 G+S leptons
         case TriCuts::PtOne:      return "PtOne";            // eg. highest pt G+S lepton pT>20 GeV
         case TriCuts::PtTwo:      return "PtTwo";            // 2nd highest pt G+S lepton pT>15 GeV
-        case TriCuts::PtThree:    return "PtThree";          // 3rd highest pt G+S lepton pT>10  
+        case TriCuts::PtThree:    return "PtThree";          // 3rd highest pt G+S lepton pT>10 GeV 
+        case TriCuts::Trigger:    return "Trigger";          // Single-lepton or double-lepton trigger 
         case TriCuts::PtFourVeto: return "PtFourVeto";       // no appropriate lepton with pT > 5 GeV
         case TriCuts::BTagVeto:   return "BTagVeto";         // no b-tagged jets (uses loose criterion)
         case TriCuts::SIP3DCut:   return "SIP3DCut";         // reject events with any of the 3 selected leptons with SIP3D > eg. 3.5

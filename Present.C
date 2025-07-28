@@ -55,8 +55,14 @@ std::pair<double,double> GetIntegral(TH1D* hist) {
   
    // Check if the histogram is named "hCutFlow" or "hDiCutFlow" or "hQuadCutFlow"
     if (std::string(hist->GetName()) == "hCutFlow"  || std::string(hist->GetName()) == "hDiCutFlow"  || std::string(hist->GetName()) == "hQuadCutFlow") {
-        // Use entries in last bin method for uncertainty
+        // Use entries in last bin for uncertainty
         auto bin = hist->GetNbinsX();
+        integral    = hist->GetBinContent(bin);
+        uncertainty = hist->GetBinError(bin);
+    }
+    else if (std::string(hist->GetName()) == "hTriTrigger"  || std::string(hist->GetName()) == "hQuadTrigger") {
+        // Use entries in first bin for uncertainty
+        auto bin = 1;
         integral    = hist->GetBinContent(bin);
         uncertainty = hist->GetBinError(bin);
     }
@@ -88,7 +94,7 @@ void AddHistogramToLegend(TLegend* legend, TH1D* hist, const std::string& label)
 
 // Function to draw a TPaveText with PT label and FOM values
 void AddFOMBox(const std::string& ptLabel, double S, double FOM1, double FOM2, double FOM3, double FOM4, 
-               float x1 = 0.12, float y1 = 0.67, float x2 = 0.37, float y2 = 0.86) {
+               float x1 = 0.17, float y1 = 0.67, float x2 = 0.42, float y2 = 0.86) {
     
     // Format FOM values into strings
     char buf1[100], buf2[100], buf3[100];
@@ -119,7 +125,9 @@ void Present(string htype="hCutFlow", float ymax=1.0e6, float ymin=0.1, string M
 // Vector of PT labels
 //std::vector<std::string> ptLabels = {"p_{T} Cuts (2, 3 GeV)", "p_{T} Cuts (5 GeV)", "p_{T} Cuts (7.5 GeV)", "p_{T} Cuts (10 GeV)"};
 
-std::vector<std::string> ptLabels = {"2l selection", "3l selection", "4l selection"};
+//std::vector<std::string> ptLabels = {"2l selection", "3l selection", "4l selection"};
+
+std::vector<std::string> ptLabels = {"2l selection", "3l selection (MLL<35 GeV)", "4l selection (MLL<35 GeV)", "3l selection (MLL<65 GeV)", "4l selection (MLL<65 GeV)", "3l selection (MLL<24 GeV)", "4l selection (MLL<24 GeV)"};
 
 // Ensure labelchoice is in bounds
 std::string ptLabel = (labelchoice >= 0 && labelchoice < ptLabels.size()) ? ptLabels[labelchoice] : "UNKNOWN";
@@ -134,7 +142,7 @@ if(which==1){
    hsignal="histos_ATLAS-" + MLSP + ".root";
 }
 else{
-   hsignal = "SlepSnu-" + MLSP + "_histos.root";
+   hsignal = "SlepSneu-" + MLSP + "_histos.root";
 }  
 
 //hsignal="histos_SMNew.root";
@@ -241,6 +249,7 @@ gPad->Update();
 hW->Draw("histsames");
 
 hBkgd->Draw("histsames");
+hSignal->Draw("histsames");    // make sure this is on top
 gPad->Update();
 
 // Also need a legend ...
@@ -297,5 +306,5 @@ AddFOMBox(ptLabel, S, FOM1, FOM2, FOM3, FOM4);
 
 leg->SetBorderSize(1);                          // Include border
 leg->Draw();
-//c1->Print("Plot1.pdf");
+c1->Print("Plot.png");
 }
