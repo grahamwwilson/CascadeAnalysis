@@ -45,6 +45,7 @@ TH1D *h3ldevZf = new TH1D("h3ldevZf","Trileptons; On Z (mll - mZ) variable [GeV]
 TH1D *h4lnossf = new TH1D("h4lnossf","Quadleptons; n OSSF (combinations); Events per bin",7,-0.5,6.5);
 TH1D *h4ldevZ = new TH1D("h4ldevZ","Quadleptons; On Z (mll - mZ) variable [GeV]; Events per bin",78,-97.5,97.5);
 TH1D *h4ldevZf = new TH1D("h4ldevZf","Quadleptons; On Z (mll - mZ) variable [GeV]; Events per bin",390,-97.5,97.5);
+TH1D *h4lnjets = new TH1D("h4lnjets","Quadleptons; N jets; Events per bin",12,-0.5,11.5);
 
 TH1D *hm3lF3 = new TH1D("hm3lF3","Trilepton Mass (eee); mlll [GeV]; Events per bin",400,0.0,400.0);
 TH1D *hm3lF4 = new TH1D("hm3lF4","Trilepton Mass (ee#mu); mlll [GeV]; Events per bin",400,0.0,400.0);

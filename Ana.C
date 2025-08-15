@@ -37,11 +37,211 @@
 #include <algorithm>
 #include <bitset> 
 #include <TMath.h>
+#include <array>
+#include <cassert>
 
 // Declare histograms globally here
 #include "AnaHistos.h"    // Try moving to SlaveBegin ?
 // Declare helper functions with bits for selection
 #include "SelectionBits.h"
+
+struct BranchingFractions {
+    std::array<double, 3> slep;     // Modes (l N1), (l N2), (v C1)
+    std::array<double, 3> sneu;     // Modes (v N1), (v N2), (l C1)
+    std::array<double, 3> neut;     // Modes (photon N1), (Z N1), (W C1)
+};
+
+// Option 1: default (used in the LSP-180 samples)
+const BranchingFractions bf_default = {
+    {0.50, 0.25, 0.25},  // slep
+    {0.25, 0.25, 0.50},  // sneu
+    {0.04, 0.48, 0.48}   // neut
+};
+
+// Option 2: deprecated (used in the LSP-220, LSP-260, and LSP-270 samples)
+const BranchingFractions bf_deprecated = {
+    {0.50, 0.25, 0.25},  // slep
+    {0.20, 0.25, 0.50},  // sneu
+    {0.05, 0.85, 0.10}   // neut
+};
+
+double get_reweight(int mode, const std::array<double,3>& target, const std::array<double,3>& current) {
+    assert(mode >= 0 && mode < 3);
+    if (current[mode] == 0.0) return 0.0; // avoid divide-by-zero
+    return target[mode] / current[mode];
+}
+
+double CascadeInfo(int evn, int tree, int prod, int dk1, int dk2, int N2dk1, int N2dk2, 
+                   bool apply=false, bool debug=false, const std::string& currBFscheme = "default",
+                   BranchingFractions bf_target = {
+                       {0.00, 1.00, 0.00},  // slep
+                       {0.00, 1.00, 0.00},  // sneu
+                       {0.00, 0.00, 1.00}   // neut
+                   }) {
+
+    double newWeight = 1.0;
+
+// First get a hold of the current branching fractions used in the generated signal sample
+    BranchingFractions bf_curr;
+    if (currBFscheme == "default") {   // As used in the LSP-180 sample
+        bf_curr = bf_default;
+    } 
+    else if (currBFscheme == "deprecated" ) {  // As used in the initial samples.
+        bf_curr = bf_deprecated;
+    } 
+    else {
+        std::cerr << "Unknown BF scheme: " << currBFscheme << ", using deprecated one " << std::endl;
+        bf_curr = bf_deprecated;
+    }
+
+// Map prod values to slepton types using pseudo-PDG IDs
+    int slep1 = 0, slep2 = 0;
+
+    switch (prod) {
+        case 1: slep1 = slep2 = 11; break;
+        case 2: slep1 = 11; slep2 = 12; break;
+        case 3: slep1 = 11; slep2 = 12; break;
+        case 4: slep1 = slep2 = 12; break;
+        case 5: slep1 = slep2 = 13; break;
+        case 6: slep1 = 13; slep2 = 14; break;
+        case 7: slep1 = 13; slep2 = 14; break;
+        case 8: slep1 = slep2 = 14; break;
+    }
+
+// Lambda to apply weight for slepton decay
+    auto weight_slepton = [&](int slep, int dk, int N2dk) {
+        if (slep == 11 || slep == 13) { // slepton
+            if (dk == 1) newWeight *= get_reweight(0, bf_target.slep, bf_curr.slep); // N1
+            if (dk == 3) newWeight *= get_reweight(2, bf_target.slep, bf_curr.slep); // C1
+            if (dk == 2) {
+                newWeight *= get_reweight(1, bf_target.slep, bf_curr.slep); // N2
+                if (N2dk == 1) newWeight *= get_reweight(0, bf_target.neut, bf_curr.neut); // photon
+                else if (N2dk == 2) newWeight *= get_reweight(1, bf_target.neut, bf_curr.neut); // Z
+                else newWeight *= get_reweight(2, bf_target.neut, bf_curr.neut); // W
+            }
+        } else if (slep == 12 || slep == 14) { // sneutrino
+            if (dk == 1) newWeight *= get_reweight(0, bf_target.sneu, bf_curr.sneu); // N1
+            if (dk == 3) newWeight *= get_reweight(2, bf_target.sneu, bf_curr.sneu); // C1
+            if (dk == 2) {
+                newWeight *= get_reweight(1, bf_target.sneu, bf_curr.sneu); // N2
+                if (N2dk == 1) newWeight *= get_reweight(0, bf_target.neut, bf_curr.neut); // photon
+                else if (N2dk == 2) newWeight *= get_reweight(1, bf_target.neut, bf_curr.neut); // Z
+                else newWeight *= get_reweight(2, bf_target.neut, bf_curr.neut); // W
+            }
+        }
+    };
+
+// Apply weight for each slepton decay chain
+    weight_slepton(slep1, dk1, N2dk1);
+    weight_slepton(slep2, dk2, N2dk2);
+
+    if (debug) {
+        std::cout << "\nEvent " << evn << "\n";
+        std::cout << "prod " << prod << " tree " << tree << "\n";
+        std::cout << "slep1, slep2 pseudoPDGIDs " << slep1 << " " << slep2 << "\n";
+        std::cout << "Slepton decays: " << dk1 << " " << dk2 << "\n";
+        std::cout << "N2 decays:      " << N2dk1 << " " << N2dk2 << "\n";
+        std::cout << "apply flag: " << apply << " New relative weight: " << newWeight << "\n";
+    }
+
+    if (!apply) newWeight = 1.0;
+    return newWeight;
+}
+
+
+double CascadeInfoOld(int evn, int tree, int prod, int dk1, int dk2, int N2dk1, int N2dk2, bool apply=false, bool debug=false){
+
+// Initially use this to debug the event-level cascade model generator information
+// so as to permit reweighting to other branching fractions.
+
+    double newWeight = 1.0;
+
+// Decode slepton IDs. Don't worry for now about slepton/anti-slepton. And use PDGIDs for leptons as a short-hand
+    int slep1 = 0; int slep2 = 0;
+    if(prod == 1 || prod == 2 || prod == 3){
+        slep1 = 11;
+    }
+    if(prod == 2 || prod == 3 || prod == 4){
+        slep2 = 12;
+    }
+    if(prod == 1)slep2 = 11;
+    if(prod == 4)slep1 = 12;
+
+    if(prod == 5 || prod == 6 || prod == 7){
+        slep1 = 13;
+    }
+    if(prod == 6 || prod == 7 || prod == 8){
+        slep2 = 14;
+    }
+    if(prod == 5)slep2 = 13;
+    if(prod == 8)slep1 = 14;
+
+// Current branching fraction triangle settings (correct for LSP-180 case)
+    double bslepA = 0.50; double bslepB = 0.25; double bslepC = 0.25;
+    double bsneuA = 0.25; double bsneuB = 0.25; double bsneuC = 0.50;
+    double bneutA = 0.04; double bneutB = 0.48; double bneutC = 0.48;
+//    double bneutA = 0.05; double bneutB = 0.85; double bneutC = 0.15;
+
+// Target branching fractions
+    double tbslepA = 0.00; double tbslepB = 1.00; double tbslepC = 0.00;
+    double tbsneuA = 0.00; double tbsneuB = 1.00; double tbsneuC = 0.00;
+    double tbneutA = 0.00; double tbneutB = 0.00; double tbneutC = 1.00;
+
+// Now identify the actual decay mode for each slepton - here we obey slepton universality ..
+    if(slep1 == 11 || slep1 == 13){
+        if(dk1 == 1)newWeight*=(tbslepA/bslepA);
+        if(dk1 == 3)newWeight*=(tbslepC/bslepC);
+        if(dk1 == 2){
+            newWeight*=(tbslepB/bslepB);
+            if(N2dk1==1)newWeight*=(tbneutA/bneutA);
+            if(N2dk1==2)newWeight*=(tbneutB/bneutB);
+            if(N2dk1==0||N2dk1==3)newWeight*=(tbneutC/bneutC);
+        }
+    }
+    if(slep2 == 11 || slep2 == 13){
+        if(dk2 == 1)newWeight*=(tbslepA/bslepA);
+        if(dk2 == 3)newWeight*=(tbslepC/bslepC);
+        if(dk2 == 2){
+            newWeight*=(tbslepB/bslepB);
+            if(N2dk2==1)newWeight*=(tbneutA/bneutA);
+            if(N2dk2==2)newWeight*=(tbneutB/bneutB);
+            if(N2dk2==0||N2dk2==3)newWeight*=(tbneutC/bneutC);
+        }
+    }
+    if(slep1 == 12 || slep1 == 14){
+        if(dk1 == 1)newWeight*=(tbsneuA/bsneuA);
+        if(dk1 == 3)newWeight*=(tbsneuC/bsneuC);
+        if(dk1 == 2){
+            newWeight*=(tbsneuB/bsneuB);
+            if(N2dk1==1)newWeight*=(tbneutA/bneutA);
+            if(N2dk1==2)newWeight*=(tbneutB/bneutB);
+            if(N2dk1==0||N2dk1==3)newWeight*=(tbneutC/bneutC);
+        }
+    }
+    if(slep2 == 12 || slep2 == 14){
+        if(dk2 == 1)newWeight*=(tbsneuA/bsneuA);
+        if(dk2 == 3)newWeight*=(tbsneuC/bsneuC);
+        if(dk2 == 2){
+            newWeight*=(tbsneuB/bsneuB);
+            if(N2dk2==1)newWeight*=(tbneutA/bneutA);
+            if(N2dk2==2)newWeight*=(tbneutB/bneutB);
+            if(N2dk2==0||N2dk2==3)newWeight*=(tbneutC/bneutC);
+        }
+    }
+
+    if ( debug ){
+        std::cout << " " << std::endl;
+        std::cout << "Event " << evn << std::endl;
+        std::cout << "prod " << prod << " tree " << tree << std::endl;
+        std::cout << "slep1, slep2 pseudoPDGIDs " << slep1 << " " << slep2 << std::endl;
+        std::cout << "Slepton decays: " << dk1 << " " << dk2 << std::endl;
+        std::cout << "N2 decays:      " << N2dk1 << " " << N2dk2 << std::endl; 
+        std::cout << "apply flag: "<< apply << " New relative weight " << newWeight << std::endl;
+    }
+    if(!apply)newWeight = 1.0;
+    return newWeight;
+
+}
 
 std::tuple<double, double, int, double> TriLeptonInfo(double m12, double m13, double m23, bool os12, bool os13, bool os23){
 
@@ -264,11 +464,67 @@ bool Ana::Process(Long64_t entry)
 
     fReader.SetLocalEntry(entry);
 
-    const double MLLCUT = 24.0; 
+    const double MLLCUT = 24.0;        //  58/24/16
+    const double TARGETLUMI = 400.0;
 
-    double wt = 400.0*(*weight);
+    double wt = TARGETLUMI*(*weight);
+    if(inputFilePrefix=="SlepSneu-180"){
+        double correctedweight = 3.639e-4;   // Zach's E-mail of 7/28/2025
+        wt = TARGETLUMI*correctedweight;
+    }
 
 #if ANA_NTUPLE_VERSION == 3
+// Access BR info etc
+    int evn = *eventnum;
+    int ctree = *cascades_tree;
+    int cprod = *cascades_prod;
+    int dk1 = *cascades_SlepSneu_1stDecay;
+    int dk2 = *cascades_SlepSneu_2ndDecay;
+    int N2dk1 = *cascades_N2_1stDecay;
+    int N2dk2 = *cascades_N2_2ndDecay;
+
+// New branching fractions. Currently just for slep while keeping B(N2)=B(C1)
+//    BranchingFractions myTarget = {
+//        {0.50, 0.25, 0.25},   // slep (N1, N2, C1)
+//        {0.25, 0.25, 0.50},   // sneu (N1, N2, C1)
+//        {0.04, 0.48, 0.48}    // neut (photon, Z, W)
+//    };
+#include "NewBranchingFractions.h"    // This defines myTarget
+
+// "default" branching fractions for the recent production by Justin (LSP=180).
+    BranchingFractions myTarget1 = {
+        {0.50, 0.25, 0.25},   // slep (N1, N2, C1)
+        {0.25, 0.25, 0.50},   // sneu (N1, N2, C1)
+        {0.04, 0.48, 0.48}    // neut (photon, Z, W)
+    };
+
+// "deprecated" branching fractions from the original productions
+    BranchingFractions myTarget2 = {
+        {0.50, 0.25, 0.25},   // slep (N1, N2, C1)
+        {0.25, 0.25, 0.50},   // sneu (N1, N2, C1)
+        {0.05, 0.85, 0.10}    // neut (photon, Z, W)
+    };
+
+    bool reWeight= true; 
+    if(reWeight){
+        double newWeight = 1.0;
+        if(inputFilePrefix=="SlepSneu-180"){
+            newWeight = CascadeInfo(evn, ctree, cprod, dk1, dk2, N2dk1, N2dk2, 
+                                    true, false, "default", myTarget);
+        }
+        else if (inputFilePrefix=="SlepSneu-220" || 
+                 inputFilePrefix=="SlepSneu-260" || 
+                 inputFilePrefix=="SlepSneu-270"){
+            newWeight = CascadeInfo(evn, ctree, cprod, dk1, dk2, N2dk1, N2dk2, 
+                                    true, false, "deprecated", myTarget);
+        }
+        else{
+            std::cout << "Should we be here? " << std::endl;
+        }
+        wt*=newWeight;
+    }
+
+// Specifically for highlighting observed different weight issue
     if(*weight<0.00032){
         hprocesslowt->Fill(*cascades_prod, wt);
     }
@@ -646,10 +902,12 @@ bool Ana::Process(Long64_t entry)
          hTriProcess->Fill(*cascades_prod, wt);
 #endif 
 
-
     }
 
     if( isSelected(quadsel) ){
+
+         h4lnjets->Fill(*Njet, wt);
+
          FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
          FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
          FourVec l3 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[2]], PT_lep[vlidx[2]], Eta_lep[vlidx[2]], Phi_lep[vlidx[2]], M_lep[vlidx[2]]);
@@ -720,7 +978,7 @@ void Ana::Terminate()
     hDiCutFlow->GetXaxis()->SetBinLabel(6, "BTagVeto");
     hDiCutFlow->GetXaxis()->SetBinLabel(7, "SIP3DCut");
     hDiCutFlow->GetXaxis()->SetBinLabel(8, "Selected");
-    std::cout << "Dilepton selected event count  " << hDiCutFlow->GetBinContent(8) << std::endl;
+    std::cout << "Dilepton selected event count " << hDiCutFlow->GetBinContent(8) << " " << hDiCutFlow->GetBinError(8) <<  std::endl;
 
     hXDiCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
     hXDiCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
@@ -743,7 +1001,7 @@ void Ana::Terminate()
     hCutFlow->GetXaxis()->SetBinLabel(11, "MxMnMll");
     hCutFlow->GetXaxis()->SetBinLabel(12, "OffZ");
     hCutFlow->GetXaxis()->SetBinLabel(13, "Selected");
-    std::cout << "Trilepton selected event count " << hCutFlow->GetBinContent(13) << std::endl;
+    std::cout << "Trilepton selected event count " << hCutFlow->GetBinContent(13) << " " << hCutFlow->GetBinError(13) << std::endl;
 
     hXCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
     hXCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
@@ -772,7 +1030,7 @@ void Ana::Terminate()
     hQuadCutFlow->GetXaxis()->SetBinLabel(12, "MxMnMll");
     hQuadCutFlow->GetXaxis()->SetBinLabel(13, "OffZ");
     hQuadCutFlow->GetXaxis()->SetBinLabel(14, "Selected");
-    std::cout << "Quadlepton selected event count " << hQuadCutFlow->GetBinContent(14) << std::endl;
+    std::cout << "Quadlepton selected event count " << hQuadCutFlow->GetBinContent(14) << " " << hQuadCutFlow->GetBinError(14) << std::endl;
 
     hXQuadCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
     hXQuadCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");

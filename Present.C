@@ -127,7 +127,7 @@ void Present(string htype="hCutFlow", float ymax=1.0e6, float ymin=0.1, string M
 
 //std::vector<std::string> ptLabels = {"2l selection", "3l selection", "4l selection"};
 
-std::vector<std::string> ptLabels = {"2l selection", "3l selection (MLL<35 GeV)", "4l selection (MLL<35 GeV)", "3l selection (MLL<65 GeV)", "4l selection (MLL<65 GeV)", "3l selection (MLL<24 GeV)", "4l selection (MLL<24 GeV)"};
+std::vector<std::string> ptLabels = {"2l selection", "3l selection (MLL<35 GeV)", "4l selection (MLL<35 GeV)", "3l selection (MLL<58 GeV)", "4l selection (MLL<58 GeV)", "3l selection (MLL<24 GeV)", "4l selection (MLL<24 GeV)", "3l selection (MLL<16 GeV)", "4l selection (MLL<16 GeV)"};
 
 // Ensure labelchoice is in bounds
 std::string ptLabel = (labelchoice >= 0 && labelchoice < ptLabels.size()) ? ptLabels[labelchoice] : "UNKNOWN";
