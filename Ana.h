@@ -43,6 +43,8 @@ public :
 #include "Ana_NtupleVariables_V2.h"
 #elif ANA_NTUPLE_VERSION == 3
 #include "Ana_NtupleVariables_V3.h"
+#elif ANA_NTUPLE_VERSION == 4
+#include "Ana_NtupleVariables_V4.h"
 #else
 #error "Unsupported ANA_NTUPLE_VERSION"
 #endif

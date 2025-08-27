@@ -127,7 +127,11 @@ void Present(string htype="hCutFlow", float ymax=1.0e6, float ymin=0.1, string M
 
 //std::vector<std::string> ptLabels = {"2l selection", "3l selection", "4l selection"};
 
-std::vector<std::string> ptLabels = {"2l selection", "3l selection (MLL<35 GeV)", "4l selection (MLL<35 GeV)", "3l selection (MLL<58 GeV)", "4l selection (MLL<58 GeV)", "3l selection (MLL<24 GeV)", "4l selection (MLL<24 GeV)", "3l selection (MLL<16 GeV)", "4l selection (MLL<16 GeV)"};
+std::vector<std::string> ptLabels = {"2l selection", "3l selection (MLL<35 GeV)", "4l selection (MLL<35 GeV)", "3l selection (MLL<58 GeV)", "4l selection (MLL<58 GeV)", "3l selection (MLL<24 GeV)", "4l selection (MLL<24 GeV)", "3l selection (MLL<16 GeV)", "4l selection (MLL<16 GeV)",
+"3l (eee) selection (MLL<24 GeV)", "3l (eem) selection (MLL<24 GeV)", "3l (emm) selection (MLL<24 GeV)", "3l (mmm) selection (MLL<24 GeV)",
+"4l (eeee) selection (MLL<24 GeV)", "4l (eeem) selection (MLL<24 GeV)", "4l (eemm) selection (MLL<24 GeV)", "4l (emmm) selection (MLL<24 GeV)", 
+"4l (mmmm) selection (MLL<24 GeV)",
+"=4l selection (MLL<24 GeV)", ">=5l selection (MLL<24 GeV)", ">=6l selection (MLL<24 GeV)"};
 
 // Ensure labelchoice is in bounds
 std::string ptLabel = (labelchoice >= 0 && labelchoice < ptLabels.size()) ? ptLabels[labelchoice] : "UNKNOWN";

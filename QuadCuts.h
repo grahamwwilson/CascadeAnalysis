@@ -4,7 +4,7 @@ enum class QuadCuts {
     GSNumber = 0, 
     PtOne, PtTwo, PtThree, PtFour, Trigger, PtFiveVeto,
     BTagVeto, SIP3DCut, 
-    MinMll, MxMinMll, OffZ, NUMCUTS
+    MinMll, MxMinMll, OffZ, Pt4L, M4LZV, NUMCUTS
 };
 
 std::string to_string(QuadCuts value) {
@@ -21,6 +21,8 @@ std::string to_string(QuadCuts value) {
         case QuadCuts::MinMll:     return "MinMll";           // reject events with the smallest lepton pair mass below 4 GeV
         case QuadCuts::MxMinMll:   return "MxMinMll";         // reject events with the smallest lepton pair mass above 65 GeV
         case QuadCuts::OffZ:       return "OffZ";             // reject events with the an OSSF lepton pair within eg. 7.5 GeV of mZ.
+        case QuadCuts::Pt4L:       return "Pt4L";             // reject events with the four-lepton pT below eg 15 GeV.
+        case QuadCuts::M4LZV:      return "M4LZV";            // reject events with four-lepton mass within eg. 7.5 GeV of mZ.
         case QuadCuts::NUMCUTS:    return "NUMCUTS";          // Use this to count the number of cuts.
     }
     return "Unknown";
