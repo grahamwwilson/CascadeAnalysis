@@ -37,17 +37,26 @@ public :
 
 // Move all the variables in the TTree into a version dependent include statement that I plan to switch among using symbolic links.
 // Need to also make sure that it does get recompiled ...
-#include "AnaVersions.h"
 
-#if ANA_NTUPLE_VERSION == 2
-#include "Ana_NtupleVariables_V2.h"
-#elif ANA_NTUPLE_VERSION == 3
-#include "Ana_NtupleVariables_V3.h"
-#elif ANA_NTUPLE_VERSION == 4
-#include "Ana_NtupleVariables_V4.h"
-#else
-#error "Unsupported ANA_NTUPLE_VERSION"
-#endif
+#define SIGNAL_CODE 1         // Signal models with cascade slepton generator information available
+#define BACKGROUND_CODE 2
+#define TCHIWZ_CODE 3
+
+// First expand arguments, then stringify
+#define STRINGIFY(x) #x
+#define EXPAND_AND_STRINGIFY(x) STRINGIFY(x)
+
+#define HEADER_NAME(version, flavor) EXPAND_AND_STRINGIFY(HEADER_NAME_IMPL(version, flavor))
+#define HEADER_NAME_IMPL(version, flavor) Ana_NtupleVariables_V##version##_##flavor.h
+
+#include "AnaVersions.h"    // Defines ANA_NTUPLE_VERSION (int), ANA_NTUPLE_FLAVOR_CODE (int), ANA_NTUPLE_FLAVOR (token)
+
+#include HEADER_NAME(ANA_NTUPLE_VERSION, ANA_NTUPLE_FLAVOR)
+
+// preprocessor debugging if necessary
+//#pragma message "ANA_NTUPLE_VERSION=" EXPAND_AND_STRINGIFY(ANA_NTUPLE_VERSION)
+//#pragma message "ANA_NTUPLE_FLAVOR="  EXPAND_AND_STRINGIFY(ANA_NTUPLE_FLAVOR)
+//#pragma message "HEADER_NAME = " HEADER_NAME(ANA_NTUPLE_VERSION, ANA_NTUPLE_FLAVOR)
 
    Ana(TTree * /*tree*/ =0) { }
    ~Ana() override { }
@@ -81,11 +90,18 @@ void Ana::Init(TTree *tree)
    // Init() will be called many times when running on PROOF
    // (once per file to be processed).
 
-// Make sure we know which ntuple version the program thinks it is using.
+// Make sure we know which ntuple version etc the program thinks it is using.
 #if defined(ANA_NTUPLE_VERSION)
    std::cout << ">>> Initializing Ana with ANA_NTUPLE_VERSION = " << ANA_NTUPLE_VERSION << std::endl;
 #else
    std::cout << ">>> Initializing Ana with undefined ANA_NTUPLE_VERSION!" << std::endl;
+#endif
+
+#if defined(ANA_NTUPLE_FLAVOR)
+   std::cout << ">>> Initializing Ana with ANA_NTUPLE_FLAVOR = "
+             << EXPAND_AND_STRINGIFY(ANA_NTUPLE_FLAVOR) << std::endl;     // See above for definition of EXPAND_AND_STRINGIFY
+#else
+   std::cout << ">>> Initializing Ana with undefined ANA_NTUPLE_FLAVOR!" << std::endl;
 #endif
 
 // Make clear which pdouble we have under the hood.

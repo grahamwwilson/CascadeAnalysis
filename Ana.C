@@ -27,6 +27,7 @@
 #include "Ana.h"
 #include <TH1.h>
 #include <TH2.h>
+#include <TAxis.h>
 #include <TStyle.h>
 #include <string>
 #include <tuple>
@@ -149,101 +150,6 @@ double CascadeInfo(int evn, int tree, int prod, int dk1, int dk2, int N2dk1, int
     return newWeight;
 }
 
-
-double CascadeInfoOld(int evn, int tree, int prod, int dk1, int dk2, int N2dk1, int N2dk2, bool apply=false, bool debug=false){
-
-// Initially use this to debug the event-level cascade model generator information
-// so as to permit reweighting to other branching fractions.
-
-    double newWeight = 1.0;
-
-// Decode slepton IDs. Don't worry for now about slepton/anti-slepton. And use PDGIDs for leptons as a short-hand
-    int slep1 = 0; int slep2 = 0;
-    if(prod == 1 || prod == 2 || prod == 3){
-        slep1 = 11;
-    }
-    if(prod == 2 || prod == 3 || prod == 4){
-        slep2 = 12;
-    }
-    if(prod == 1)slep2 = 11;
-    if(prod == 4)slep1 = 12;
-
-    if(prod == 5 || prod == 6 || prod == 7){
-        slep1 = 13;
-    }
-    if(prod == 6 || prod == 7 || prod == 8){
-        slep2 = 14;
-    }
-    if(prod == 5)slep2 = 13;
-    if(prod == 8)slep1 = 14;
-
-// Current branching fraction triangle settings (correct for LSP-180 case)
-    double bslepA = 0.50; double bslepB = 0.25; double bslepC = 0.25;
-    double bsneuA = 0.25; double bsneuB = 0.25; double bsneuC = 0.50;
-    double bneutA = 0.04; double bneutB = 0.48; double bneutC = 0.48;
-//    double bneutA = 0.05; double bneutB = 0.85; double bneutC = 0.15;
-
-// Target branching fractions
-    double tbslepA = 0.00; double tbslepB = 1.00; double tbslepC = 0.00;
-    double tbsneuA = 0.00; double tbsneuB = 1.00; double tbsneuC = 0.00;
-    double tbneutA = 0.00; double tbneutB = 0.00; double tbneutC = 1.00;
-
-// Now identify the actual decay mode for each slepton - here we obey slepton universality ..
-    if(slep1 == 11 || slep1 == 13){
-        if(dk1 == 1)newWeight*=(tbslepA/bslepA);
-        if(dk1 == 3)newWeight*=(tbslepC/bslepC);
-        if(dk1 == 2){
-            newWeight*=(tbslepB/bslepB);
-            if(N2dk1==1)newWeight*=(tbneutA/bneutA);
-            if(N2dk1==2)newWeight*=(tbneutB/bneutB);
-            if(N2dk1==0||N2dk1==3)newWeight*=(tbneutC/bneutC);
-        }
-    }
-    if(slep2 == 11 || slep2 == 13){
-        if(dk2 == 1)newWeight*=(tbslepA/bslepA);
-        if(dk2 == 3)newWeight*=(tbslepC/bslepC);
-        if(dk2 == 2){
-            newWeight*=(tbslepB/bslepB);
-            if(N2dk2==1)newWeight*=(tbneutA/bneutA);
-            if(N2dk2==2)newWeight*=(tbneutB/bneutB);
-            if(N2dk2==0||N2dk2==3)newWeight*=(tbneutC/bneutC);
-        }
-    }
-    if(slep1 == 12 || slep1 == 14){
-        if(dk1 == 1)newWeight*=(tbsneuA/bsneuA);
-        if(dk1 == 3)newWeight*=(tbsneuC/bsneuC);
-        if(dk1 == 2){
-            newWeight*=(tbsneuB/bsneuB);
-            if(N2dk1==1)newWeight*=(tbneutA/bneutA);
-            if(N2dk1==2)newWeight*=(tbneutB/bneutB);
-            if(N2dk1==0||N2dk1==3)newWeight*=(tbneutC/bneutC);
-        }
-    }
-    if(slep2 == 12 || slep2 == 14){
-        if(dk2 == 1)newWeight*=(tbsneuA/bsneuA);
-        if(dk2 == 3)newWeight*=(tbsneuC/bsneuC);
-        if(dk2 == 2){
-            newWeight*=(tbsneuB/bsneuB);
-            if(N2dk2==1)newWeight*=(tbneutA/bneutA);
-            if(N2dk2==2)newWeight*=(tbneutB/bneutB);
-            if(N2dk2==0||N2dk2==3)newWeight*=(tbneutC/bneutC);
-        }
-    }
-
-    if ( debug ){
-        std::cout << " " << std::endl;
-        std::cout << "Event " << evn << std::endl;
-        std::cout << "prod " << prod << " tree " << tree << std::endl;
-        std::cout << "slep1, slep2 pseudoPDGIDs " << slep1 << " " << slep2 << std::endl;
-        std::cout << "Slepton decays: " << dk1 << " " << dk2 << std::endl;
-        std::cout << "N2 decays:      " << N2dk1 << " " << N2dk2 << std::endl; 
-        std::cout << "apply flag: "<< apply << " New relative weight " << newWeight << std::endl;
-    }
-    if(!apply)newWeight = 1.0;
-    return newWeight;
-
-}
-
 int ProcessInfo(int prod, int dk1, int dk2, int N2dk1, int N2dk2){
 
     int value = 2;                         // slepton-sneutrino associated production
@@ -253,12 +159,145 @@ int ProcessInfo(int prod, int dk1, int dk2, int N2dk1, int N2dk2){
 
 }
 
-std::tuple<double, double, int, double> TriLeptonInfo(double m12, double m13, double m23, bool os12, bool os13, bool os23){
+int NewPairCode(int pairCode) {
+
+// Map paircode (in range 1 to 6) to values from 1 to 4 with 1=OSSF, 2=OSDF, 3=SSSF, 4=SSDF
+
+    int code = 1;
+    if (pairCode != 1) code = pairCode - 1;
+    if (pairCode >= 5) code--; 
+
+    return code;
+
+}
+
+int PairCode(const std::pair<int,int>& lepPair, const std::array<int,4>& qfs) {
+
+    // pair indices are 1-based in QuadLeptonInfo, so subtract 1
+
+    int i = lepPair.first  - 1;
+    int j = lepPair.second - 1;
+
+    int qfi = qfs[i];
+    int qfj = qfs[j];
+
+    int code = 0;
+
+    if (qfi * qfj < 0) {
+        // opposite sign
+        if (std::abs(qfi) == std::abs(qfj)) {
+            if(std::abs(qfi) == 1){
+                code = 1; // OSSF-ee
+            }
+            else {
+                code = 2; // OSSF-mm
+            }
+        } 
+        else {  // different flavor
+            code = 3;     // OSDF-em
+        }
+    } 
+    else {
+        // same sign
+        if (std::abs(qfi) == std::abs(qfj)) {
+            if(std::abs(qfi) == 1){
+                code = 4; // SSSF-ee
+            }
+            else {
+                code = 5; // SSSF-mm
+            }
+        } 
+        else {  // different flavor
+            code = 6;     // SSDF-em
+        }
+    }
+    return code;
+}
+
+template <size_t N>
+int QPairCode(const std::pair<int,int>& lepPair, const std::array<int,N>& qfs) {
+
+    // pair indices are 1-based in TriLeptonInfo, so subtract 1
+
+    int i = lepPair.first  - 1;
+    int j = lepPair.second - 1;
+
+    int qfi = qfs[i];
+    int qfj = qfs[j];
+
+    int code = 0;
+
+    if (qfi * qfj < 0) {
+        // opposite sign
+        if (std::abs(qfi) == std::abs(qfj)) {
+            if(std::abs(qfi) == 1){
+                code = 1; // OSSF-ee
+            }
+            else {
+                code = 2; // OSSF-mm
+            }
+        } 
+        else {  // different flavor
+            code = 3;     // OSDF-em
+        }
+    } 
+    else {   // same sign
+        if (std::abs(qfi) == std::abs(qfj)) {   // same flavor
+            if( qfi == -1){
+                code = 4; // NSS-ee
+            }
+            else if ( qfi == -2 ){
+                code = 5; // NSS-mm
+            }
+            else if ( qfi ==  1 ){
+                code = 7; // PSS-ee
+            }
+            else if ( qfi ==  2 ){
+                code = 8; // PSS-mm
+            }
+            else{
+                cout << "Shouldn't be here in QPairCode " << qfi << " " << qfj << endl;
+            }
+        } 
+        else {  // different flavor
+            if( (qfi == -1 && qfj == -2) || (qfi == -2 && qfj == -1) ){
+                code = 6;  // NSS-em
+            }
+            else if ( (qfi ==  1 && qfj ==  2) || (qfi ==  2 && qfj ==  1) ){
+                code = 9;  // PSS-em
+            }
+            else{
+                cout << "Shouldn't be here either in QPairCode " << qfi << " " << qfj << endl; 
+            }
+        }
+    }
+    return code;
+}
+
+int CompLepCode(int compLep, const std::array<int,3>& qfs) {
+
+    // pair indices are 1-based in TriLeptonInfo, so subtract 1
+
+    int i = compLep - 1;
+    int qf = qfs[i];
+
+    int code = 0;
+    if(qf == 1)code = 1;
+    if(qf == 2)code = 2;
+    if(qf == -1)code = 3;
+    if(qf == -2)code = 4;
+
+    return code;
+}
+
+
+
+std::tuple<double, double, int, double, int, int> TriLeptonInfo(double m12, double m13, double m23, bool ossf12, bool ossf13, bool ossf23, int qf1, int qf2, int qf3){
 
 // Calculate a number of quantities related to trilepton topologies and return in a tuple.
 
 // 1. The min dilepton mass independent of flavor/charge
-     double minmll = std::min( { m12, m13, m23 });
+//     double minmll = std::min( { m12, m13, m23 });
 // 2. The max dilepton mass independent of flavor/charge
      double maxmll = std::max( { m12, m13, m23 });
      const double MZ = 91.2;
@@ -266,51 +305,90 @@ std::tuple<double, double, int, double> TriLeptonInfo(double m12, double m13, do
      int nossf = 0;
 // 4. For OSSF dileptons the smallest SIGNED deviation with respect to the nominal Z mass. If no 
      double devZ = -95.0;   // default value
-     if( os12 ){
+     if( ossf12 ){
          nossf++;
          double thisdevZ = m12 - MZ;
          if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
      }
-     if( os13 ){
+     if( ossf13 ){
          nossf++;
          double thisdevZ = m13 - MZ;
          if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
      }
-     if( os23 ){
+     if( ossf23 ){
          nossf++;
          double thisdevZ = m23 - MZ;
          if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
      }
+
+   // 3. Find min pair and complementary lepton
+     struct PairEntry {
+         double mass;
+         std::pair<int,int> pair;
+         int comp; // complementary lepton
+     };
+
+     std::array<PairEntry,3> pairs{{
+         { m12, {1,2}, 3 },
+         { m13, {1,3}, 2 },
+         { m23, {2,3}, 1 }
+     }};
+
+     auto min_it = std::min_element(pairs.begin(), pairs.end(),
+                                   [](auto &a, auto &b){ return a.mass < b.mass; });
+
+     auto minmll   = min_it->mass;
+     auto min_pair = min_it->pair;
+     int comp_lep  = min_it->comp;
+
+     std::array<int,3> qfs = { qf1, qf2, qf3};
+
+     int minPairCode  = QPairCode(min_pair, qfs);
+     int compLepCode  = CompLepCode(comp_lep, qfs);
  
-     return std::make_tuple(minmll, maxmll, nossf, devZ);
+     return std::make_tuple(minmll, maxmll, nossf, devZ, minPairCode, compLepCode);
  
 }
 
-std::tuple<double, double, int, double, double, double> QuadLeptonInfo(double m12, double m13, double m14, double m23, double m24, double m34, 
+std::tuple<double, double, int, double, double, double, int, int, int, int> QuadLeptonInfo(double m12, double m13, double m14, 
+                                                                       double m23, double m24, double m34, 
                                                                        double m123, double m124, double m234,
-                                                       bool os12, bool os13, bool os14, bool os23, bool os24, bool os34){
+                                                                       bool ossf12, bool ossf13, bool ossf14, 
+                                                                       bool ossf23, bool ossf24, bool ossf34,
+                                                                       int qf1, int qf2, int qf3, int qf4){
+// Input arguments for 4 leptons are: 
+// The masses of each pair, the masses of each triplet, flags for each pair as to wehther opposite-sign same flavor, 
+// and the charge*flavor values for each lepton.
 
 // Calculate a number of quantities related to four-lepton topologies and return in a tuple.
 // 1. The min dilepton mass independent of flavor/charge
 //     double minmll = std::min( { m12, m13, m14, m23, m24, m34 });
 
-    // Store value + complementary value
-    using Entry = std::pair<double,double>;
+    // Entry: (mass, complementary_mass, indices of min pair, indices of complementary pair)
+    struct Entry {
+        double mass;
+        double comp_mass;
+        std::pair<int,int> pair;
+        std::pair<int,int> comp_pair;
+    };
+
     std::array<Entry,6> masses {{
-        { m12, m34 },  // if min is m12, complementary is m34
-        { m13, m24 },  // if min is m13, complementary is m24
-        { m14, m23 },  // if min is m14, complementary is m23
-        { m23, m14 },  // if min is m23, complementary is m14
-        { m24, m13 },  // if min is m24, complementary is m13
-        { m34, m12 }   // if min is m34, complementary is m12
+        { m12, m34, {1,2}, {3,4} },
+        { m13, m24, {1,3}, {2,4} },
+        { m14, m23, {1,4}, {2,3} },
+        { m23, m14, {2,3}, {1,4} },
+        { m24, m13, {2,4}, {1,3} },
+        { m34, m12, {3,4}, {1,2} }
     }};
 
 // Find the entry with smallest first element
     auto min_it = std::min_element(masses.begin(), masses.end(),
-                                   [](auto &a, auto &b){ return a.first < b.first; });
+                                   [](auto &a, auto &b){ return a.mass < b.mass; });
 
-    double min_val = min_it->first;
-    double comp_val = min_it->second;
+    double min_val   = min_it->mass;
+    double comp_val  = min_it->comp_mass;
+    auto   min_pair  = min_it->pair;
+    auto   comp_pair = min_it->comp_pair;
 
 //    std::cout << "Minimum mass = " << min_val
 //              << ", complementary mass = " << comp_val << "\n";
@@ -320,45 +398,59 @@ std::tuple<double, double, int, double, double, double> QuadLeptonInfo(double m1
 
 // 2. The max dilepton mass independent of flavor/charge
      double maxmll = std::max( { m12, m13, m14, m23, m24, m34 });
-     const double MZ = 91.2;
+
 // 3. The number of opposite-sign same flavor (OSSF) dileptons
      int nossf = 0;
-// 4. For OSSF dileptons the smallest SIGNED deviation with respect to the nominal Z mass. If no 
+// 4. For OSSF dileptons the smallest SIGNED deviation with respect to the nominal Z mass. If none defaults to -95.0. 
+     const double MZ = 91.2;
      double devZ = -95.0;   // default value
-     if( os12 ){
+     if( ossf12 ){
          nossf++;
          double thisdevZ = m12 - MZ;
          if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
      }
-     if( os13 ){
+     if( ossf13 ){
          nossf++;
          double thisdevZ = m13 - MZ;
          if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
      }
-     if( os14 ){
+     if( ossf14 ){
          nossf++;
          double thisdevZ = m14 - MZ;
          if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
      }
-     if( os23 ){
+     if( ossf23 ){
          nossf++;
          double thisdevZ = m23 - MZ;
          if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
      }
-     if( os24 ){
+     if( ossf24 ){
          nossf++;
          double thisdevZ = m24 - MZ;
          if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
      }
-     if( os34 ){
+     if( ossf34 ){
          nossf++;
          double thisdevZ = m34 - MZ;
          if(std::abs(thisdevZ) < std::abs(devZ)) devZ = thisdevZ;
      }
 
-     double minm3l = std::min( { m123, m124, m234 });
+// 5. The complementary dilepton mass (using the other two leptons) to the pairing that 
+//    results in the minimum dilepton mass. The variable is othermll.
+
+// 6. The minimum trilepton mass
+
+     double minm3l = std::min( { m123, m124, m234 } );
+
+     std::array<int,4> qfs = { qf1, qf2, qf3, qf4 };
+
+     int minPairCode  = PairCode(min_pair,  qfs);
+     int compPairCode = PairCode(comp_pair, qfs);
+
+     int minQPairCode  = QPairCode(min_pair,  qfs);
+     int compQPairCode = QPairCode(comp_pair, qfs);
  
-     return std::make_tuple(minmll, maxmll, nossf, devZ, othermll, minm3l);
+     return std::make_tuple(minmll, maxmll, nossf, devZ, othermll, minm3l, minPairCode, compPairCode, minQPairCode, compQPairCode);
  
 }
 
@@ -394,7 +486,7 @@ void FillCutFlow(unsigned int sel, double wt) {
 
 }
 
-void FillDiCutFlow(unsigned int sel, double wt) {
+void FillDiCutFlow(unsigned int sel, int ntaunus, double wt) {
 // Note this histogram used to be defined in Ana.h
 
     // Fill the preselection bin
@@ -412,6 +504,28 @@ void FillDiCutFlow(unsigned int sel, double wt) {
     if (sel == 0) {
         hDiCutFlow->Fill(static_cast<unsigned int>(DiCuts::NUMCUTS), wt);
     }
+
+    if(ntaunus == 0){    // Diagnostics for rates.
+
+    // Fill the preselection bin
+        hDiCutFlowNonTau->Fill(-1.0, wt);
+
+    // Loop over all cuts
+       for (unsigned int i = 0; i < static_cast<unsigned int>(DiCuts::NUMCUTS); ++i) {
+            DiCuts cut = static_cast<DiCuts>(i);
+            if (PassesAllCutsSoFar(sel, cut)) {
+                hDiCutFlowNonTau->Fill(i, wt);
+            }
+        }
+
+    // Optional: final bin if all cuts passed
+        if (sel == 0) {
+            hDiCutFlowNonTau->Fill(static_cast<unsigned int>(DiCuts::NUMCUTS), wt);
+        }
+
+    }
+
+
 
 // Now do the exclusive one.
     if (sel == 0) {
@@ -501,16 +615,17 @@ bool Ana::Process(Long64_t entry)
 
     fReader.SetLocalEntry(entry);
 
-    const double MLLCUT = 24.0;        //  58/24/16
+    const double MLLCUT3 = 24.0;        //  58/24/16
+    const double MLLCUT4 = 21.0;
     const double TARGETLUMI = 400.0;
 
     double wt = TARGETLUMI*(*weight);
     if(inputFilePrefix=="SlepSneu-180"){
-        double correctedweight = 3.639e-4;   // Zach's E-mail of 7/28/2025
+        double correctedweight = 3.63941e-4;   // Zach's E-mail of 7/28/2025 said 3.639e-4.
         wt = TARGETLUMI*correctedweight;
     }
 
-#if ANA_NTUPLE_VERSION == 3
+#if ANA_NTUPLE_VERSION >= 3 && ANA_NTUPLE_FLAVOR_CODE == SIGNAL_CODE
 // Access BR info etc
     int evn = *eventnum;
     int ctree = *cascades_tree;
@@ -576,6 +691,8 @@ bool Ana::Process(Long64_t entry)
     haltMET_phi->Fill(*altMET_phi, wt);
     FourVec fMET = FourVec::FromPtEtaPhiM(100, *MET, 0.0, *MET_phi, 0.0);
 
+//    std::cout << "Event weight = " << 1.0e6*(*weight) << std::endl;
+
 //   std::cout << "New event " << std::endl;
     for (unsigned int i = 0; i < PT_lep.GetSize(); ++i){
         hleptonPT->Fill(PT_lep[i], wt);
@@ -621,9 +738,26 @@ bool Ana::Process(Long64_t entry)
     bool passTrig = false;
     if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger)passTrig = true;
 
+#if ANA_NTUPLE_VERSION == 4
+    bool newTrig = false;
+    if (*TripleElectrontrigger || *DiEleMutrigger || *DiMuEleLowPTtrigger || *DiMuEleHighPTtrigger || *TripleMuonLowPTtrigger || *TripleMuonHighPTtrigger)newTrig = true;
+    if (passTrig || newTrig) passTrig = true;
+#endif
+
+#if ANA_NTUPLE_VERSION == 5
+//    passTrig = false;
+//    if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMuMutrigger)passTrig = true;
+    bool newTrig = false;
+    if (*TripleElectrontrigger || *DiEleMutrigger || *DiMuEleLowPTtrigger || *DiMuEleHighPTtrigger 
+                               || *TripleMuonLowPTtrigger || *TripleMuonHighPTtrigger  || *METDoubleMutrigger )newTrig = true;
+    if (passTrig || newTrig) passTrig = true;
+#endif
+
 // Start on 3-lepton selection using enum class TriCuts
     unsigned int trisel = 0;
     std::vector<double> ptcuts3l = {20.0, 12.5, 7.5};
+//    std::vector<double> ptcuts3l = {10.0,  7.5, 5.0};
+//    std::vector<double> ptcuts3l = {7.5,  7.5,  7.5};
     double ptcutVeto3l = 2.0;
     double sip3dcut3l = 3.5;
     double maxSIP3D3l{};
@@ -636,6 +770,8 @@ bool Ana::Process(Long64_t entry)
     int nossf3l = 0;
     double devZ3l = 0.0;
     double m3l = 0.0;
+    int minPairCode3l = 0;
+    int compLepCode = 0;
 
     bool vetoall = true;
 
@@ -684,14 +820,16 @@ bool Ana::Process(Long64_t entry)
         FourVec l23 = l2 + l3;
         FourVec l123 = l1 + l23;
         double m12 = l12.M();   double m13 = l13.M();  double m23 = l23.M();
-        bool os12 = l1.osdil(l2);   bool os13 = l1.osdil(l3);  bool os23 = l2.osdil(l3);
-        auto result = TriLeptonInfo(m12, m13, m23, os12, os13, os23);
+        bool ossf12 = l1.osdil(l2);   bool ossf13 = l1.osdil(l3);  bool ossf23 = l2.osdil(l3);
+        auto result = TriLeptonInfo(m12, m13, m23, ossf12, ossf13, ossf23, l1.qf(), l2.qf(), l3.qf() );
         minmll3l = std::get<0>(result);
         maxmll3l = std::get<1>(result);
         nossf3l  = std::get<2>(result);
         devZ3l   = std::get<3>(result);
+        minPairCode3l  = std::get<4>(result);
+        compLepCode    = std::get<5>(result);
         if(minmll3l < 4.0) trisel = setFailureBit(trisel, TriCuts::MinMll);
-        if(minmll3l > MLLCUT) trisel = setFailureBit(trisel, TriCuts::MxMinMll);  // This is signal hypothesis sensitive.  35 GeV is OK for LSP=260 and 270, but NOT 220.
+        if(minmll3l > MLLCUT3) trisel = setFailureBit(trisel, TriCuts::MxMinMll);  // This is signal hypothesis sensitive.  35 GeV is OK for LSP=260 and 270, but NOT 220.
         if(std::abs(devZ3l) < 7.5) trisel = setFailureBit(trisel, TriCuts::OffZ);
         m3l = l123.M();
         if(std::abs(m3l - 91.2) < 7.5) trisel = setFailureBit(trisel, TriCuts::M3LZV);
@@ -701,8 +839,9 @@ bool Ana::Process(Long64_t entry)
 // 4l selection
 // Start on 4-lepton selection using enum class QuadCuts
     unsigned int quadsel = 0;
-//    std::vector<double> ptcuts4l = {7.5, 7.5, 6.0, 4.0};
-    std::vector<double> ptcuts4l = {20.0, 12.5, 7.5, 5.0};
+    std::vector<double> ptcuts4l = {7.5, 7.5, 6.0, 2.0};
+//    std::vector<double> ptcuts4l = {20.0, 12.5, 7.5, 5.0};
+//    std::vector<double> ptcuts4l = {6.0, 6.0, 6.0, 6.0};
     bool failFifthLeptonVeto = false;
     double ptFifthLepton = -1.5;  // Default to invalid value
 //    double ptcutVeto4l = 3.0;
@@ -717,6 +856,10 @@ bool Ana::Process(Long64_t entry)
     double m4l = 0.0;
     double othermll4l = 0.0;
     double minm3lfor4l = 0.0;
+    int minPairCode = 0;
+    int compPairCode = 0;
+    int minQPairCode = 0;
+    int compQPairCode = 0;
   
     if ( ngs < 4 ){
         quadsel = setFailureBit(quadsel, QuadCuts::GSNumber);
@@ -759,17 +902,23 @@ bool Ana::Process(Long64_t entry)
         FourVec l234 = l23 + l4;
         double m12 = l12.M();   double m13 = l13.M();  double m14 = l14.M(); double m23 = l23.M(); double m24 = l24.M(); double m34 = l34.M();
         double m123 = l123.M();  double m124 = l124.M();  double m234= l234.M();
-        bool os12 = l1.osdil(l2);   bool os13 = l1.osdil(l3);  bool os23 = l2.osdil(l3);
-        bool os14 = l1.osdil(l4);   bool os24 = l2.osdil(l4);  bool os34 = l3.osdil(l4);
-        auto result = QuadLeptonInfo(m12, m13, m14, m23, m24, m24, m123, m124, m234, os12, os13, os14, os23, os24, os34);
+        bool ossf12 = l1.osdil(l2);   bool ossf13 = l1.osdil(l3);  bool ossf23 = l2.osdil(l3);
+        bool ossf14 = l1.osdil(l4);   bool ossf24 = l2.osdil(l4);  bool ossf34 = l3.osdil(l4);
+        auto result = QuadLeptonInfo(m12, m13, m14, m23, m24, m34, m123, m124, m234, 
+                                     ossf12, ossf13, ossf14, ossf23, ossf24, ossf34,
+                                     l1.qf(), l2.qf(), l3.qf(), l4.qf() );
         minmll4l = std::get<0>(result);
         maxmll4l = std::get<1>(result);
         nossf4l = std::get<2>(result);
         devZ4l = std::get<3>(result);
         othermll4l = std::get<4>(result);
         minm3lfor4l = std::get<5>(result);
+        minPairCode = std::get<6>(result);
+        compPairCode = std::get<7>(result);
+        minQPairCode = std::get<8>(result);
+        compQPairCode = std::get<9>(result);
         if(minmll4l < 4.0) quadsel = setFailureBit(quadsel, QuadCuts::MinMll);
-        if(minmll4l > MLLCUT) quadsel = setFailureBit(quadsel, QuadCuts::MxMinMll);        // Needs to be checked/adjusted for each signal hypothesis
+        if(minmll4l > MLLCUT4) quadsel = setFailureBit(quadsel, QuadCuts::MxMinMll);        // Needs to be checked/adjusted for each signal hypothesis
         if(std::abs(devZ4l) < 7.5) quadsel = setFailureBit(quadsel, QuadCuts::OffZ);
         FourVec l1234 = l12 + l34;
         pt4l = l1234.Pt();
@@ -810,7 +959,7 @@ bool Ana::Process(Long64_t entry)
         maxSIP3D2l = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]]});
         if ( maxSIP3D2l > sip3dcut2l ) disel = setFailureBit(disel, DiCuts::SIP3DCut);
     }
-    FillDiCutFlow(disel, wt);
+    FillDiCutFlow(disel, ntaunus, wt);
 
     if( isSelectedOrFailsJustOneCut( trisel, TriCuts::PtOne )) {
         hPtOne->Fill(PT_lep[vlidx[0]] , wt);
@@ -836,7 +985,8 @@ bool Ana::Process(Long64_t entry)
          if (*SingleElectrontrigger || *SingleMuontrigger) hTriTrigger->Fill(7.0, wt);
          if (*DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hTriTrigger->Fill(8.0, wt);
          if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hTriTrigger->Fill(9.0, wt);   
-         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger || *METORtrigger) hTriTrigger->Fill(10.0, wt);                 
+         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger || *METORtrigger) hTriTrigger->Fill(10.0, wt);
+         if (passTrig) hTriTrigger->Fill(11.0, wt);                
     }
 
     if( isSelectedOrFailsJustOneCut( trisel, TriCuts::PtFourVeto )) {
@@ -872,7 +1022,8 @@ bool Ana::Process(Long64_t entry)
          if (*SingleElectrontrigger || *SingleMuontrigger) hQuadTrigger->Fill(7.0, wt);
          if (*DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hQuadTrigger->Fill(8.0, wt);
          if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger) hQuadTrigger->Fill(9.0, wt);   
-         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger || *METORtrigger) hQuadTrigger->Fill(10.0, wt);  
+         if (*SingleElectrontrigger || *SingleMuontrigger || *DoubleElectrontrigger || *DoubleMuontrigger || *EMutrigger || *METORtrigger) hQuadTrigger->Fill(10.0, wt); 
+         if (passTrig) hQuadTrigger->Fill(11.0, wt);   
     }
 
     if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::PtFiveVeto )) {
@@ -899,6 +1050,22 @@ bool Ana::Process(Long64_t entry)
     if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::M4LZV )) {
         hm4l->Fill(m4l, wt);
         h4ldevZV->Fill(m4l-91.2, wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::PtOne )) {
+        hPtOne4l->Fill(PT_lep[vlidx[0]] , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::PtTwo )) {
+        hPtTwo4l->Fill(PT_lep[vlidx[1]] , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::PtThree )) {
+        hPtThree4l->Fill(PT_lep[vlidx[2]] , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::PtFour )) {
+        hPtFour4l->Fill(PT_lep[vlidx[3]] , wt);
     }
 
     if( isSelected( disel) ){
@@ -935,11 +1102,17 @@ bool Ana::Process(Long64_t entry)
     }
 
     if( isSelected( trisel ) ){
+
+         hCodes3l->Fill(minPairCode3l, compLepCode, wt);
+
          hselection->Fill(3.0,wt);
 
          FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
          FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
          FourVec l3 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[2]], PT_lep[vlidx[2]], Eta_lep[vlidx[2]], Phi_lep[vlidx[2]], M_lep[vlidx[2]]);
+
+         hcentraleta3l->Fill( std::min( {std::abs(Eta_lep[vlidx[0]]), std::abs(Eta_lep[vlidx[1]]), std::abs(Eta_lep[vlidx[2]])}) , wt);
+         hforwardeta3l->Fill( std::max( {std::abs(Eta_lep[vlidx[0]]), std::abs(Eta_lep[vlidx[1]]), std::abs(Eta_lep[vlidx[2]])}) , wt);
 
          FourVec l12 = l1 + l2;
          FourVec l13 = l1 + l3;
@@ -1024,7 +1197,8 @@ bool Ana::Process(Long64_t entry)
          h3lnus->Fill(*genNnu, wt);
          h3lnleptons->Fill(ngs, wt);
 
-#if ANA_NTUPLE_VERSION == 3
+//#if ANA_NTUPLE_VERSION == 3
+#if ANA_NTUPLE_VERSION >= 3 && ANA_NTUPLE_FLAVOR_CODE == SIGNAL_CODE
          hTriProcess->Fill(*cascades_prod, wt);
 #endif 
 
@@ -1039,6 +1213,9 @@ bool Ana::Process(Long64_t entry)
          FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
          FourVec l3 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[2]], PT_lep[vlidx[2]], Eta_lep[vlidx[2]], Phi_lep[vlidx[2]], M_lep[vlidx[2]]);
          FourVec l4 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[3]], PT_lep[vlidx[3]], Eta_lep[vlidx[3]], Phi_lep[vlidx[3]], M_lep[vlidx[3]]);
+
+         hcentraleta4l->Fill( std::min( {std::abs(Eta_lep[vlidx[0]]), std::abs(Eta_lep[vlidx[1]]), std::abs(Eta_lep[vlidx[2]]), std::abs(Eta_lep[vlidx[3]])}) , wt);
+         hforwardeta4l->Fill( std::max( {std::abs(Eta_lep[vlidx[0]]), std::abs(Eta_lep[vlidx[1]]), std::abs(Eta_lep[vlidx[2]]), std::abs(Eta_lep[vlidx[3]])}) , wt);
 
          FourVec l12 = l1 + l2;
          FourVec l34 = l3 + l4;
@@ -1120,9 +1297,20 @@ bool Ana::Process(Long64_t entry)
          if( charge4==-2 || charge4==2 || ngs>=5 )hsel4C8->Fill(1.0, wt);
          if( ((charge4==-2 || charge4==2) && TightCharge4==16)  || ngs >= 5 )hsel4C9->Fill(1.0, wt);
 
+         hpairCodes4l->Fill(minPairCode, compPairCode, wt);          // These are in the range 1 to 6
+         int altminPairCode = NewPairCode(minPairCode);              
+         int altcompPairCode = NewPairCode(compPairCode);
+         hpairCodesA4l->Fill(altminPairCode, altcompPairCode, wt);   // These are in the range 1 to 4 
+         hpairCodesQ4l->Fill(altminPairCode, altcompPairCode, wt);
+         hpairCodesF4l->Fill((altminPairCode+1)%2, (altcompPairCode+1)%2, wt);  // These are in the range 0, 1
+         hpairCodesL4l->Fill((minPairCode+2)%3, (compPairCode+2)%3, wt);  // These are in the range 0, 1, 2
+
+         hpairCodesC4l->Fill(minQPairCode, compQPairCode, wt);   // These are in the range 1 to 9.
+         hpairCodesCQ4l->Fill(minQPairCode, compQPairCode, wt);   // These are in the range 1 to 9.
+
 //         std::cout << "4l selected. " << *eventnum << " genNnu " << *genNnu << " ntaunus: " << ntaunus << " 4l pt: " << l1234.Pt() << " Njet: " << *Njet << " PTCM: " << *PTCM << " MET: " << *MET << " genMET " << *genMET << std::endl;
 
-#if ANA_NTUPLE_VERSION == 3
+#if ANA_NTUPLE_VERSION >= 3 && ANA_NTUPLE_FLAVOR_CODE == SIGNAL_CODE
          hQuadProcess->Fill(*cascades_prod, wt);
          int iprocess = ProcessInfo(cprod, dk1, dk2, N2dk1, N2dk2);
          if(iprocess==1)h4lmasses1->Fill(minmll4l, othermll4l, wt);
@@ -1174,6 +1362,181 @@ void Ana::SlaveTerminate()
 
 }
 
+void SetCodeLabels6(TH2* h) {
+
+    if (!h) return;  // safety check
+
+    std::vector<std::string> labels = {"OSee", "OS#mu#mu", "OSe#mu", "SSee", "SS#mu#mu", "SSe#mu"};
+
+    TAxis* xaxis = h->GetXaxis();
+    TAxis* yaxis = h->GetYaxis();
+
+    for (size_t i = 0; i < labels.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= xaxis->GetNbins()) xaxis->SetBinLabel(bin, labels[i].c_str());
+        if (bin <= yaxis->GetNbins()) yaxis->SetBinLabel(bin, labels[i].c_str());
+    }
+
+    xaxis->SetLabelSize(0.05);
+    yaxis->SetLabelSize(0.05);
+
+}
+
+void SetCodeLabels4(TH2* h) {
+
+    if (!h) return;  // safety check
+
+    std::vector<std::string> labels = {"OSSF", "OSDF", "SSSF", "SSDF"};
+
+    TAxis* xaxis = h->GetXaxis();
+    TAxis* yaxis = h->GetYaxis();
+
+    for (size_t i = 0; i < labels.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= xaxis->GetNbins()) xaxis->SetBinLabel(bin, labels[i].c_str());
+        if (bin <= yaxis->GetNbins()) yaxis->SetBinLabel(bin, labels[i].c_str());
+    }
+
+    xaxis->SetLabelSize(0.05);
+    yaxis->SetLabelSize(0.05);
+
+}
+
+void SetCodeLabels2Q(TH2* h) {
+
+    if (!h) return;  // safety check
+
+    std::vector<std::string> labels = {"OS", "SS"};
+
+    TAxis* xaxis = h->GetXaxis();
+    TAxis* yaxis = h->GetYaxis();
+
+    for (size_t i = 0; i < labels.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= xaxis->GetNbins()) xaxis->SetBinLabel(bin, labels[i].c_str());
+        if (bin <= yaxis->GetNbins()) yaxis->SetBinLabel(bin, labels[i].c_str());
+    }
+
+    xaxis->SetLabelSize(0.075);
+    yaxis->SetLabelSize(0.075);
+
+}
+
+void SetCodeLabels2F(TH2* h) {
+
+    if (!h) return;  // safety check
+
+    std::vector<std::string> labels = {"SF", "DF"};
+
+    TAxis* xaxis = h->GetXaxis();
+    TAxis* yaxis = h->GetYaxis();
+
+    for (size_t i = 0; i < labels.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= xaxis->GetNbins()) xaxis->SetBinLabel(bin, labels[i].c_str());
+        if (bin <= yaxis->GetNbins()) yaxis->SetBinLabel(bin, labels[i].c_str());
+    }
+
+    xaxis->SetLabelSize(0.075);
+    yaxis->SetLabelSize(0.075);
+
+}
+
+void SetCodeLabels3F(TH2* h) {
+
+    if (!h) return;  // safety check
+
+    std::vector<std::string> labels = {"ee", "#mu#mu", "e#mu"};
+
+    TAxis* xaxis = h->GetXaxis();
+    TAxis* yaxis = h->GetYaxis();
+
+    for (size_t i = 0; i < labels.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= xaxis->GetNbins()) xaxis->SetBinLabel(bin, labels[i].c_str());
+        if (bin <= yaxis->GetNbins()) yaxis->SetBinLabel(bin, labels[i].c_str());
+    }
+
+    xaxis->SetLabelSize(0.075);
+    yaxis->SetLabelSize(0.075);
+
+}
+
+void SetCodeLabelsT(TH2* h) {
+
+    if (!h) return;  // safety check
+
+    std::vector<std::string> labelsx = {"OSee", "OS#mu#mu", "OSe#mu", "NSSee", "NSS#mu#mu", "NSSe#mu", "PSSee", "PSS#mu#mu", "PSSe#mu"};
+    std::vector<std::string> labelsy = {"e^{+}", "#mu^{+}", "e^{-}", "#mu^{-}"};
+
+    TAxis* xaxis = h->GetXaxis();
+    TAxis* yaxis = h->GetYaxis();
+
+    for (size_t i = 0; i < labelsx.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= xaxis->GetNbins()) xaxis->SetBinLabel(bin, labelsx[i].c_str());
+    }
+
+    for (size_t i = 0; i < labelsy.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= yaxis->GetNbins()) yaxis->SetBinLabel(bin, labelsy[i].c_str());
+    }
+
+    xaxis->SetLabelSize(0.045);
+    yaxis->SetLabelSize(0.075);
+
+}
+
+void SetCodeLabelsC(TH2* h) {
+
+    if (!h) return;  // safety check
+
+    std::vector<std::string> labelsx = {"OSee", "OS#mu#mu", "OSe#mu", "NSSee", "NSS#mu#mu", "NSSe#mu", "PSSee", "PSS#mu#mu", "PSSe#mu"};
+    std::vector<std::string> labelsy = {"OSee", "OS#mu#mu", "OSe#mu", "NSSee", "NSS#mu#mu", "NSSe#mu", "PSSee", "PSS#mu#mu", "PSSe#mu"};
+
+    TAxis* xaxis = h->GetXaxis();
+    TAxis* yaxis = h->GetYaxis();
+
+    for (size_t i = 0; i < labelsx.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= xaxis->GetNbins()) xaxis->SetBinLabel(bin, labelsx[i].c_str());
+    }
+
+    for (size_t i = 0; i < labelsy.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= yaxis->GetNbins()) yaxis->SetBinLabel(bin, labelsy[i].c_str());
+    }
+
+    xaxis->SetLabelSize(0.045);
+    yaxis->SetLabelSize(0.045);
+
+}
+
+void SetCodeLabelsCQ(TH2* h) {
+
+    if (!h) return;  // safety check
+
+    std::vector<std::string> labelsx = {"OS", "NSS", "PSS"};
+    std::vector<std::string> labelsy = {"OS", "NSS", "PSS"};
+
+    TAxis* xaxis = h->GetXaxis();
+    TAxis* yaxis = h->GetYaxis();
+
+    for (size_t i = 0; i < labelsx.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= xaxis->GetNbins()) xaxis->SetBinLabel(bin, labelsx[i].c_str());
+    }
+
+    for (size_t i = 0; i < labelsy.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= yaxis->GetNbins()) yaxis->SetBinLabel(bin, labelsy[i].c_str());
+    }
+
+    xaxis->SetLabelSize(0.075);
+    yaxis->SetLabelSize(0.075);
+
+}
+
 void Ana::Terminate()
 {
    // The Terminate() function is the last function to be called during
@@ -1191,6 +1554,7 @@ void Ana::Terminate()
     hDiCutFlow->GetXaxis()->SetBinLabel(7, "SIP3DCut");
     hDiCutFlow->GetXaxis()->SetBinLabel(8, "Selected");
     std::cout << "Dilepton selected event count " << hDiCutFlow->GetBinContent(8) << " " << hDiCutFlow->GetBinError(8) <<  std::endl;
+    std::cout << "DileptonNonTau    event count " << hDiCutFlowNonTau->GetBinContent(8) << " " << hDiCutFlowNonTau->GetBinError(8) <<  std::endl;
 
     hXDiCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
     hXDiCutFlow->GetXaxis()->SetBinLabel(2, "GSNumber");
@@ -1354,6 +1718,7 @@ void Ana::Terminate()
     hTriTrigger->GetXaxis()->SetBinLabel(9,"2l");
     hTriTrigger->GetXaxis()->SetBinLabel(10,"1l+2l");
     hTriTrigger->GetXaxis()->SetBinLabel(11,"1l+2l+MET");
+    hTriTrigger->GetXaxis()->SetBinLabel(12,"TRIG");
     hTriTrigger->GetXaxis()->SetLabelSize(0.04);
 
     hQuadTrigger->GetXaxis()->SetBinLabel(1,"None");
@@ -1367,6 +1732,7 @@ void Ana::Terminate()
     hQuadTrigger->GetXaxis()->SetBinLabel(9,"2l");
     hQuadTrigger->GetXaxis()->SetBinLabel(10,"1l+2l");
     hQuadTrigger->GetXaxis()->SetBinLabel(11,"1l+2l+MET");
+    hQuadTrigger->GetXaxis()->SetBinLabel(12,"TRIG");
     hQuadTrigger->GetXaxis()->SetLabelSize(0.04);
 
     hselection->GetXaxis()->SetBinLabel(1,"2L");
@@ -1376,7 +1742,16 @@ void Ana::Terminate()
     hselection->GetXaxis()->SetBinLabel(5,"24L");
     hselection->GetXaxis()->SetBinLabel(6,"34L");
     hselection->GetXaxis()->SetBinLabel(7,"234L");
-    hQuadTrigger->GetXaxis()->SetLabelSize(0.05);
+    hselection->GetXaxis()->SetLabelSize(0.05);
+
+    SetCodeLabels6(hpairCodes4l);
+    SetCodeLabels4(hpairCodesA4l);
+    SetCodeLabels2Q(hpairCodesQ4l);
+    SetCodeLabels2F(hpairCodesF4l);
+    SetCodeLabels3F(hpairCodesL4l);
+    SetCodeLabelsC(hpairCodesC4l);
+    SetCodeLabelsCQ(hpairCodesCQ4l);
+    SetCodeLabelsT(hCodes3l);
 
    // Get a list of all objects in memory (for saving histograms)
    TList *list = gDirectory->GetList();

@@ -215,6 +215,11 @@ public:
         return flavor;
     }
 
+// Charge-flavor product
+    int qf() const {
+        return lcharge()*lflavor();
+    }
+
     bool osdil(const FourVec& o) const {
  // Here require that a dilepton pair is OSSF.
         return lflavor()==o.lflavor()
