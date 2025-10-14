@@ -12,6 +12,7 @@
 #include "TFile.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TriLeptonTools.h"
 
 int Analyze(int nevsToRead, std::string which, double target, double lumi, std::string prefix, double elPtMin, double muPtMin){
 
@@ -488,6 +489,28 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
                 if (bRegion) hSROSoff->Fill(l3code + 4, wt);
                 if (cRegion) hSROSoff->Fill(l3code + 8, wt);
             }
+
+// Copy code style from Ana.C
+            FourVec l1 = leptons[0];
+            FourVec l2 = leptons[1];
+            FourVec l3 = leptons[2];
+            FourVec l12 = l1 + l2;
+            FourVec l13 = l1 + l3;
+            FourVec l23 = l2 + l3;
+            FourVec l123 = l1 + l23;
+            double m12 = l12.M();   double m13 = l13.M();  double m23 = l23.M();
+            bool ossf12 = l1.osdil(l2);   bool ossf13 = l1.osdil(l3);  bool ossf23 = l2.osdil(l3);
+            auto result = TriLeptonInfo(m12, m13, m23, ossf12, ossf13, ossf23, l1.qf(), l2.qf(), l3.qf() );
+            auto minmll3l = std::get<0>(result);
+            auto maxmll3l = std::get<1>(result);
+            auto nossf3l  = std::get<2>(result);
+            auto devZ3l   = std::get<3>(result);
+            auto minPairCode3l  = std::get<4>(result);
+            auto compLepCode    = std::get<5>(result);
+            std::pair<int,int> key = {compLepCode, minPairCode3l};
+            hminmll3l->Fill(minmll3l, wt);
+            hmaxmll3l->Fill(maxmll3l, wt);
+            if(minPairCode3l == 3)hminmll->Fill(minmll3l, wt);
         }
 
         else if (leptons.size() == 4) {
