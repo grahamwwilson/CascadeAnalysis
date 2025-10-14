@@ -23,6 +23,9 @@ public:
     int flag;
     LorentzVectorM v;
 
+    // Default constructor (zero 4-vector with pdgID = 0, flag = 1)
+    FourVec() : pdgID(0), flag(1), v(0.0, 0.0, 0.0, 0.0) {}
+
     // Basic constructor using (px, py, pz, m)
     explicit FourVec(int id, double px, double py, double pz, double m, int f = 1)
         : pdgID(id), flag(f), v(px, py, pz, m) {}

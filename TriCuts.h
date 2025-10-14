@@ -4,7 +4,7 @@ enum class TriCuts {
     GSNumber = 0, 
     PtOne, PtTwo, PtThree, Trigger, PtFourVeto,
     BTagVeto, SIP3DCut, 
-    MinMll, MxMinMll, OffZ, M3LZV, NUMCUTS
+    MinMll, MxMinMll, OffZ, Pt3L, M3LZV, FQSB, OSSF, NUMCUTS
 };
 
 std::string to_string(TriCuts value) {
@@ -20,7 +20,10 @@ std::string to_string(TriCuts value) {
         case TriCuts::MinMll:     return "MinMll";           // reject events with the smallest lepton pair mass below 4 GeV
         case TriCuts::MxMinMll:   return "MxMinMll";         // reject events with the smallest lepton pair mass above 65 GeV
         case TriCuts::OffZ:       return "OffZ";             // reject events with the an OSSF lepton pair within eg. 7.5 GeV of mZ.
+        case TriCuts::Pt3L:       return "Pt3L";             // reject events with the tri-lepton pT below eg 15 GeV.
         case TriCuts::M3LZV:      return "M3LZV";            // reject events with trilepton mass within eg. 7.5 GeV of mZ.
+        case TriCuts::FQSB:       return "FQSB";             // reject trilepton (minPairCode, compLepCode) event categories with low lepton-flavor/charge S/B 
+        case TriCuts::OSSF:       return "OSSF";             // reject events with no OSSF lepton pair (makes a lot of sense for OSemu cases selected by FQSB cut)
         case TriCuts::NUMCUTS:    return "NUMCUTS";          // Use this to count the number of cuts.
     }
     return "Unknown";
