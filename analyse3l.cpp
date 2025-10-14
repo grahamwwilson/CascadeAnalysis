@@ -510,7 +510,18 @@ int Analyze(int nevsToRead, std::string which, double target, double lumi, std::
             std::pair<int,int> key = {compLepCode, minPairCode3l};
             hminmll3l->Fill(minmll3l, wt);
             hmaxmll3l->Fill(maxmll3l, wt);
-            if(minPairCode3l == 3)hminmll->Fill(minmll3l, wt);
+            if(minPairCode3l <= 2){
+                hminmllC12->Fill(minmll3l, wt);
+            }
+            else if(minPairCode3l == 3){
+                hminmllC3->Fill(minmll3l, wt);
+            }
+            else if(minPairCode3l == 6 || minPairCode3l == 9){
+                hminmllCSSDF->Fill(minmll3l, wt);
+            }
+            else{
+                hminmllCSSSF->Fill(minmll3l, wt);
+            }
         }
 
         else if (leptons.size() == 4) {
