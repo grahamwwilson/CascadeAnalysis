@@ -162,10 +162,10 @@
     TH1D* hMT2LN260 = new TH1D("hMT2LN260", "M(IA), M(IB) = 260;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
     TH1D* hMT2LN270 = new TH1D("hMT2LN270", "M(IA), M(IB) = 270;  MT2 (GeV); Events per bin", 800, 0.0, 800.0);
 
-TH1D *hminmllC12 = new TH1D("hminmllC12","Trileptons ; (OSSF) min(mll) [GeV]; Events per bin",200,0.0,200.0);
-TH1D *hminmllC3 = new TH1D("hminmllC3","Trileptons ; (OSemu) min(mll) [GeV]; Events per bin",200,0.0,200.0);
-TH1D *hminmllCSSSF = new TH1D("hminmllCSSSF","Trileptons ; (SSSF) min(mll) [GeV]; Events per bin",200,0.0,200.0);
-TH1D *hminmllCSSDF = new TH1D("hminmllCSSDF","Trileptons ; (SSSF) min(mll) [GeV]; Events per bin",200,0.0,200.0);
-TH1D *hminmll3l = new TH1D("hminmll3l","Trileptons ; min(mll) [GeV]; Events per bin",200,0.0,200.0);
+TH1D *hminmllC12 = new TH1D("hminmllC12","Trileptons ; (OSSF) min(mll) [GeV]; Events per bin",40,0.0,40.0);
+TH1D *hminmllC3 = new TH1D("hminmllC3","Trileptons ; (OSemu) min(mll) [GeV]; Events per bin",40,0.0,40.0);
+TH1D *hminmllCSSSF = new TH1D("hminmllCSSSF","Trileptons ; (SSSF) min(mll) [GeV]; Events per bin",40,0.0,40.0);
+TH1D *hminmllCSSDF = new TH1D("hminmllCSSDF","Trileptons ; (SSSF) min(mll) [GeV]; Events per bin",40,0.0,40.0);
+TH1D *hminmll3l = new TH1D("hminmll3l","Trileptons ; min(mll) [GeV]; Events per bin",40,0.0,40.0);
 TH1D *hmaxmll3l = new TH1D("hmaxmll3l","Trileptons ; max(mll) [GeV]; Events per bin",200,0.0,200.0);
 
