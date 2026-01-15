@@ -93,13 +93,13 @@ void AddHistogramToLegend(TLegend* legend, TH1D* hist, const std::string& label)
 }
 
 // Function to draw a TPaveText with PT label and FOM values
-void AddFOMBox(const std::string& ptLabel, double S, double FOM1, double FOM2, double FOM3, double FOM4, 
-               float x1 = 0.17, float y1 = 0.67, float x2 = 0.42, float y2 = 0.86) {
+void AddFOMBox(const std::string& ptLabel, double S, double FOM1, double FOM2, double FOM3, double FOM4, double FOM5,
+               float x1 = 0.17, float y1 = 0.70, float x2 = 0.47, float y2 = 0.87) {
     
     // Format FOM values into strings
     char buf1[100], buf2[100], buf3[100];
     sprintf(buf1, "S = %.2f, S/B = %.4f", S, FOM1);
-    sprintf(buf2, "S/#sqrt{B} = %.2f, Z_{Bi}^{1%%} = %.2f", FOM2, FOM4);
+    sprintf(buf2, "S/#sqrt{B} = %.2f, Z_{Bi}^{1%%/3%%} = %.2f/%.2f", FOM2, FOM4, FOM5);
     sprintf(buf3, "med[Z_{0}^{A} |#mu=1] = %.2f", FOM3); 
 
     // Create and configure TPaveText
@@ -298,16 +298,19 @@ double FOM1 = S/B;
 double FOM2 = S/std::sqrt(B);
 // Cowan, Cranmer, Gross, Vitells, asymptotic discovery significance, Eqn 97 in 1007.1727.
 double FOM3 = std::sqrt(2.0*( (S+B)*std::log(1.0 + (S/B)) - S ));
-double FOM4 = zBi(S, B, 0.01);   // Use 2% uncertainty for now
+double FOM4 = zBi(S, B, 0.01);   // 1% uncertainty
+double FOM5 = zBi(S, B, 0.03);   // 3% uncertainty
 std::cout << "Signal      : " << pSignal.first << " +- " << pSignal.second << std::endl;
 std::cout << "Bkgd        : " << pBkgd.first << " +- " << pBkgd.second << std:: endl;
 std::cout << "S/B         : " << FOM1 << std::endl;
 std::cout << "S/sqrt(B)   : " << FOM2 << std::endl;
 std::cout << "Z Asimov    : " << FOM3 << std::endl;
 std::cout << "Z Bi        : " << FOM4 << std::endl;
+std::cout << "Z Bi        : " << FOM5 << std::endl;
+
 
 // Draw FOM box
-AddFOMBox(ptLabel, S, FOM1, FOM2, FOM3, FOM4);
+AddFOMBox(ptLabel, S, FOM1, FOM2, FOM3, FOM4, FOM5);
 
 leg->SetBorderSize(1);                          // Include border
 leg->Draw();

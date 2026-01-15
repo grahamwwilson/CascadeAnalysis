@@ -3,7 +3,7 @@
 enum class QuadCuts {
     GSNumber = 0, 
     PtOne, PtTwo, PtThree, PtFour, Trigger, PtFiveVeto,
-    BTagVeto, SIP3DCut, 
+    BTagVeto, SIP3DCut, MaxEta, MinEta, 
     MinMll, MxMinMll, OffZ, Pt4L, M4LZV, MxCompMll, NUMCUTS
 };
 
@@ -20,6 +20,8 @@ std::string to_string(QuadCuts value) {
         case QuadCuts::PtFiveVeto: return "PtFiveVeto";       // eg. No appropriate lepton with pT > 3 GeV
         case QuadCuts::BTagVeto:   return "BTagVeto";         // eg. no b-tagged jets (uses loose criterion)
         case QuadCuts::SIP3DCut:   return "SIP3DCut";         // reject events with any of the 3 selected leptons with SIP3D > eg. 3.5
+        case QuadCuts::MaxEta:     return "MaxEta";           // reject events unless all 4 leptons have |eta| < max value (such as 2.1)
+        case QuadCuts::MinEta:     return "MinEta";           // reject events unless at least one lepton has |eta| < min value (such as 1.3)
         case QuadCuts::MinMll:     return "MinMll";           // reject events with the smallest lepton pair mass below eg 4 GeV
         case QuadCuts::MxMinMll:   return "MxMinMll";         // reject events with the smallest lepton pair mass above eg 21 GeV
         case QuadCuts::OffZ:       return "OffZ";             // reject events with the an OSSF lepton pair within eg. 7.5 GeV of mZ.

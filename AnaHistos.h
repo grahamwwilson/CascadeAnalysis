@@ -164,12 +164,12 @@ TH1D* h4lSIP3DSignificance = new TH1D("h4lSIP3DSignificance","Four leptons; Even
 
 TH1D* hDiCutFlow = new TH1D("hDiCutFlow", "Dileptons; Cut Flow; Events per bin scaled to 400 inv fb", 8, -1.5, 6.5);
 TH1D* hDiCutFlowNonTau = new TH1D("hDiCutFlowNonTau", "Dileptons; Cut Flow; Events per bin scaled to 400 inv fb", 8, -1.5, 6.5);
-TH1D* hCutFlow = new TH1D("hCutFlow", "Trileptons; Cut Flow; Events per bin scaled to 400 inv fb", 17, -1.5, 15.5);   // Can we make these be adjusted automatically according to the enum?
-TH1D* hQuadCutFlow = new TH1D("hQuadCutFlow", "Quadleptons; Cut Flow; Events per bin scaled to 400 inv fb", 17, -1.5, 15.5);
+TH1D* hCutFlow = new TH1D("hCutFlow", "Trileptons; Cut Flow; Events per bin scaled to 400 inv fb", 20, -1.5, 18.5);   // Can we make these be adjusted automatically according to the enum?
+TH1D* hQuadCutFlow = new TH1D("hQuadCutFlow", "Quadleptons; Cut Flow; Events per bin scaled to 400 inv fb", 19, -1.5, 17.5);
 
 TH1D* hXDiCutFlow = new TH1D("hXDiCutFlow", "Dileptons; Exclusive Cut Flow; Events per bin scaled to 400 inv fb", 7, -1.5, 5.5);
-TH1D* hXCutFlow = new TH1D("hXCutFlow", "Trileptons; Exclusive Cut Flow; Events per bin scaled to 400 inv fb", 16, -1.5, 14.5);
-TH1D* hXQuadCutFlow = new TH1D("hXQuadCutFlow", "Quadleptons; Exclusive Cut Flow; Events per bin scaled to 400 inv fb", 16, -1.5, 14.5);
+TH1D* hXCutFlow = new TH1D("hXCutFlow", "Trileptons; Exclusive Cut Flow; Events per bin scaled to 400 inv fb", 19, -1.5, 17.5);
+TH1D* hXQuadCutFlow = new TH1D("hXQuadCutFlow", "Quadleptons; Exclusive Cut Flow; Events per bin scaled to 400 inv fb", 18, -1.5, 16.5);
 
 TH1D* hprocesslowt = new TH1D("hprocesslowt", " ; Production process; Events per bin scaled to 400 inv fb", 8, 0.5, 8.5);
 TH1D* hprocesshiwt = new TH1D("hprocesshiwt", " ; Production process; Events per bin scaled to 400 inv fb", 8, 0.5, 8.5);
@@ -247,12 +247,16 @@ TH1D* hsel4C8 = new TH1D("hsel4C8","Quadleptons (Q2 or 5L); ; Events per bin sca
 TH1D* hsel4C9 = new TH1D("hsel4C9","Quadleptons (Q2T or 5L); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
 TH1D* hsel4C10 = new TH1D("hsel4C10","Quadleptons (5L); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
 
+TH1D* hsel4C11 = new TH1D("hsel4C11","Quadleptons (2+2); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
+TH1D* hsel4C12 = new TH1D("hsel4C12","Quadleptons (3+1); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
+
+TH1D* hsel3Exclusive = new TH1D("hsel3Exclusive","Trileptons; Exclusive Category; Events per bin scaled to 400 inv fb",4,0.5,4.5);
 TH1D* hsel4Exclusive = new TH1D("hsel4Exclusive","Quadleptons; Exclusive Category; Events per bin scaled to 400 inv fb",7,0.5,7.5);
 
-TH1D* hcentraleta3l = new TH1D("hcentraleta3l","Trileptons; Most central |eta|; Events per bin scaled to 400 inv fb",25,0.0,2.5);
-TH1D* hcentraleta4l = new TH1D("hcentraleta4l","Quadleptons; Most central |eta|; Events per bin scaled to 400 inv fb",25,0.0,2.5);
-TH1D* hforwardeta3l = new TH1D("hforwardeta3l","Trileptons; Most forward |eta|; Events per bin scaled to 400 inv fb",25,0.0,2.5);
-TH1D* hforwardeta4l = new TH1D("hforwardeta4l","Quadleptons; Most forward |eta|; Events per bin scaled to 400 inv fb",25,0.0,2.5);
+TH1D* hcentraleta3l = new TH1D("hcentraleta3l","Trileptons; Most central |eta|; Events per bin scaled to 400 inv fb",125,0.0,2.5);
+TH1D* hcentraleta4l = new TH1D("hcentraleta4l","Quadleptons; Most central |eta|; Events per bin scaled to 400 inv fb",125,0.0,2.5);
+TH1D* hforwardeta3l = new TH1D("hforwardeta3l","Trileptons; Most forward |eta|; Events per bin scaled to 400 inv fb",125,0.0,2.5);
+TH1D* hforwardeta4l = new TH1D("hforwardeta4l","Quadleptons; Most forward |eta|; Events per bin scaled to 400 inv fb",125,0.0,2.5);
 
 TH2D* hpairCodes4l = new TH2D("hpairCodes4l","Quadleptons; minPairCode; compPairCode",6,0.5,6.5,6,0.5,6.5);
 TH2D* hpairCodesA4l = new TH2D("hpairCodesA4l","Quadleptons; minPairCode; compPairCode",4,0.5,4.5,4,0.5,4.5);
@@ -296,4 +300,73 @@ TH2D* hA4lMasses  = new TH2D("hA4lMasses","Quadleptons; 2l pairing mass; 3l min 
 TH2D* hA4lMassesFine  = new TH2D("hA4lMassesFine","Quadleptons; 2l pairing mass ; 3l min mass",40,0.0,200.0,40,0.0,200.0);
 
 TH1D* h4lFactor = new TH1D("h4lFactor","Quadleptons; (2+2)/( (2+2) + (3+1) ); Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+
+TH1D* h3lMinAbsEta = new TH1D("h3lMinAbsEta","Trileptons; min(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* h3lMidAbsEta = new TH1D("h3lMidAbsEta","Trileptons; mid(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* h3lMaxAbsEta = new TH1D("h3lMaxAbsEta","Trileptons; max(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* h4lMinAbsEta = new TH1D("h4lMinAbsEta","Quadleptons; min(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* h4lSMinAbsEta = new TH1D("h4lSMinAbsEta","Quadleptons; 2nd min(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* h4lSMaxAbsEta = new TH1D("h4lSMaxAbsEta","Quadleptons; 2nd max(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* h4lMaxAbsEta = new TH1D("h4lMaxAbsEta","Quadleptons; max(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+
+TH1D* hS3lMinAbsEta = new TH1D("hS3lMinAbsEta","Trileptons; min(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* hS3lMidAbsEta = new TH1D("hS3lMidAbsEta","Trileptons; mid(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* hS3lMaxAbsEta = new TH1D("hS3lMaxAbsEta","Trileptons; max(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* hS4lMinAbsEta = new TH1D("hS4lMinAbsEta","Quadleptons; min(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* hS4lSMinAbsEta = new TH1D("hS4lSMinAbsEta","Quadleptons; 2nd min(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* hS4lSMaxAbsEta = new TH1D("hS4lSMaxAbsEta","Quadleptons; 2nd max(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+TH1D* hS4lMaxAbsEta = new TH1D("hS4lMaxAbsEta","Quadleptons; max(abs(eta)); Events per bin scaled to 400 fb^{-1}",50,0.0,2.5);
+
+TH2D* h3lEtas  = new TH2D("h3lEtas","Trileptons; max(|#eta|); min(|#eta|)",25,0.0,2.5,25,0.0,2.5);
+TH2D* h4lEtas  = new TH2D("h4lEtas","Quadleptons; max(|#eta|); min(|#eta|)",25,0.0,2.5,25,0.0,2.5);
+
+TH1D* hMinm3l = new TH1D("hMinm3l","Quadleptons; min(m3l); Events per bin scaled to 400 fb^{-1}",100,0.0,100.0);
+TH2D* hMxCompPlot  = new TH2D("hMxCompPlot","Quadleptons; m3l; motherOS",25,0.0,50.0,50,0.0,50.0);
+TH2D* hMxCompPlot2  = new TH2D("hMxCompPlot2","Quadleptons; m3l; mother",25,0.0,50.0,50,0.0,50.0);
+
+TH1D* hComplementary = new TH1D("hComplementary","Quadleptons; mComplementary [GeV]; Events per bin scaled to 400 fb^{-1}",100,0.0,50.0);
+TH1D* hComplementary2 = new TH1D("hComplementary2","Quadleptons; mComplementary2 [GeV]; Events per bin scaled to 400 fb^{-1}",100,0.0,50.0);
+TH1D* hComplementary3 = new TH1D("hComplementary3","Quadleptons; mComplementary3 [GeV]; Events per bin scaled to 400 fb^{-1}",100,0.0,50.0);
+
+TH1D* h1Complementary = new TH1D("h1Complementary","Quadleptons; mComplementary [GeV]; Events per bin scaled to 400 fb^{-1}",100,0.0,50.0);
+TH1D* h1Complementary2 = new TH1D("h1Complementary2","Quadleptons; mComplementary2 [GeV]; Events per bin scaled to 400 fb^{-1}",100,0.0,50.0);
+TH1D* h1Complementary3 = new TH1D("h1Complementary3","Quadleptons; mComplementary3 [GeV]; Events per bin scaled to 400 fb^{-1}",100,0.0,50.0);
+
+TH1D* h2Complementary = new TH1D("h2Complementary","Quadleptons; mComplementary [GeV]; Events per bin scaled to 400 fb^{-1}",100,0.0,50.0);
+TH1D* h2Complementary2 = new TH1D("h2Complementary2","Quadleptons; mComplementary2 [GeV]; Events per bin scaled to 400 fb^{-1}",100,0.0,50.0);
+TH1D* h2Complementary3 = new TH1D("h2Complementary3","Quadleptons; mComplementary3 [GeV]; Events per bin scaled to 400 fb^{-1}",100,0.0,50.0);
+
+TH1D* h3lThrust = new TH1D("h3lThrust","Trileptons; 1 - Thrust; Events per bin scaled to 400 fb^{-1}",50,0.0,0.5);
+TH1D* h3lSphericity = new TH1D("h3lSphericity","Trileptons; Sphericity; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h3lAplanarity = new TH1D("h3lAplanarity","Trileptons; Aplanarity; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h3lCParameter = new TH1D("h3lCParameter","Trileptons; C-parameter; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h3lFW2 = new TH1D("h3lFW2","Trileptons; Fox-Wolfram Moment R_{2}; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h3lFW3 = new TH1D("h3lFW3","Trileptons; Fox-Wolfram Moment R_{3}; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h3lFW4 = new TH1D("h3lFW4","Trileptons; Fox-Wolfram Moment R_{4}; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h3lcosthCS = new TH1D("h3lcosthCS","Trileptons; costhCS; Events per bin scaled to 400 fb^{-1}",50,-1.0,1.0);
+TH1D* h3lacosthCS = new TH1D("h3lacosthCS","Trileptons; |costhCS|; Events per bin scaled to 400 fb^{-1}",40,0.0,1.0);
+TH1D* h3lacosthCSCoarse = new TH1D("h3lacosthCSCoarse","Trileptons; |costhCS|; Events per bin scaled to 400 fb^{-1}",20,0.0,1.0);
+TH1D* h3lphiCS = new TH1D("h3lphiCS","Trileptons; #phi_{CS}; Events per bin scaled to 400 fb^{-1}",40,-M_PI, M_PI);
+
+TH1D* h4lThrust = new TH1D("h4lThrust","Quadleptons; 1 - Thrust; Events per bin scaled to 400 fb^{-1}",50,0.0,0.5);
+TH1D* h4lSphericity = new TH1D("h4lSphericity","Quadleptons; Sphericity; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h4lAplanarity = new TH1D("h4lAplanarity","Quadleptons; Aplanarity; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h4lCParameter = new TH1D("h4lCParameter","Quadleptons; C-parameter; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h4lFW2 = new TH1D("h4lFW2","Quadleptons; Fox-Wolfram Moment R_{2}; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h4lFW3 = new TH1D("h4lFW3","Quadleptons; Fox-Wolfram Moment R_{3}; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h4lFW4 = new TH1D("h4lFW4","Quadleptons; Fox-Wolfram Moment R_{4}; Events per bin scaled to 400 fb^{-1}",50,0.0,1.0);
+TH1D* h4lcosthCS = new TH1D("h4lcosthCS","Quadleptons; costhCS; Events per bin scaled to 400 fb^{-1}",50,-1.0,1.0);
+TH1D* h4lacosthCS = new TH1D("h4lacosthCS","Quadleptons; |costhCS|; Events per bin scaled to 400 fb^{-1}",40,0.0,1.0);
+TH1D* h4lacosthCSCoarse = new TH1D("h4lacosthCSCoarse","Quadleptons; |costhCS|; Events per bin scaled to 400 fb^{-1}",20,0.0,1.0);
+TH1D* h4lphiCS = new TH1D("h4lphiCS","Quadleptons; #phi_{CS}; Events per bin scaled to 400 fb^{-1}",40,-M_PI, M_PI);
+
+TH1D* h3lRapidity = new TH1D("h3lRapidity","Trileptons; y(3l); Events per bin scaled to 400 fb^{-1}",60,-3.0,3.0);
+TH1D* h3lAbsRapidity = new TH1D("h3lAbsRapidity","Trileptons; |y(3l)|; Events per bin scaled to 400 fb^{-1}",30,0.0,3.0);
+TH1D* h4lRapidity = new TH1D("h4lRapidity","Quadleptons; y(4l); Events per bin scaled to 400 fb^{-1}",60,-3.0,3.0);
+TH1D* h4lAbsRapidity = new TH1D("h4lAbsRapidity","Quadleptons; |y(4l)|; Events per bin scaled to 400 fb^{-1}",30,0.0,3.0);
+
+TH1D* h4lMaxMass3vs1 = new TH1D("h4lMaxMass3vs1","Quadleptons; Max (Thrust-)Hemisphere Mass (3+1 events) [GeV]; Events per bin scaled to 400 fb^{-1}",120,0.0,60.0);
+TH1D* h4lMaxMass2vs2 = new TH1D("h4lMaxMass2vs2","Quadleptons; Max (Thrust-)Hemisphere Mass (2+2 events) [GeV]; Events per bin scaled to 400 fb^{-1}",120,0.0,60.0);
+
+
 

@@ -509,4 +509,16 @@ public:
 
     }
 
+// Return 3-vector for angular computations
+    ROOT::Math::XYZVector Vect() const {
+        return ROOT::Math::XYZVector(v.Px(), v.Py(), v.Pz());
+    }
+
+// Return boost vector beta for the system
+    ROOT::Math::XYZVector BoostVector() const {
+        return ROOT::Math::XYZVector(v.Px()/v.E(), v.Py()/v.E(), v.Pz()/v.E());
+    }
+
+
+
 };

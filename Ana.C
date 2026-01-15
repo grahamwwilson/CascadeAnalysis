@@ -33,6 +33,7 @@
 #include <string>
 #include <tuple>
 #include "FourVec.h"
+#include "EventShape.h"   // Code for event shapes
 #include "DiCuts.h"       // Dilepton selection
 #include "TriCuts.h"      // Trilepton selection
 #include "QuadCuts.h"     // Quadlepton selection
@@ -368,14 +369,14 @@ std::tuple<double, double, int, double, int, int> TriLeptonInfo(double m12, doub
  
 }
 
-std::tuple<double, double, int, double, double, double, int, int, int, int, double> QuadLeptonInfo(double m12, double m13, double m14, 
+std::tuple<double, double, int, double, double, double, int, int, int, int, double, double, double> QuadLeptonInfo(double m12, double m13, double m14, 
                                                                        double m23, double m24, double m34, 
-                                                                       double m123, double m124, double m234,
+                                                                       double m123, double m124, double m134, double m234,
                                                                        bool ossf12, bool ossf13, bool ossf14, 
                                                                        bool ossf23, bool ossf24, bool ossf34,
                                                                        int qf1, int qf2, int qf3, int qf4){
 // Input arguments for 4 leptons are: 
-// The masses of each pair, the masses of each triplet, flags for each pair as to wehther opposite-sign same flavor, 
+// The masses of each pair (6 of), the masses of each triplet (4 of), flags for each pair as to whether opposite-sign same flavor, 
 // and the charge*flavor values for each lepton.
 
 // Calculate a number of quantities related to four-lepton topologies and return in a tuple.
@@ -456,9 +457,9 @@ std::tuple<double, double, int, double, double, double, int, int, int, int, doub
 // 5. The complementary dilepton mass (using the other two leptons) to the pairing that 
 //    results in the minimum dilepton mass. The variable is othermll.
 
-// 6. The minimum trilepton mass
+// 6. The minimum trilepton mass (4 choices)
 
-     double minm3l = std::min( { m123, m124, m234 } );
+     double minm3l = std::min( { m123, m124, m134, m234 } );
 
      std::array<int,4> qfs = { qf1, qf2, qf3, qf4 };
 
@@ -474,9 +475,28 @@ std::tuple<double, double, int, double, double, double, int, int, int, int, doub
      double msq3 = m14*m14 + m23*m23;
      double minmsq = std::min( {msq1, msq2, msq3} );
      double min2lpairedmass = std::sqrt(minmsq);
+
+// Add a new quantity the minimum "other" di-lepton mass for particular 2+2 assignments.
+// This is done with two implementations. 
+// Firstly, for all 3 assignments. 
+// Secondly, only for OS assignments.
+
+     double othermllA = std::max(m12, m34);
+     double othermllB = std::max(m13, m24);
+     double othermllC = std::max(m14, m23);
+     double minOthermll = std::min( {othermllA, othermllB, othermllC} );
+
+     double osmllA = 99999.0;
+     double osmllB = 99999.0;
+     double osmllC = 99999.0;
+     if( (qf1*qf2)<0 && (qf3*qf4)<0 )osmllA = std::max(m12, m34);
+     if( (qf1*qf3)<0 && (qf2*qf4)<0 )osmllB = std::max(m13, m24);
+     if( (qf1*qf4)<0 && (qf2*qf3)<0 )osmllC = std::max(m14, m23);
+     double minOthermllOS = std::min( {osmllA, osmllB, osmllC} );
  
-     return std::make_tuple(minmll, maxmll, nossf, devZ, othermll, minm3l, minPairCode, compPairCode, minQPairCode, compQPairCode, min2lpairedmass);
- 
+     return std::make_tuple(minmll, maxmll, nossf, devZ, othermll, minm3l, 
+                            minPairCode, compPairCode, minQPairCode, compQPairCode, min2lpairedmass,
+                            minOthermll, minOthermllOS);
 }
 
 void FillCutFlow(unsigned int sel, double wt) {
@@ -598,6 +618,10 @@ void FillQuadCutFlow(unsigned int sel, double wt) {
 }
 
 
+//#include <iostream>
+//#include <iomanip>
+
+
 void Ana::Begin(TTree * /*tree*/)
 {
    // The Begin() function is called at the start of the query.
@@ -702,16 +726,17 @@ bool Ana::Process(Long64_t entry)
         {0.05, 0.85, 0.10}    // neut (photon, Z, W)
     };
 
-    bool reWeight= false; 
+//    bool reWeight= false; 
+#include "ReWeight.h"              // Use this include to control reweighting
     if(reWeight){
         double newWeight = 1.0;
-        if(inputFilePrefix=="SlepSneu-180"){
+        if(inputFilePrefix=="SlepSneu-180" || inputFilePrefix=="SlepSNEU-180"){
             newWeight = CascadeInfo(evn, ctree, cprod, dk1, dk2, N2dk1, N2dk2, 
                                     true, false, "default", myTarget);
         }
-        else if (inputFilePrefix=="SlepSneu-220" || 
-                 inputFilePrefix=="SlepSneu-260" || 
-                 inputFilePrefix=="SlepSneu-270"){
+        else if (inputFilePrefix=="SlepSneu-220" || inputFilePrefix=="SlepSNEU-220" || 
+                 inputFilePrefix=="SlepSneu-260" || inputFilePrefix=="SlepSNEU-260" ||
+                 inputFilePrefix=="SlepSneu-270" || inputFilePrefix=="SlepSNEU-180" ) {
             newWeight = CascadeInfo(evn, ctree, cprod, dk1, dk2, N2dk1, N2dk2, 
                                     true, false, "deprecated", myTarget);
         }
@@ -826,7 +851,7 @@ bool Ana::Process(Long64_t entry)
 //    std::vector<double> ptcuts3l = {10.0,  7.5, 5.0};
 //    std::vector<double> ptcuts3l = {7.5,  7.5,  7.5};
     double ptcutVeto3l = 2.0;
-    double sip3dcut3l = 3.5;
+    double sip3dcut3l = 3.0;
     double maxSIP3D3l{};
     double minSIP3D3l{};
     double SIP3DChisq3l{};
@@ -841,9 +866,19 @@ bool Ana::Process(Long64_t entry)
     int compLepCode = 0;
     double pt3l = 0.0;
     double pt3ljets = 0.0;
+    double y3l = 0.0;
+
+// Cuts on ordered |eta| of the selected leading leptons.
+    double maxEtaCut3l = 2.1;
+    double minEtaCut3l = 5.0;    // No cut for now ...
+    double maxEtaCut4l = 1.5;
+    double minEtaCut4l = 5.0;    // No cut ...
+
+    double cosTheta_CS_3l=0.0;
 
     bool vetoall = true;
 
+    std::vector<double> vAbsEta3l;  // Store the |eta| values for the first 3 leptons
     if ( ngs < 3 ){
         trisel = setFailureBit(trisel, TriCuts::GSNumber);
     }
@@ -888,6 +923,11 @@ bool Ana::Process(Long64_t entry)
         FourVec l13 = l1 + l3;
         FourVec l23 = l2 + l3;
         FourVec l123 = l1 + l23;
+        y3l = l123.rapidity();
+        vAbsEta3l.push_back(std::abs(Eta_lep[vlidx[0]])); vAbsEta3l.push_back(std::abs(Eta_lep[vlidx[1]])); vAbsEta3l.push_back(std::abs(Eta_lep[vlidx[2]]));
+        std::sort(vAbsEta3l.begin(), vAbsEta3l.end());
+        if( vAbsEta3l[2] > maxEtaCut3l) trisel = setFailureBit(trisel, TriCuts::MaxEta);
+        if( vAbsEta3l[0] > minEtaCut3l) trisel = setFailureBit(trisel, TriCuts::MinEta);
         double m12 = l12.M();   double m13 = l13.M();  double m23 = l23.M();
         bool ossf12 = l1.osdil(l2);   bool ossf13 = l1.osdil(l3);  bool ossf23 = l2.osdil(l3);
         auto result = TriLeptonInfo(m12, m13, m23, ossf12, ossf13, ossf23, l1.qf(), l2.qf(), l3.qf() );
@@ -909,6 +949,17 @@ bool Ana::Process(Long64_t entry)
         FourVec l123Jets = l123 + allJets;
         pt3ljets = l123Jets.Pt();
         if( (*Njet == 0 && pt3l < 10.0) || (*Njet >=1 && pt3ljets < 30.0)) trisel = setFailureBit(trisel, TriCuts::Pt3L);
+// New cut based on thrust topology
+        std::vector<FourVec> leptons;
+        leptons.push_back(l1); leptons.push_back(l2); leptons.push_back(l3);
+// Compute Collins-Soper variables
+        auto cs = EventShape::ComputeThrustAxisInCS(leptons, 6800.0);
+        cosTheta_CS_3l = cs.cosTheta_CS;
+        if(std::abs(cosTheta_CS_3l) > 0.70) trisel = setFailureBit(trisel, TriCuts::CS);
+// Compute thrust hemispheres
+//        auto hemis = EventShape::ComputeThrustHemispheres(leptons, cs.zCS);
+//        nlepMaxHemi3l = std::max(hemis.nPlus, hemis.nMinus);
+//        maxMassHemi3l = std::max(hemis.massPlus, hemis.massMinus);
     }
     FillCutFlow(trisel, wt);
 
@@ -939,7 +990,22 @@ bool Ana::Process(Long64_t entry)
     int compQPairCode = 0;
     double min2lPairedMass = 0.0;
     bool ZZlike = false;
-  
+
+    double minOthermll   = 99999.0;
+    double minOthermllOS = 99999.0;
+
+    double mComplementary = 0.0;
+    double mComplementary2 = 0.0;
+    double mComplementary3 = 0.0;
+    int OtherFailureMode = 0;
+    int MyCharge4=0;
+    int MyTightCharge4=0;
+    double y4l = 0.0;
+    int nlepMaxHemi4l = 0;
+    double maxMassHemi4l = 0.0;
+    double cosTheta_CS_4l = 0.0;
+
+    std::vector<double> vAbsEta4l;  // Store the |eta| values for the first 4 leptons  
     if ( ngs < 4 ){
         quadsel = setFailureBit(quadsel, QuadCuts::GSNumber);
     }
@@ -978,12 +1044,17 @@ bool Ana::Process(Long64_t entry)
         FourVec l34 = l3 + l4;
         FourVec l123 = l12 + l3;
         FourVec l124 = l12 + l4;
+        FourVec l134 = l13 + l4;
         FourVec l234 = l23 + l4;
+        vAbsEta4l.push_back(std::abs(Eta_lep[vlidx[0]])); vAbsEta4l.push_back(std::abs(Eta_lep[vlidx[1]])); vAbsEta4l.push_back(std::abs(Eta_lep[vlidx[2]])); vAbsEta4l.push_back(std::abs(Eta_lep[vlidx[3]]));
+        std::sort(vAbsEta4l.begin(), vAbsEta4l.end());
+        if( vAbsEta4l[3] > maxEtaCut4l ) quadsel = setFailureBit(quadsel, QuadCuts::MaxEta);
+        if( vAbsEta4l[0] > minEtaCut4l ) quadsel = setFailureBit(quadsel, QuadCuts::MinEta);
         double m12 = l12.M();   double m13 = l13.M();  double m14 = l14.M(); double m23 = l23.M(); double m24 = l24.M(); double m34 = l34.M();
-        double m123 = l123.M();  double m124 = l124.M();  double m234= l234.M();
+        double m123 = l123.M();  double m124 = l124.M();  double m134 = l134.M(); double m234= l234.M();
         bool ossf12 = l1.osdil(l2);   bool ossf13 = l1.osdil(l3);  bool ossf23 = l2.osdil(l3);
         bool ossf14 = l1.osdil(l4);   bool ossf24 = l2.osdil(l4);  bool ossf34 = l3.osdil(l4);
-        auto result = QuadLeptonInfo(m12, m13, m14, m23, m24, m34, m123, m124, m234, 
+        auto result = QuadLeptonInfo(m12, m13, m14, m23, m24, m34, m123, m124, m134, m234, 
                                      ossf12, ossf13, ossf14, ossf23, ossf24, ossf34,
                                      l1.qf(), l2.qf(), l3.qf(), l4.qf() );
         ZZlike = ZZlikeEvent( l1.qf(), l2.qf(), l3.qf(), l4.qf() );
@@ -998,10 +1069,13 @@ bool Ana::Process(Long64_t entry)
         minQPairCode = std::get<8>(result);
         compQPairCode = std::get<9>(result);
         min2lPairedMass = std::get<10>(result);
+        minOthermll   = std::get<11>(result);
+        minOthermllOS = std::get<12>(result);
         if(minmll4l < 4.0) quadsel = setFailureBit(quadsel, QuadCuts::MinMll);
         if(minmll4l > MLLCUT4) quadsel = setFailureBit(quadsel, QuadCuts::MxMinMll);        // Needs to be checked/adjusted for each signal hypothesis
         if(std::abs(devZ4l) < 7.5) quadsel = setFailureBit(quadsel, QuadCuts::OffZ);
         FourVec l1234 = l12 + l34;
+        y4l = l1234.rapidity();
         pt4l = l1234.Pt();
         FourVec ljets = l1234 + allJets;
         pt4ljets = ljets.Pt();
@@ -1009,7 +1083,45 @@ bool Ana::Process(Long64_t entry)
         m4l = l1234.M();
 // May be better to separate these in future.
         if( ZZlike && ( std::abs(m4l - 91.2) < 10.0  || (m4l > 121.0 && m4l < 127.0) )  ) quadsel = setFailureBit(quadsel, QuadCuts::M4LZV);
-        if(othermll4l>60.0) quadsel = setFailureBit(quadsel, QuadCuts::MxCompMll);
+
+// Assemble various cuts related to the event topology. These may need be consolidated.
+        MyCharge4 = l1.lcharge() + l2.lcharge() + l3.lcharge() + l4.lcharge();
+        MyTightCharge4 = TightCharge_lep[vlidx[0]]*TightCharge_lep[vlidx[1]]*TightCharge_lep[vlidx[2]]*TightCharge_lep[vlidx[3]];
+
+//        if(othermll4l > 60.0) OtherFailureMode +=1;
+        
+        if( (ZZlike && MyCharge4 == 0) || ( MyCharge4 == 0 && MyTightCharge4==16) ){
+            mComplementary  = std::min( 0.70*minm3lfor4l, minOthermllOS );
+            mComplementary2 = std::min( 0.65*minm3lfor4l, minOthermllOS );
+            mComplementary3 = std::min( 0.75*minm3lfor4l, minOthermllOS );
+        }
+        else{
+            mComplementary  = std::min( 0.70*minm3lfor4l, minOthermll );
+            mComplementary2 = std::min( 0.65*minm3lfor4l, minOthermll );
+            mComplementary3 = std::min( 0.75*minm3lfor4l, minOthermll );
+        } 
+//        if(mComplementary > 27.0) quadsel = setFailureBit(quadsel, QuadCuts::MxCompMll);
+
+// New cut based on thrust topology
+         std::vector<FourVec> leptons;
+         leptons.push_back(l1); leptons.push_back(l2); leptons.push_back(l3); leptons.push_back(l4);
+
+// Compute Collins-Soper variables
+         auto cs = EventShape::ComputeThrustAxisInCS(leptons, 6800.0);
+         cosTheta_CS_4l = cs.cosTheta_CS;
+// Compute thrust hemispheres
+         auto hemis = EventShape::ComputeThrustHemispheres(leptons, cs.zCS);
+         nlepMaxHemi4l = std::max(hemis.nPlus, hemis.nMinus);
+         maxMassHemi4l = std::max(hemis.massPlus, hemis.massMinus);
+
+         int failsCut = 0;
+         if( nlepMaxHemi4l == 2){     // 2+2
+             if(maxMassHemi4l > 23.0) failsCut = 1;     // tighter than prior 27 GeV
+         }
+         else{                        // 3+1
+             if(maxMassHemi4l > 39.0) failsCut = 2;     // hard-code - similar to before.
+         }
+         if(failsCut !=0) quadsel = setFailureBit(quadsel, QuadCuts::MxCompMll);
     }
     FillQuadCutFlow(quadsel, wt);
 
@@ -1083,6 +1195,19 @@ bool Ana::Process(Long64_t entry)
         hmaxSIP3D->Fill(maxSIP3D3l , wt);
     }
 
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::MaxEta ) ) {
+        h3lMaxAbsEta->Fill(vAbsEta3l[2] , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::MinEta ) ) {
+        h3lMinAbsEta->Fill(vAbsEta3l[0] , wt);
+    }
+
+    if( isSelectedOrFailsAtMostTwoCuts( trisel, TriCuts::MaxEta, TriCuts::MinEta ) ) {
+        h3lEtas->Fill(vAbsEta3l[2] , vAbsEta3l[0], wt);
+        h3lMidAbsEta->Fill(vAbsEta3l[1], wt);
+    }
+
     if( isSelectedOrFailsJustOneCut( trisel, TriCuts::MinMll ) || isSelectedOrFailsJustOneCut( trisel, TriCuts::MxMinMll )) {
         hminmll->Fill(minmll3l , wt);
     }
@@ -1103,6 +1228,12 @@ bool Ana::Process(Long64_t entry)
 
     if( isSelectedOrFailsJustOneCut( trisel, TriCuts::OSSF )) {
         h3lnossf->Fill(nossf3l, wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( trisel, TriCuts::CS )) {
+        h3lcosthCS->Fill(cosTheta_CS_3l, wt);
+        h3lacosthCS->Fill(std::abs(cosTheta_CS_3l), wt);
+        h3lacosthCSCoarse->Fill(std::abs(cosTheta_CS_3l), wt);
     }
 
     if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::Trigger )) {
@@ -1126,6 +1257,23 @@ bool Ana::Process(Long64_t entry)
 
     if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::SIP3DCut ) ) {
         hmaxSIP3D4l->Fill(maxSIP3D4l , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MaxEta ) ) {
+        h4lMaxAbsEta->Fill(vAbsEta4l[3] , wt);
+    }
+
+    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MinEta ) ) {
+        h4lMinAbsEta->Fill(vAbsEta4l[0] , wt);
+    }
+
+    if( isSelectedOrFailsAtMostTwoCuts( quadsel, QuadCuts::MaxEta, QuadCuts::MinEta ) ) {
+        h4lEtas->Fill(vAbsEta4l[3] , vAbsEta4l[0], wt);
+        h4lSMinAbsEta->Fill(vAbsEta4l[1], wt);
+        h4lSMaxAbsEta->Fill(vAbsEta4l[2], wt);
+// Move to if selected loop
+//        h4lRapidity->Fill(y4l, wt);
+//        h4lAbsRapidity->Fill(std::abs(y4l), wt);
     }
 
     if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MinMll ) || isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MxMinMll )) {
@@ -1191,8 +1339,32 @@ bool Ana::Process(Long64_t entry)
     }
 
     if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MxCompMll )) {
-       hothermll4l->Fill(othermll4l, wt);
+
+        if( (ZZlike && MyCharge4 == 0) || ( MyCharge4 == 0 && MyTightCharge4==16) ){
+             hMxCompPlot->Fill(minm3lfor4l, minOthermllOS, wt);
+             h1Complementary->Fill(std::min(mComplementary, 49.98), wt);
+             h1Complementary2->Fill(std::min(mComplementary2, 49.98), wt);
+             h1Complementary3->Fill(std::min(mComplementary3, 49.98), wt);
+        }
+        else{
+             hMxCompPlot2->Fill(minm3lfor4l, minOthermll, wt);             
+             h2Complementary->Fill(std::min(mComplementary, 49.98), wt);
+             h2Complementary2->Fill(std::min(mComplementary2, 49.98), wt);
+             h2Complementary3->Fill(std::min(mComplementary3, 49.98), wt);
+        }
+        hComplementary->Fill(std::min(mComplementary, 49.98), wt);
+        hComplementary2->Fill(std::min(mComplementary2, 49.98), wt);
+        hComplementary3->Fill(std::min(mComplementary3, 49.98), wt);
+
+// Now with new logic
+        if (nlepMaxHemi4l == 2) {
+            h4lMaxMass2vs2->Fill(std::min(maxMassHemi4l, 59.98), wt);
+        }
+        else{
+            h4lMaxMass3vs1->Fill(std::min(maxMassHemi4l, 59.98), wt);            
+        }
     }
+
 
     if( isSelected( disel) ){
 
@@ -1295,11 +1467,25 @@ bool Ana::Process(Long64_t entry)
     if( isSelected( trisel ) ){
 
 //         hCodes3l->Fill(minPairCode3l, compLepCode, wt);
+         h3lRapidity->Fill(y3l, wt);
+         h3lAbsRapidity->Fill(std::abs(y3l), wt);
 
-         if(minPairCode3l == 3 && compLepCode == 1)hsel3P1->Fill(1.0, wt);
-         if(minPairCode3l == 3 && compLepCode == 2)hsel3P2->Fill(1.0, wt);
-         if(minPairCode3l == 3 && compLepCode == 3)hsel3P3->Fill(1.0, wt);
-         if(minPairCode3l == 3 && compLepCode == 4)hsel3P4->Fill(1.0, wt);
+         if(minPairCode3l == 3 && compLepCode == 1){
+             hsel3P1->Fill(1.0, wt);
+             hsel3Exclusive->Fill(1.0, wt);
+         }
+         if(minPairCode3l == 3 && compLepCode == 2){
+             hsel3P2->Fill(1.0, wt);
+             hsel3Exclusive->Fill(2.0, wt);
+         }
+         if(minPairCode3l == 3 && compLepCode == 3){
+             hsel3P3->Fill(1.0, wt);
+             hsel3Exclusive->Fill(3.0, wt);
+         }
+         if(minPairCode3l == 3 && compLepCode == 4){
+             hsel3P4->Fill(1.0, wt);
+             hsel3Exclusive->Fill(4.0, wt);
+         }
 
          hselection->Fill(3.0,wt);
 
@@ -1418,6 +1604,65 @@ bool Ana::Process(Long64_t entry)
              hpt3l0jets->Fill(std::min(lepsPlusJets.Pt(), 99.99), wt); 
          }
 
+// eta distributions for selected 3-lepton events
+         hS3lMinAbsEta->Fill(vAbsEta3l[0], wt);
+         hS3lMidAbsEta->Fill(vAbsEta3l[1], wt); 
+         hS3lMaxAbsEta->Fill(vAbsEta3l[2], wt);
+
+         std::cout << " " << std::endl;
+         std::cout << "Selected 3-lepton event " << *eventnum << endl;
+
+         l1.Print();
+         l2.Print();
+         l3.Print();
+
+         std::vector<FourVec> leptons;
+         leptons.push_back(l1); leptons.push_back(l2); leptons.push_back(l3);
+
+         std::cout<<"Before computing shapes, inspect boosted kinematics:\n";
+         EventShape::PrintBoostedVectors(leptons,true);
+
+         std::cout << std::setprecision(6) << std::endl;
+         auto thrust = EventShape::ComputeThrust(leptons, true);
+         std::cout << "Thrust = " << thrust.thrust << ", Tau (1-T) = " << 1.0-thrust.thrust << "\n";
+         std::cout << "Thrust axis = " << thrust.axis.X() << " " << thrust.axis.Y() << " " << thrust.axis.Z() << std::endl;
+    
+         auto tensor = EventShape::ComputeTensorObservables(leptons, true);
+         std::cout << "Eigenvalues: "
+                   << tensor.lambda[0] << ", "
+                   << tensor.lambda[1] << ", "
+                   << tensor.lambda[2] << "\n";
+         std::cout << "Sphericity = " << tensor.sphericity << "\n";
+         std::cout << "Aplanarity = " << tensor.aplanarity << "\n";
+         std::cout << "C-parameter = " << tensor.Cparameter << "\n";
+
+// Fox Wolfram moments
+         auto H = EventShape::ComputeFoxWolfram(leptons, 4, true);
+         std::cout << "Fox-Wolfram moment ratios:\n";
+         for (int l=1; l<=(int)H.size()-1; l++)
+             std::cout << "R" << l << " = " << H[l]/H[0] << " " << H[0] << "\n";
+
+         h3lThrust->Fill(1.0 - thrust.thrust, wt);
+         h3lSphericity->Fill(tensor.sphericity, wt);
+         h3lAplanarity->Fill(tensor.aplanarity, wt);
+         h3lCParameter->Fill(tensor.Cparameter, wt);
+         h3lFW2->Fill(H[2], wt);                     // Fox-Wolfram moment, R2 = H2/H0
+         h3lFW3->Fill(H[3], wt);                     // Fox-Wolfram moment, R3 = H3/H0
+         h3lFW4->Fill(H[4], wt);                     // Fox-Wolfram moment, R4 = H4/H0
+
+// Now try CS angle.
+
+         auto cs = EventShape::ComputeThrustAxisInCS(leptons, 6800.0);
+
+         std::cout << "Qmass="<<cs.Qmass<<" QT="<<cs.QT<<" y_lab="<<cs.y_lab<<" y_CS="<<cs.y_CS<<"\n";
+         std::cout << "Thrust axis (RF) = " << cs.thrustAxis_rf.X() << ","
+                   << cs.thrustAxis_rf.Y() << "," << cs.thrustAxis_rf.Z() << "\n";
+         std::cout << "cos(theta_CS) = " << cs.cosTheta_CS << ", phi_CS = " << cs.phi_CS << "\n";
+
+//         h3lcosthCS->Fill(cs.cosTheta_CS, wt);
+//         h3lacosthCS->Fill(std::abs(cs.cosTheta_CS), wt);
+//         h3lacosthCSCoarse->Fill(std::abs(cs.cosTheta_CS), wt);
+         h3lphiCS->Fill(cs.phi_CS, wt);
 
 //#if ANA_NTUPLE_VERSION == 3
 #if ANA_NTUPLE_VERSION >= 3 && ANA_NTUPLE_FLAVOR_CODE == SIGNAL_CODE
@@ -1428,6 +1673,8 @@ bool Ana::Process(Long64_t entry)
 
     if( isSelected(quadsel) ){
          hselection->Fill(4.0,wt);
+         h4lRapidity->Fill(y4l, wt);
+         h4lAbsRapidity->Fill(std::abs(y4l), wt);
 
 #if ANA_NTUPLE_VERSION >= 3
          hPTISR4L->Fill(myPTISR, wt);
@@ -1435,10 +1682,68 @@ bool Ana::Process(Long64_t entry)
 
          h4lnjets->Fill(*Njet, wt);
 
+         std::cout << " " << std::endl;
+         std::cout << "Selected 4-lepton event " << *eventnum << endl;
+
          FourVec l1 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[0]], PT_lep[vlidx[0]], Eta_lep[vlidx[0]], Phi_lep[vlidx[0]], M_lep[vlidx[0]]);
          FourVec l2 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[1]], PT_lep[vlidx[1]], Eta_lep[vlidx[1]], Phi_lep[vlidx[1]], M_lep[vlidx[1]]);
          FourVec l3 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[2]], PT_lep[vlidx[2]], Eta_lep[vlidx[2]], Phi_lep[vlidx[2]], M_lep[vlidx[2]]);
          FourVec l4 = FourVec::FromPtEtaPhiM(PDGID_lep[vlidx[3]], PT_lep[vlidx[3]], Eta_lep[vlidx[3]], Phi_lep[vlidx[3]], M_lep[vlidx[3]]);
+
+         std::vector<FourVec> leptons;
+         leptons.push_back(l1); leptons.push_back(l2); leptons.push_back(l3); leptons.push_back(l4);
+
+         std::cout<<"Before computing shapes, inspect boosted kinematics:\n";
+         EventShape::PrintBoostedVectors(leptons,true);
+
+         std::cout << std::setprecision(6) << std::endl;
+//         auto thrustold = EventShape::ComputeThrustOld(leptons, true);
+//         std::cout << "Thrust (old) = " << thrustold.thrust << ", Tau (1-T) = " << 1.0-thrustold.thrust << "\n";
+
+         auto thrust = EventShape::ComputeThrust(leptons, true);
+         std::cout << "Thrust = " << thrust.thrust << ", Tau (1-T) = " << 1.0-thrust.thrust << "\n";
+         std::cout << "Thrust axis = " << thrust.axis.X() << " " << thrust.axis.Y() << " " << thrust.axis.Z() << std::endl;
+    
+         auto tensor = EventShape::ComputeTensorObservables(leptons, true);
+         std::cout << "Eigenvalues: "
+                   << tensor.lambda[0] << ", "
+                   << tensor.lambda[1] << ", "
+                   << tensor.lambda[2] << "\n";
+         std::cout << "Sphericity = " << tensor.sphericity << "\n";
+         std::cout << "Aplanarity = " << tensor.aplanarity << "\n";
+         std::cout << "C-parameter = " << tensor.Cparameter << "\n";
+
+// Fox Wolfram moments
+         auto H = EventShape::ComputeFoxWolfram(leptons, 4, true);
+         std::cout << "Fox-Wolfram moment ratios:\n";
+         for (int l=1; l<=(int)H.size()-1; l++)
+             std::cout << "R" << l << " = " << H[l]/H[0] << " " << H[0] << "\n";
+
+         h4lThrust->Fill(1.0 - thrust.thrust, wt);
+         h4lSphericity->Fill(tensor.sphericity, wt);
+         h4lAplanarity->Fill(tensor.aplanarity, wt);
+         h4lCParameter->Fill(tensor.Cparameter, wt);
+         h4lFW2->Fill(H[2], wt);                     // Fox-Wolfram moment, R2 = H2/H0
+         h4lFW3->Fill(H[3], wt);                     // Fox-Wolfram moment, R3 = H3/H0
+         h4lFW4->Fill(H[4], wt);                     // Fox-Wolfram moment, R4 = H4/H0
+
+// Now try CS angle.
+
+         auto cs = EventShape::ComputeThrustAxisInCS(leptons, 6800.0);
+
+         std::cout << "Qmass="<<cs.Qmass<<" QT="<<cs.QT<<" y_lab="<<cs.y_lab<<" y_CS="<<cs.y_CS<<"\n";
+         std::cout << "Thrust axis (RF) = " << cs.thrustAxis_rf.X() << ","
+                   << cs.thrustAxis_rf.Y() << "," << cs.thrustAxis_rf.Z() << "\n";
+         std::cout << "cos(theta_CS) = " << cs.cosTheta_CS << ", phi_CS = " << cs.phi_CS << "\n";
+
+         h4lcosthCS->Fill(cs.cosTheta_CS, wt);
+         h4lacosthCS->Fill(std::abs(cs.cosTheta_CS), wt);
+         h4lacosthCSCoarse->Fill(std::abs(cs.cosTheta_CS), wt);
+         h4lphiCS->Fill(cs.phi_CS, wt);
+
+         auto hemis = EventShape::ComputeThrustHemispheres(leptons, cs.zCS);
+
+         EventShape::PrintThrustHemispheres(hemis);
 
          hcentraleta4l->Fill( std::min( {std::abs(Eta_lep[vlidx[0]]), std::abs(Eta_lep[vlidx[1]]), std::abs(Eta_lep[vlidx[2]]), std::abs(Eta_lep[vlidx[3]])}) , wt);
          hforwardeta4l->Fill( std::max( {std::abs(Eta_lep[vlidx[0]]), std::abs(Eta_lep[vlidx[1]]), std::abs(Eta_lep[vlidx[2]]), std::abs(Eta_lep[vlidx[3]])}) , wt);
@@ -1454,7 +1759,7 @@ bool Ana::Process(Long64_t entry)
          FourVec l134 = l13 + l4;
          FourVec l234 = l23 + l4;
          FourVec l1234 = l12 + l34;
-         std::cout << "Selected 4-lepton event " << *eventnum << endl;
+
          l1234.Print();
          allJets.Print();
          FourVec lepsPlusJets = l1234 + allJets;
@@ -1479,6 +1784,9 @@ bool Ana::Process(Long64_t entry)
          if ( flavor4 == 6 )hsel4C3->Fill(1.0, wt);
          if ( flavor4 == 7 )hsel4C4->Fill(1.0, wt);
          if ( flavor4 == 8 )hsel4C5->Fill(1.0, wt);
+
+         if (nlepMaxHemi4l == 2)hsel4C11->Fill(1.0, wt);
+         if (nlepMaxHemi4l == 3)hsel4C12->Fill(1.0, wt);
 
     //     hm4l->Fill(l1234.Mass(), wt);
          if(surviveBtagVeto){
@@ -1548,6 +1856,12 @@ bool Ana::Process(Long64_t entry)
 
          double m4l = l1234.Mass();
 
+// eta distributions for selected 4-lepton events
+         hS4lMinAbsEta->Fill(vAbsEta4l[0], wt);
+         hS4lSMinAbsEta->Fill(vAbsEta4l[1], wt);
+         hS4lSMaxAbsEta->Fill(vAbsEta4l[2], wt); 
+         hS4lMaxAbsEta->Fill(vAbsEta4l[3], wt);
+
          if( ngs >= 5){
             hsel4Exclusive->Fill(1.0, wt);
          }
@@ -1566,24 +1880,36 @@ bool Ana::Process(Long64_t entry)
             hA4lMasses->Fill(min2lPairedMass, minm3lfor4l, wt); 
             hA4lMassesFine->Fill(min2lPairedMass, minm3lfor4l, wt);   
 
-            cout << "4l masses debug: Event " << *eventnum << endl;
+            cout << "4l masses debug: Event " << *eventnum << " genMET " << *genMET << " charge4 " << charge4 << " TightCharge4 " << TightCharge4 << endl;
+#if ANA_NTUPLE_VERSION >= 3 && ANA_NTUPLE_FLAVOR_CODE == SIGNAL_CODE
+            cout << "Cascades process       " << cprod << " " << dk1 << " " << dk2 << " " << N2dk1 << " " << N2dk2 << endl; 
+#endif
             l1.Print();
             l2.Print();
             l3.Print();
             l4.Print();
+            cout << "Etas " << l1.Eta() << " " << l2.Eta() << " " << l3.Eta() << " " << l4.Eta() << endl;
             cout << "mij (12,13,14,23,24,34): " << l12.Mass() << " " << l13.Mass() << " " << l14.Mass() << " " << l23.Mass() << " " << l24.Mass() << " " << l34.Mass() << endl;  
             cout << "mij+mkl (12+34,13+24,14+23): " << l12.Mass()+l34.Mass() << " " << l13.Mass()+l24.Mass() << " " << l14.Mass()+l23.Mass() << endl; 
+            cout << "M2l (12+34,13+24,14+23): " << std::sqrt(std::pow(l12.Mass(),2) + std::pow(l34.Mass(), 2)) 
+                                                << " " <<  std::sqrt(std::pow(l13.Mass(),2) + std::pow(l24.Mass(), 2)) 
+                                                << " " << std::sqrt(std::pow(l14.Mass(),2) + std::pow(l23.Mass(), 2)) << endl;
             cout << "mijk (123,124,134,234) : " << l123.Mass() << " " << l124.Mass() << " " << l134.Mass() << " " << l234.Mass() << endl; 
 
             cout << "minmll4l, othermll4l, maxmll4l " << minmll4l << " " << othermll4l << " " << maxmll4l << endl;
             cout << "m4l: " << m4l << " 3l: " << minm3lfor4l << " 2lPaired: " << min2lPairedMass << endl;
+            double othermllA = std::max(l12.Mass(), l34.Mass());
+            double othermllB = std::max(l13.Mass(), l24.Mass());
+            double othermllC = std::max(l14.Mass(), l23.Mass());
+            cout << "Other masses: " << othermllA << " " << othermllB << " " << othermllC << endl;
             double threePlusOneMass = std::sqrt(minm3lfor4l*minm3lfor4l/3.0);
             double twoPlusTwoMass = std::sqrt(min2lPairedMass*min2lPairedMass/2.0);
             double factor = twoPlusTwoMass/(twoPlusTwoMass+threePlusOneMass);
             cout << "3+1?: " << threePlusOneMass << " 2+2?: " << twoPlusTwoMass << " Factor (<0.5 =>2+2) " << factor << endl;
             h4lFactor->Fill(factor, wt);
-          
          }
+
+         std::cout << "COMPLEMENTARY MASS = " << mComplementary << std::endl;
 
          hpairCodes4l->Fill(minPairCode, compPairCode, wt);          // These are in the range 1 to 6
          int altminPairCode = NewPairCode(minPairCode);              
@@ -1842,6 +2168,23 @@ void SetProcessLabels(TH1* h) {
 
 }
 
+void SetCodeLabels3E(TH1* h) {
+
+    if (!h) return;  // safety check
+
+    std::vector<std::string> labels = { "e+", "#mu+", "e-", "#mu-" };
+
+    TAxis* xaxis = h->GetXaxis();
+
+    for (size_t i = 0; i < labels.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= xaxis->GetNbins()) xaxis->SetBinLabel(bin, labels[i].c_str());
+    }
+
+    xaxis->SetLabelSize(0.06);
+
+}
+
 void SetCodeLabels4E(TH1* h) {
 
     if (!h) return;  // safety check
@@ -1895,15 +2238,18 @@ void Ana::Terminate()
     hCutFlow->GetXaxis()->SetBinLabel(7, "Pt4Veto");
     hCutFlow->GetXaxis()->SetBinLabel(8, "BTagVeto");
     hCutFlow->GetXaxis()->SetBinLabel(9, "SIP3DCut");
-    hCutFlow->GetXaxis()->SetBinLabel(10,  "MnMll");
-    hCutFlow->GetXaxis()->SetBinLabel(11, "MxMnMll");
-    hCutFlow->GetXaxis()->SetBinLabel(12, "OffZ");
-    hCutFlow->GetXaxis()->SetBinLabel(13, "Pt3L");
-    hCutFlow->GetXaxis()->SetBinLabel(14, "M3LZV");
-    hCutFlow->GetXaxis()->SetBinLabel(15, "FQSB");
-    hCutFlow->GetXaxis()->SetBinLabel(16, "OSSF");
-    hCutFlow->GetXaxis()->SetBinLabel(17, "Selected");
-    std::cout << "Trilepton selected event count " << hCutFlow->GetBinContent(17) << " " << hCutFlow->GetBinError(17) << std::endl;
+    hCutFlow->GetXaxis()->SetBinLabel(10, "MaxEta");
+    hCutFlow->GetXaxis()->SetBinLabel(11, "MinEta");
+    hCutFlow->GetXaxis()->SetBinLabel(12,  "MnMll");
+    hCutFlow->GetXaxis()->SetBinLabel(13, "MxMnMll");
+    hCutFlow->GetXaxis()->SetBinLabel(14, "OffZ");
+    hCutFlow->GetXaxis()->SetBinLabel(15, "Pt3L");
+    hCutFlow->GetXaxis()->SetBinLabel(16, "M3LZV");
+    hCutFlow->GetXaxis()->SetBinLabel(17, "FQSB");
+    hCutFlow->GetXaxis()->SetBinLabel(18, "OSSF");
+    hCutFlow->GetXaxis()->SetBinLabel(19, "CS");
+    hCutFlow->GetXaxis()->SetBinLabel(20, "Selected");
+    std::cout << "Trilepton selected event count " << hCutFlow->GetBinContent(20) << " " << hCutFlow->GetBinError(20) << std::endl;
 
     hXCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
     hXCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
@@ -1914,13 +2260,16 @@ void Ana::Terminate()
     hXCutFlow->GetXaxis()->SetBinLabel(7, "Pt4Veto");
     hXCutFlow->GetXaxis()->SetBinLabel(8, "BTagVeto");
     hXCutFlow->GetXaxis()->SetBinLabel(9, "SIP3DCut");
-    hXCutFlow->GetXaxis()->SetBinLabel(10,  "MnMll");
-    hXCutFlow->GetXaxis()->SetBinLabel(11, "MxMnMll");
-    hXCutFlow->GetXaxis()->SetBinLabel(12, "OffZ");
-    hXCutFlow->GetXaxis()->SetBinLabel(13, "Pt3L");
-    hXCutFlow->GetXaxis()->SetBinLabel(14, "M3LZV");
-    hXCutFlow->GetXaxis()->SetBinLabel(15, "FQSB");
-    hXCutFlow->GetXaxis()->SetBinLabel(16, "OSSF");
+    hXCutFlow->GetXaxis()->SetBinLabel(10, "MaxEta");
+    hXCutFlow->GetXaxis()->SetBinLabel(11, "MinEta");
+    hXCutFlow->GetXaxis()->SetBinLabel(12,  "MnMll");
+    hXCutFlow->GetXaxis()->SetBinLabel(13, "MxMnMll");
+    hXCutFlow->GetXaxis()->SetBinLabel(14, "OffZ");
+    hXCutFlow->GetXaxis()->SetBinLabel(15, "Pt3L");
+    hXCutFlow->GetXaxis()->SetBinLabel(16, "M3LZV");
+    hXCutFlow->GetXaxis()->SetBinLabel(17, "FQSB");
+    hXCutFlow->GetXaxis()->SetBinLabel(18, "OSSF");
+    hXCutFlow->GetXaxis()->SetBinLabel(19, "CS");
 
     hQuadCutFlow->GetXaxis()->SetBinLabel(1, "All");
     hQuadCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
@@ -1932,14 +2281,16 @@ void Ana::Terminate()
     hQuadCutFlow->GetXaxis()->SetBinLabel(8, "Pt5Veto");
     hQuadCutFlow->GetXaxis()->SetBinLabel(9, "BTagVeto");
     hQuadCutFlow->GetXaxis()->SetBinLabel(10, "SIP3DCut");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(11,  "MnMll");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(12, "MxMnMll");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(13, "OffZ");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(14, "Pt4L");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(15, "M4LZV");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(16, "MxCompMll");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(17, "Selected");
-    std::cout << "Quadlepton selected event count " << hQuadCutFlow->GetBinContent(17) << " " << hQuadCutFlow->GetBinError(17) << std::endl;
+    hQuadCutFlow->GetXaxis()->SetBinLabel(11, "MaxEta");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(12, "MinEta");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(13,  "MnMll");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(14, "MxMnMll");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(15, "OffZ");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(16, "Pt4L");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(17, "M4LZV");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(18, "MxCompMll");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(19, "Selected");
+    std::cout << "Quadlepton selected event count " << hQuadCutFlow->GetBinContent(19) << " " << hQuadCutFlow->GetBinError(19) << std::endl;
 
     hXQuadCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
     hXQuadCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
@@ -1951,12 +2302,14 @@ void Ana::Terminate()
     hXQuadCutFlow->GetXaxis()->SetBinLabel(8, "Pt5Veto");
     hXQuadCutFlow->GetXaxis()->SetBinLabel(9, "BTagVeto");
     hXQuadCutFlow->GetXaxis()->SetBinLabel(10, "SIP3DCut");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(11,  "MnMll");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(12, "MxMnMll");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(13, "OffZ");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(14, "Pt4L");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(15, "M4LZV");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(16, "MxCompMll");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(11, "MaxEta");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(12, "MinEta");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(13,  "MnMll");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(14, "MxMnMll");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(15, "OffZ");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(16, "Pt4L");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(17, "M4LZV");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(18, "MxCompMll");
 
     h3lflavor->GetXaxis()->SetBinLabel(1,"eee");
     h3lflavor->GetXaxis()->SetBinLabel(2,"ee#mu");
@@ -2062,6 +2415,7 @@ void Ana::Terminate()
     SetCodeLabelsC(hpairCodesC4l);
     SetCodeLabelsCQ(hpairCodesCQ4l);
     SetCodeLabelsT(hCodes3l);
+    SetCodeLabels3E(hsel3Exclusive);
     SetCodeLabels4E(hsel4Exclusive);
 
    // Get a list of all objects in memory (for saving histograms)
@@ -2070,11 +2424,17 @@ void Ana::Terminate()
 
    // Save the histograms to a file - good for eg. fitting in the future
 
+   // Construct an output file name including job chunk info
+   std::string addOnString = "";
+   if(Njobs>1)addOnString += "_N" + std::to_string(Njobs) + "_Chunk" + std::to_string(JobIndex);
+
    std:string rfile ="";
    if(treeName == "KUAnalysis"){
-       rfile = inputFilePrefix + "_histos.root";
+       std::cout << "First clause" << std::endl;
+       rfile = inputFilePrefix + addOnString + "_histos.root";
    }
    else{
+       std::cout << "Second clause" << std::endl;
        rfile = treeName + "_" + inputFilePrefix + "_histos.root";       
    }
    std::cout << "rfile = " << rfile << endl;

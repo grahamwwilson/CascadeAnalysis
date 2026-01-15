@@ -17,11 +17,31 @@
 #include <TTreeReaderValue.h>
 #include <TTreeReaderArray.h>
 #include <string>
+#include <sstream>
 #include "asymm_mt2_lester_bisect.h"
+#include <chrono>
+#include <iomanip>
 
 // Headers needed by this particular selector
 #include <vector>
 #include "PreciseDouble.h"
+
+void printEpochSecNano()
+{
+    using clock = std::chrono::system_clock;
+
+    auto now = clock::now();
+    auto since_epoch = now.time_since_epoch();
+
+    auto secs  = std::chrono::duration_cast<std::chrono::seconds>(since_epoch);
+    auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     since_epoch - secs);
+
+    std::cout << secs.count() << "."
+              << std::setw(9) << std::setfill('0')
+              << nanos.count()
+              << std::endl;
+}
 
 class Ana : public TSelector {
 public :
@@ -29,6 +49,11 @@ public :
 // Populate these strings in Init
    std::string     inputFilePrefix;
    std::string     treeName;
+
+// Populate these new variables also in Init by deciphering the optionString
+   int Njobs{1};
+   int JobIndex{0};
+   std::string optionString;
 
 //   TH1D* hCutFlow = nullptr;  // member variable
 
@@ -90,6 +115,8 @@ void Ana::Init(TTree *tree)
    // Init() will be called many times when running on PROOF
    // (once per file to be processed).
 
+   printEpochSecNano();
+
 // Make sure we know which ntuple version etc the program thinks it is using.
 #if defined(ANA_NTUPLE_VERSION)
    std::cout << ">>> Initializing Ana with ANA_NTUPLE_VERSION = " << ANA_NTUPLE_VERSION << std::endl;
@@ -126,9 +153,30 @@ void Ana::Init(TTree *tree)
         if (f) {
             inputFilePrefix = f->GetName();
             inputFilePrefix.resize(inputFilePrefix.size() - 5);  // remove the ".root" from the file name
-            std::cout << "Init() -> inputFilePrefix: " << inputFilePrefix << " analyzing tree " << treeName << std::endl;
+            std::cout << "Init() -> inputFilePrefix: " 
+                      << inputFilePrefix << " analyzing tree " 
+                      << treeName << std::endl;
         }
     }
+
+    if (!tree) return;
+
+    if (fOption) {
+        std::string optionString(fOption);
+        std::cout << "Option string: " << optionString << std::endl;
+        // parse Njobs and JobIndex here
+        std::stringstream ss(optionString);
+        std::string token;
+        while (std::getline(ss, token, ';')) {
+            if (token.find("Njobs=") == 0) {
+                Njobs = std::stoi(token.substr(6));
+            } else if (token.find("JobIndex=") == 0) {
+                JobIndex = std::stoi(token.substr(9));
+            }
+        }
+    }
+
+    std::cout << "Init() -> Njobs: " << Njobs << " JobIndex: " << JobIndex << std::endl;
 
 }
 

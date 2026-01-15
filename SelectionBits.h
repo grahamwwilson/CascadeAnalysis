@@ -69,6 +69,19 @@ bool isSelectedOrFailsJustOneCut(unsigned int selword, Enum value) {
     return result;
 }
 
+template<typename Enum>    // Generalize this so that it works for all enums
+bool isSelectedOrFailsAtMostTwoCuts(unsigned int selword, Enum value1, Enum value2) {
+// Check if the event is selected or only fails the specified cut
+    unsigned int mask1 = 1u << static_cast<unsigned int>(value1);
+    unsigned int mask2 = 1u << static_cast<unsigned int>(value2);
+    unsigned int both = mask1 | mask2;
+
+    // Passes if either: passes all (selword == 0), fails only cut1,  fails only cut2, or fails only cut1 and cut2.
+    bool result = (selword == 0 || selword == mask1 || selword == mask2 || selword == both);
+
+    return result;
+}
+
 bool isSelected(unsigned int selword) {
 // Check if the event is selected (selword == 0).
     return selword == 0;
