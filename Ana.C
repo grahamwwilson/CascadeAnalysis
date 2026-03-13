@@ -1473,18 +1473,22 @@ bool Ana::Process(Long64_t entry)
          if(minPairCode3l == 3 && compLepCode == 1){
              hsel3P1->Fill(1.0, wt);
              hsel3Exclusive->Fill(1.0, wt);
+             hselAllExclusive->Fill(1.0, wt);
          }
          if(minPairCode3l == 3 && compLepCode == 2){
              hsel3P2->Fill(1.0, wt);
              hsel3Exclusive->Fill(2.0, wt);
+             hselAllExclusive->Fill(2.0, wt);
          }
          if(minPairCode3l == 3 && compLepCode == 3){
              hsel3P3->Fill(1.0, wt);
              hsel3Exclusive->Fill(3.0, wt);
+             hselAllExclusive->Fill(3.0, wt);
          }
          if(minPairCode3l == 3 && compLepCode == 4){
              hsel3P4->Fill(1.0, wt);
              hsel3Exclusive->Fill(4.0, wt);
+             hselAllExclusive->Fill(4.0, wt);
          }
 
          hselection->Fill(3.0,wt);
@@ -1862,14 +1866,26 @@ bool Ana::Process(Long64_t entry)
          hS4lSMaxAbsEta->Fill(vAbsEta4l[2], wt); 
          hS4lMaxAbsEta->Fill(vAbsEta4l[3], wt);
 
+         double offset = 4.0;
+
          if( ngs >= 5){
             hsel4Exclusive->Fill(1.0, wt);
+            hselAllExclusive->Fill(1.0+offset, wt);
+            hsel4D1->Fill(1.0,wt);
          }
          else if( ((charge4==-2 || charge4==2) && TightCharge4==16) ){
-            hsel4Exclusive->Fill(2.0, wt);            
+            hsel4Exclusive->Fill(2.0, wt);
+            hselAllExclusive->Fill(2.0+offset, wt); 
+            hsel4D2->Fill(1.0,wt);           
          }
          else{
+            if(flavor4==4)hsel4D3->Fill(1.0,wt);
+            if(flavor4==5)hsel4D4->Fill(1.0,wt);
+            if(flavor4==6)hsel4D5->Fill(1.0,wt);
+            if(flavor4==7)hsel4D6->Fill(1.0,wt);
+            if(flavor4==8)hsel4D7->Fill(1.0,wt);
             hsel4Exclusive->Fill(flavor4 - 1, wt);
+            hselAllExclusive->Fill(double(flavor4-1)+offset, wt);
             hMinm3lOverm4l->Fill(minm3lfor4l/m4l, wt);  
             hMin2lMassOverm4l->Fill(min2lPairedMass/m4l, wt);
             h4lMassRatios->Fill(min2lPairedMass/m4l, minm3lfor4l/m4l, wt); 
@@ -2202,6 +2218,36 @@ void SetCodeLabels4E(TH1* h) {
 
 }
 
+void SetCodeLabelsAE(TH1* h) {
+
+    if (!h) return;  // safety check
+
+//    std::vector<std::string> labels = { "e+", "#mu+", "e-", "#mu-", "5L", "|Q|=2", "4e", "eee#mu", "ee#mu#mu", "e#mu#mu#mu", "4#mu"};
+    std::vector<std::string> labels = {
+        "e#mue^{+}",
+        "e#mu#mu^{+}",
+        "e#mue^{-}",
+        "e#mu#mu^{-}",
+        "5L",
+        "|Q|=2",
+        "4e",
+        "eee#mu",
+        "ee#mu#mu",
+        "e#mu#mu#mu",
+        "4#mu"
+    };
+
+    TAxis* xaxis = h->GetXaxis();
+
+    for (size_t i = 0; i < labels.size(); ++i) {
+        int bin = i+1; // ROOT bins are 1-based
+        if (bin <= xaxis->GetNbins()) xaxis->SetBinLabel(bin, labels[i].c_str());
+    }
+
+    xaxis->SetLabelSize(0.06);
+
+}
+
 void Ana::Terminate()
 {
    // The Terminate() function is the last function to be called during
@@ -2417,6 +2463,7 @@ void Ana::Terminate()
     SetCodeLabelsT(hCodes3l);
     SetCodeLabels3E(hsel3Exclusive);
     SetCodeLabels4E(hsel4Exclusive);
+    SetCodeLabelsAE(hselAllExclusive);
 
    // Get a list of all objects in memory (for saving histograms)
    TList *list = gDirectory->GetList();

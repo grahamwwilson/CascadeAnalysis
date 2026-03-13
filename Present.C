@@ -132,7 +132,7 @@ std::vector<std::string> ptLabels = {"2l selection", "3l selection (MLL<35 GeV)"
 "3l (eee) selection (MLL<24 GeV)", "3l (eem) selection (MLL<24 GeV)", "3l (emm) selection (MLL<24 GeV)", "3l (mmm) selection (MLL<24 GeV)",
 "4l (eeee) selection (MLL<24 GeV)", "4l (eeem) selection (MLL<24 GeV)", "4l (eemm) selection (MLL<24 GeV)", "4l (emmm) selection (MLL<24 GeV)", 
 "4l (mmmm) selection (MLL<24 GeV)",
-"=4l selection (MLL<24 GeV)", ">=5l selection (MLL<24 GeV)", ">=6l selection (MLL<24 GeV)"};
+"=4l selection (MLL<24 GeV)", ">=5l selection (MLL<24 GeV)", ">=6l selection (MLL<24 GeV)","3L+4L selections (no ISR req.)"};
 
 // Ensure labelchoice is in bounds
 std::string ptLabel = (labelchoice >= 0 && labelchoice < ptLabels.size()) ? ptLabels[labelchoice] : "UNKNOWN";
@@ -156,7 +156,7 @@ cout << "Using signal histogram set " << hsignal << endl;
 
 // Let's rationalize the color choice
 //std::vector<int> colors = {kBlue, kRed, kTeal, kMagenta, kBlack, kGreen, kCyan, kGray, kOrange, kViolet, kPink};
-std::vector<int> colors = {kAzure, kBlack, kRed, kMagenta,  kTeal+4, kGreen, kAzure+10, kPink-4, kOrange+1, kViolet+5};
+std::vector<int> colors = {kAzure, kBlack, kRed, kMagenta,  kTeal+4, kGreen, kAzure+10, kYellow, kOrange+1, kViolet+5};
 for (int color : colors) {
     std::cout << "Color: " << color << std::endl;
 }

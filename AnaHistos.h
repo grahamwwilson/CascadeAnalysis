@@ -250,8 +250,17 @@ TH1D* hsel4C10 = new TH1D("hsel4C10","Quadleptons (5L); ; Events per bin scaled 
 TH1D* hsel4C11 = new TH1D("hsel4C11","Quadleptons (2+2); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
 TH1D* hsel4C12 = new TH1D("hsel4C12","Quadleptons (3+1); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
 
+TH1D* hsel4D3 = new TH1D("hsel4D3","Quadleptons (eeee); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
+TH1D* hsel4D4 = new TH1D("hsel4D4","Quadleptons (eeem); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
+TH1D* hsel4D5 = new TH1D("hsel4D5","Quadleptons (eemm); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
+TH1D* hsel4D6 = new TH1D("hsel4D6","Quadleptons (emmm); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
+TH1D* hsel4D7 = new TH1D("hsel4D7","Quadleptons (mmmm); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
+TH1D* hsel4D1 = new TH1D("hsel4D1","Quadleptons (5l); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
+TH1D* hsel4D2 = new TH1D("hsel4D2","Quadleptons (Q2T); ; Events per bin scaled to 400 inv fb",3,0.5,3.5);
+
 TH1D* hsel3Exclusive = new TH1D("hsel3Exclusive","Trileptons; Exclusive Category; Events per bin scaled to 400 inv fb",4,0.5,4.5);
 TH1D* hsel4Exclusive = new TH1D("hsel4Exclusive","Quadleptons; Exclusive Category; Events per bin scaled to 400 inv fb",7,0.5,7.5);
+TH1D* hselAllExclusive = new TH1D("hselAllExclusive","(3L + 4L); Exclusive Category; Events per bin scaled to 400 inv fb",11,0.5,11.5);
 
 TH1D* hcentraleta3l = new TH1D("hcentraleta3l","Trileptons; Most central |eta|; Events per bin scaled to 400 inv fb",125,0.0,2.5);
 TH1D* hcentraleta4l = new TH1D("hcentraleta4l","Quadleptons; Most central |eta|; Events per bin scaled to 400 inv fb",125,0.0,2.5);
