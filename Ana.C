@@ -310,7 +310,6 @@ int CompLepCode(int compLep, const std::array<int,3>& qfs) {
 }
 
 
-
 std::tuple<double, double, int, double, int, int> TriLeptonInfo(double m12, double m13, double m23, bool ossf12, bool ossf13, bool ossf23, int qf1, int qf2, int qf3){
 
 // Calculate a number of quantities related to trilepton topologies and return in a tuple.
@@ -874,7 +873,7 @@ bool Ana::Process(Long64_t entry)
     double maxEtaCut4l = 1.5;
     double minEtaCut4l = 5.0;    // No cut ...
 
-    double cosTheta_CS_3l=0.0;
+    double cosTheta_CS_3l = 0.0;
 
     bool vetoall = true;
 
@@ -1026,7 +1025,7 @@ bool Ana::Process(Long64_t entry)
              }
         }
         if ( !passTrig ) quadsel = setFailureBit(quadsel, QuadCuts::Trigger); 
-        if ( failFifthLeptonVeto ) quadsel = setFailureBit(quadsel, QuadCuts::PtFiveVeto);
+//        if ( failFifthLeptonVeto ) quadsel = setFailureBit(quadsel, QuadCuts::PtFiveVeto);
         if ( !surviveBtagVeto ) quadsel = setFailureBit(quadsel, QuadCuts::BTagVeto);
         maxSIP3D4l = std::max({SIP3D_lep[vlidx[0]], SIP3D_lep[vlidx[1]], SIP3D_lep[vlidx[2]], SIP3D_lep[vlidx[3]]});
         SIP3DChisq4l = std::pow(SIP3D_lep[vlidx[0]], 2) + std::pow(SIP3D_lep[vlidx[1]], 2) + std::pow(SIP3D_lep[vlidx[2]], 2) + std::pow(SIP3D_lep[vlidx[3]], 2) ;
@@ -1072,7 +1071,7 @@ bool Ana::Process(Long64_t entry)
         minOthermll   = std::get<11>(result);
         minOthermllOS = std::get<12>(result);
         if(minmll4l < 4.0) quadsel = setFailureBit(quadsel, QuadCuts::MinMll);
-        if(minmll4l > MLLCUT4) quadsel = setFailureBit(quadsel, QuadCuts::MxMinMll);        // Needs to be checked/adjusted for each signal hypothesis
+//        if(minmll4l > MLLCUT4) quadsel = setFailureBit(quadsel, QuadCuts::MxMinMll);        // Needs to be checked/adjusted for each signal hypothesis
         if(std::abs(devZ4l) < 7.5) quadsel = setFailureBit(quadsel, QuadCuts::OffZ);
         FourVec l1234 = l12 + l34;
         y4l = l1234.rapidity();
@@ -1251,9 +1250,11 @@ bool Ana::Process(Long64_t entry)
          if (passTrig) hQuadTrigger->Fill(11.0, wt);   
     }
 
+/*
     if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::PtFiveVeto )) {
         hPtFiveVeto->Fill(ptFifthLepton , wt);
     }
+*/
 
     if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::SIP3DCut ) ) {
         hmaxSIP3D4l->Fill(maxSIP3D4l , wt);
@@ -1276,9 +1277,9 @@ bool Ana::Process(Long64_t entry)
 //        h4lAbsRapidity->Fill(std::abs(y4l), wt);
     }
 
-    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MinMll ) || isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MxMinMll )) {
-        hminmll4l->Fill(minmll4l , wt);
-    }
+//    if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MinMll ) || isSelectedOrFailsJustOneCut( quadsel, QuadCuts::MxMinMll )) {
+//        hminmll4l->Fill(minmll4l , wt);
+//    }
 
     if( isSelectedOrFailsJustOneCut( quadsel, QuadCuts::OffZ )) {
         h4ldevZ->Fill(devZ4l , wt);
@@ -1463,6 +1464,7 @@ bool Ana::Process(Long64_t entry)
          
     }
 
+// Would be good to maybe resusscitate |Q| = 3 trileptons.
 
     if( isSelected( trisel ) ){
 
@@ -2324,19 +2326,19 @@ void Ana::Terminate()
     hQuadCutFlow->GetXaxis()->SetBinLabel(5, "Pt3");
     hQuadCutFlow->GetXaxis()->SetBinLabel(6, "Pt4");
     hQuadCutFlow->GetXaxis()->SetBinLabel(7, "TRG");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(8, "Pt5Veto");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(9, "BTagVeto");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(10, "SIP3DCut");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(11, "MaxEta");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(12, "MinEta");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(13,  "MnMll");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(14, "MxMnMll");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(15, "OffZ");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(16, "Pt4L");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(17, "M4LZV");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(18, "MxCompMll");
-    hQuadCutFlow->GetXaxis()->SetBinLabel(19, "Selected");
-    std::cout << "Quadlepton selected event count " << hQuadCutFlow->GetBinContent(19) << " " << hQuadCutFlow->GetBinError(19) << std::endl;
+//    hQuadCutFlow->GetXaxis()->SetBinLabel(8, "Pt5Veto");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(8, "BTagVeto");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(9, "SIP3DCut");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(10, "MaxEta");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(11, "MinEta");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(12,  "MnMll");
+//    hQuadCutFlow->GetXaxis()->SetBinLabel(14, "MxMnMll");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(13, "OffZ");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(14, "Pt4L");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(15, "M4LZV");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(16, "MxCompMll");
+    hQuadCutFlow->GetXaxis()->SetBinLabel(17, "Selected");
+    std::cout << "Quadlepton selected event count " << hQuadCutFlow->GetBinContent(17) << " " << hQuadCutFlow->GetBinError(17) << std::endl;
 
     hXQuadCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
     hXQuadCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");
@@ -2345,17 +2347,17 @@ void Ana::Terminate()
     hXQuadCutFlow->GetXaxis()->SetBinLabel(5, "Pt3");
     hXQuadCutFlow->GetXaxis()->SetBinLabel(6, "Pt4");
     hXQuadCutFlow->GetXaxis()->SetBinLabel(7, "TRG");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(8, "Pt5Veto");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(9, "BTagVeto");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(10, "SIP3DCut");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(11, "MaxEta");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(12, "MinEta");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(13,  "MnMll");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(14, "MxMnMll");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(15, "OffZ");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(16, "Pt4L");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(17, "M4LZV");
-    hXQuadCutFlow->GetXaxis()->SetBinLabel(18, "MxCompMll");
+//    hXQuadCutFlow->GetXaxis()->SetBinLabel(8, "Pt5Veto");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(8, "BTagVeto");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(9, "SIP3DCut");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(10, "MaxEta");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(11, "MinEta");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(12,  "MnMll");
+//    hXQuadCutFlow->GetXaxis()->SetBinLabel(14, "MxMnMll");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(13, "OffZ");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(14, "Pt4L");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(15, "M4LZV");
+    hXQuadCutFlow->GetXaxis()->SetBinLabel(16, "MxCompMll");
 
     h3lflavor->GetXaxis()->SetBinLabel(1,"eee");
     h3lflavor->GetXaxis()->SetBinLabel(2,"ee#mu");

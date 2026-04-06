@@ -165,11 +165,11 @@ TH1D* h4lSIP3DSignificance = new TH1D("h4lSIP3DSignificance","Four leptons; Even
 TH1D* hDiCutFlow = new TH1D("hDiCutFlow", "Dileptons; Cut Flow; Events per bin scaled to 400 inv fb", 8, -1.5, 6.5);
 TH1D* hDiCutFlowNonTau = new TH1D("hDiCutFlowNonTau", "Dileptons; Cut Flow; Events per bin scaled to 400 inv fb", 8, -1.5, 6.5);
 TH1D* hCutFlow = new TH1D("hCutFlow", "Trileptons; Cut Flow; Events per bin scaled to 400 inv fb", 20, -1.5, 18.5);   // Can we make these be adjusted automatically according to the enum?
-TH1D* hQuadCutFlow = new TH1D("hQuadCutFlow", "Quadleptons; Cut Flow; Events per bin scaled to 400 inv fb", 19, -1.5, 17.5);
+TH1D* hQuadCutFlow = new TH1D("hQuadCutFlow", "Quadleptons; Cut Flow; Events per bin scaled to 400 inv fb", 17, -1.5, 15.5);
 
 TH1D* hXDiCutFlow = new TH1D("hXDiCutFlow", "Dileptons; Exclusive Cut Flow; Events per bin scaled to 400 inv fb", 7, -1.5, 5.5);
 TH1D* hXCutFlow = new TH1D("hXCutFlow", "Trileptons; Exclusive Cut Flow; Events per bin scaled to 400 inv fb", 19, -1.5, 17.5);
-TH1D* hXQuadCutFlow = new TH1D("hXQuadCutFlow", "Quadleptons; Exclusive Cut Flow; Events per bin scaled to 400 inv fb", 18, -1.5, 16.5);
+TH1D* hXQuadCutFlow = new TH1D("hXQuadCutFlow", "Quadleptons; Exclusive Cut Flow; Events per bin scaled to 400 inv fb", 16, -1.5, 14.5);
 
 TH1D* hprocesslowt = new TH1D("hprocesslowt", " ; Production process; Events per bin scaled to 400 inv fb", 8, 0.5, 8.5);
 TH1D* hprocesshiwt = new TH1D("hprocesshiwt", " ; Production process; Events per bin scaled to 400 inv fb", 8, 0.5, 8.5);

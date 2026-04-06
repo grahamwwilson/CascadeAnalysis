@@ -156,7 +156,7 @@ cout << "Using signal histogram set " << hsignal << endl;
 
 // Let's rationalize the color choice
 //std::vector<int> colors = {kBlue, kRed, kTeal, kMagenta, kBlack, kGreen, kCyan, kGray, kOrange, kViolet, kPink};
-std::vector<int> colors = {kAzure, kBlack, kRed, kMagenta,  kTeal+4, kGreen, kAzure+10, kYellow, kOrange+1, kViolet+5};
+std::vector<int> colors = {kAzure, kBlack, kRed, kMagenta,  kTeal+4, kGreen, kAzure+10, kYellow+1, kOrange+1, kViolet+5};
 for (int color : colors) {
     std::cout << "Color: " << color << std::endl;
 }
