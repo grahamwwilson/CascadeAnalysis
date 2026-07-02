@@ -870,7 +870,7 @@ bool Ana::Process(Long64_t entry)
 // Cuts on ordered |eta| of the selected leading leptons.
     double maxEtaCut3l = 2.1;
     double minEtaCut3l = 5.0;    // No cut for now ...
-    double maxEtaCut4l = 1.5;
+    double maxEtaCut4l = 1.5;    // This cut is indeed tighter than for 3l given that we don't use the CS angle cut for 4l.
     double minEtaCut4l = 5.0;    // No cut ...
 
     double cosTheta_CS_3l = 0.0;
