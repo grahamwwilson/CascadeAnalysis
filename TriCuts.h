@@ -1,15 +1,21 @@
 // Organize cuts for selecting events that are consistent with a prompt 3-lepton signature
 
+// Add 3 new pre-sel parts to do pre-selection accounting
+
 enum class TriCuts {
-    GSNumber = 0, 
-    PtOne, PtTwo, PtThree, Trigger, PtFourVeto,
+    TwoL = 0, ThreeL, GS2, 
+    GSNumber, PtOne, PtTwo, PtThree, Trigger, PtFourVeto,
     BTagVeto, SIP3DCut, MaxEta, MinEta,
     MinMll, MxMinMll, OffZ, Pt3L, M3LZV, FQSB, OSSF, CS, NUMCUTS
 };
 
 std::string to_string(TriCuts value) {
     switch (value) {
-        case TriCuts::GSNumber:   return "GSNumber";         // eg. >=3 G+S leptons
+// Add pre-selection bins
+        case TriCuts::TwoL:       return "TwoL";               // 2L
+        case TriCuts::ThreeL:     return "ThreeL";               // 3L
+        case TriCuts::GS2:        return "GS2";              // at least 2 G or S leptons
+        case TriCuts::GSNumber:   return "GSNumber";         // eg. >=3 G or S leptons
         case TriCuts::PtOne:      return "PtOne";            // eg. highest pt G+S lepton pT>20 GeV
         case TriCuts::PtTwo:      return "PtTwo";            // 2nd highest pt G+S lepton pT>15 GeV
         case TriCuts::PtThree:    return "PtThree";          // 3rd highest pt G+S lepton pT>10 GeV 
