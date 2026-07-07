@@ -781,6 +781,7 @@ bool Ana::Process(Long64_t entry)
 
     int nleptons = 0; int nleptons_hipt = 0;
     int nbronze = 0;
+    int ngold = 0;
     int ngs = 0;
 // Loop over leptons separating into two quality categories
     for (unsigned int i = 0; i < LepQual_lep.GetSize(); ++i){
@@ -792,6 +793,7 @@ bool Ana::Process(Long64_t entry)
             nbronze++;             // Bronze
             vbidx.push_back(i);
         }
+        if(LepQual_lep[i] == 0) ngold ++; // Gold count
     }
     hnleptons->Fill(nleptons, wt);
     hnleptons_hipt->Fill(nleptons_hipt, wt);
@@ -884,6 +886,7 @@ bool Ana::Process(Long64_t entry)
     if (ngs + nbronze < 2) trisel = setFailureBit(trisel, TriCuts::TwoL);
     if (ngs + nbronze < 3) trisel = setFailureBit(trisel, TriCuts::ThreeL);
     if (ngs < 2) trisel = setFailureBit(trisel, TriCuts::GS2);
+    if (ngold < 2 && ngs < 3) trisel = setFailureBit(trisel, TriCuts::GG_GS3);
 
     std::vector<double> vAbsEta3l;  // Store the |eta| values for the first 3 leptons
     if ( ngs < 3 ){
@@ -2289,49 +2292,51 @@ void Ana::Terminate()
     hCutFlow->GetXaxis()->SetBinLabel(2, "2L");
     hCutFlow->GetXaxis()->SetBinLabel(3, "3L");
     hCutFlow->GetXaxis()->SetBinLabel(4, "GS2");
-    hCutFlow->GetXaxis()->SetBinLabel(5, "N(G+S)");
-    hCutFlow->GetXaxis()->SetBinLabel(6, "Pt1");
-    hCutFlow->GetXaxis()->SetBinLabel(7, "Pt2");
-    hCutFlow->GetXaxis()->SetBinLabel(8, "Pt3");
-    hCutFlow->GetXaxis()->SetBinLabel(9, "TRG");
-    hCutFlow->GetXaxis()->SetBinLabel(10, "Pt4Veto");
-    hCutFlow->GetXaxis()->SetBinLabel(11, "BTagVeto");
-    hCutFlow->GetXaxis()->SetBinLabel(12, "SIP3DCut");
-    hCutFlow->GetXaxis()->SetBinLabel(13, "MaxEta");
-    hCutFlow->GetXaxis()->SetBinLabel(14, "MinEta");
-    hCutFlow->GetXaxis()->SetBinLabel(15,  "MnMll");
-    hCutFlow->GetXaxis()->SetBinLabel(16, "MxMnMll");
-    hCutFlow->GetXaxis()->SetBinLabel(17, "OffZ");
-    hCutFlow->GetXaxis()->SetBinLabel(18, "Pt3L");
-    hCutFlow->GetXaxis()->SetBinLabel(19, "M3LZV");
-    hCutFlow->GetXaxis()->SetBinLabel(20, "FQSB");
-    hCutFlow->GetXaxis()->SetBinLabel(21, "OSSF");
-    hCutFlow->GetXaxis()->SetBinLabel(22, "CS");
-    hCutFlow->GetXaxis()->SetBinLabel(23, "Selected");
+    hCutFlow->GetXaxis()->SetBinLabel(5, "GG_GS3");
+    hCutFlow->GetXaxis()->SetBinLabel(6, "N(G+S)");
+    hCutFlow->GetXaxis()->SetBinLabel(7, "Pt1");
+    hCutFlow->GetXaxis()->SetBinLabel(8, "Pt2");
+    hCutFlow->GetXaxis()->SetBinLabel(9, "Pt3");
+    hCutFlow->GetXaxis()->SetBinLabel(10, "TRG");
+    hCutFlow->GetXaxis()->SetBinLabel(11, "Pt4Veto");
+    hCutFlow->GetXaxis()->SetBinLabel(12, "BTagVeto");
+    hCutFlow->GetXaxis()->SetBinLabel(13, "SIP3DCut");
+    hCutFlow->GetXaxis()->SetBinLabel(14, "MaxEta");
+    hCutFlow->GetXaxis()->SetBinLabel(15, "MinEta");
+    hCutFlow->GetXaxis()->SetBinLabel(16,  "MnMll");
+    hCutFlow->GetXaxis()->SetBinLabel(17, "MxMnMll");
+    hCutFlow->GetXaxis()->SetBinLabel(18, "OffZ");
+    hCutFlow->GetXaxis()->SetBinLabel(19, "Pt3L");
+    hCutFlow->GetXaxis()->SetBinLabel(20, "M3LZV");
+    hCutFlow->GetXaxis()->SetBinLabel(21, "FQSB");
+    hCutFlow->GetXaxis()->SetBinLabel(22, "OSSF");
+    hCutFlow->GetXaxis()->SetBinLabel(23, "CS");
+    hCutFlow->GetXaxis()->SetBinLabel(24, "Selected");
     std::cout << "Trilepton selected event count " << hCutFlow->GetBinContent(23) << " " << hCutFlow->GetBinError(23) << std::endl;
 
     hXCutFlow->GetXaxis()->SetBinLabel(1, "Selected");
     hXCutFlow->GetXaxis()->SetBinLabel(2, "2L");
     hXCutFlow->GetXaxis()->SetBinLabel(3, "3L");
     hXCutFlow->GetXaxis()->SetBinLabel(4, "GS2");
-    hXCutFlow->GetXaxis()->SetBinLabel(5, "N(G+S)");
-    hXCutFlow->GetXaxis()->SetBinLabel(6, "Pt1");
-    hXCutFlow->GetXaxis()->SetBinLabel(7, "Pt2");
-    hXCutFlow->GetXaxis()->SetBinLabel(8, "Pt3");
-    hXCutFlow->GetXaxis()->SetBinLabel(9, "TRG");
-    hXCutFlow->GetXaxis()->SetBinLabel(10, "Pt4Veto");
-    hXCutFlow->GetXaxis()->SetBinLabel(11, "BTagVeto");
-    hXCutFlow->GetXaxis()->SetBinLabel(12, "SIP3DCut");
-    hXCutFlow->GetXaxis()->SetBinLabel(13, "MaxEta");
-    hXCutFlow->GetXaxis()->SetBinLabel(14, "MinEta");
-    hXCutFlow->GetXaxis()->SetBinLabel(14,  "MnMll");
-    hXCutFlow->GetXaxis()->SetBinLabel(16, "MxMnMll");
-    hXCutFlow->GetXaxis()->SetBinLabel(17, "OffZ");
-    hXCutFlow->GetXaxis()->SetBinLabel(18, "Pt3L");
-    hXCutFlow->GetXaxis()->SetBinLabel(19, "M3LZV");
-    hXCutFlow->GetXaxis()->SetBinLabel(20, "FQSB");
-    hXCutFlow->GetXaxis()->SetBinLabel(21, "OSSF");
-    hXCutFlow->GetXaxis()->SetBinLabel(22, "CS");
+    hXCutFlow->GetXaxis()->SetBinLabel(5, "GG_GS3");
+    hXCutFlow->GetXaxis()->SetBinLabel(6, "N(G+S)");
+    hXCutFlow->GetXaxis()->SetBinLabel(7, "Pt1");
+    hXCutFlow->GetXaxis()->SetBinLabel(8, "Pt2");
+    hXCutFlow->GetXaxis()->SetBinLabel(9, "Pt3");
+    hXCutFlow->GetXaxis()->SetBinLabel(10, "TRG");
+    hXCutFlow->GetXaxis()->SetBinLabel(11, "Pt4Veto");
+    hXCutFlow->GetXaxis()->SetBinLabel(12, "BTagVeto");
+    hXCutFlow->GetXaxis()->SetBinLabel(13, "SIP3DCut");
+    hXCutFlow->GetXaxis()->SetBinLabel(14, "MaxEta");
+    hXCutFlow->GetXaxis()->SetBinLabel(15, "MinEta");
+    hXCutFlow->GetXaxis()->SetBinLabel(16,  "MnMll");
+    hXCutFlow->GetXaxis()->SetBinLabel(17, "MxMnMll");
+    hXCutFlow->GetXaxis()->SetBinLabel(18, "OffZ");
+    hXCutFlow->GetXaxis()->SetBinLabel(19, "Pt3L");
+    hXCutFlow->GetXaxis()->SetBinLabel(20, "M3LZV");
+    hXCutFlow->GetXaxis()->SetBinLabel(21, "FQSB");
+    hXCutFlow->GetXaxis()->SetBinLabel(22, "OSSF");
+    hXCutFlow->GetXaxis()->SetBinLabel(23, "CS");
 
     hQuadCutFlow->GetXaxis()->SetBinLabel(1, "All");
     hQuadCutFlow->GetXaxis()->SetBinLabel(2, "N(G+S)");

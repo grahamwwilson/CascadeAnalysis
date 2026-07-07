@@ -3,7 +3,7 @@
 // Add 3 new pre-sel parts to do pre-selection accounting
 
 enum class TriCuts {
-    TwoL = 0, ThreeL, GS2, 
+    TwoL = 0, ThreeL, GS2, GG_GS3,
     GSNumber, PtOne, PtTwo, PtThree, Trigger, PtFourVeto,
     BTagVeto, SIP3DCut, MaxEta, MinEta,
     MinMll, MxMinMll, OffZ, Pt3L, M3LZV, FQSB, OSSF, CS, NUMCUTS
@@ -12,9 +12,10 @@ enum class TriCuts {
 std::string to_string(TriCuts value) {
     switch (value) {
 // Add pre-selection bins
-        case TriCuts::TwoL:       return "TwoL";               // 2L
-        case TriCuts::ThreeL:     return "ThreeL";               // 3L
+        case TriCuts::TwoL:       return "TwoL";             // 2L
+        case TriCuts::ThreeL:     return "ThreeL";           // 3L
         case TriCuts::GS2:        return "GS2";              // at least 2 G or S leptons
+        case TriCuts::GG_GS3:     return "GG_GS3";           // >=2G or >=3 G+S
         case TriCuts::GSNumber:   return "GSNumber";         // eg. >=3 G or S leptons
         case TriCuts::PtOne:      return "PtOne";            // eg. highest pt G+S lepton pT>20 GeV
         case TriCuts::PtTwo:      return "PtTwo";            // 2nd highest pt G+S lepton pT>15 GeV
